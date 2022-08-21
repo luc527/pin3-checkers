@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkers</title>
+  <style>
+    :root {
+      --cell-size-px: 64px;
+      --white0: rgb(220, 220, 220);
+      --black0: rgb(50, 50, 50);
+      --white1: rgb(180, 180, 180);
+      --black1: rgb(100, 100, 100);
+    }
+    .board-table, .board-cell, .board-row {
+      border: 0;
+      padding: 0;
+      margin: 0;
+    }
+    .board-cell {
+      width: var(--cell-size-px);
+      height: var(--cell-size-px);
+      max-width: var(--cell-size-px);
+      max-height: var(--cell-size-px);
+      position: relative;
+    }
+    .board-cell.black {
+      background-color: var(--black0);
+    }
+    .board-cell.white {
+      background-color: var(--white0);
+    }
+
+    .piece {
+      position: absolute;
+    }
+
+    .piece.man {
+      top: 50%;
+      left: 50%;
+      transform: translateY(-50%) translateX(-50%);
+      width: calc(3/4 * var(--cell-size-px));
+      height: calc(3/4 * var(--cell-size-px));
+      border-radius: 100%;
+    }
+
+    .piece.king {
+      top: 50%;
+      left: 50%;
+      transform: translateY(-50%) translateX(-50%) rotate(45deg);
+      width: calc(1/2 * var(--cell-size-px));
+      height: calc(1/2 * var(--cell-size-px));
+    }
+
+    .piece.white {
+      background-color: var(--white0);
+    }
+    .piece.black {
+      background-color: var(--black0);
+      border: 2px solid var(--white1);
+    }
+  </style>
+</head>
+<body>
+
+<table id="board-table"></table>
+
+<script>
+
+const pieceElemMatrix = createBoardTable(document.querySelector('#board-table'));
+
+const game = makeInitialGame();
+
+renderBoard(game.board, pieceElemMatrix);
+
+/**
+ * Creates the table representing the board in the DOM
+ * Already creates both 'man' and 'king' pieces in all board cells,
+ * so to render a particular board we just toggle the visibility and colors of existing elements
+ * 
+ * @param {HTMLTableElement} tableElem
+ * 
+ * @return {Array} Piece elements indexed by position
+ */
+function createBoardTable(tableElem) {
+  tableElem.setAttribute('cellspacing', 0);
+  const pieceElemMatrix = Array(8);
+
+  for (let i = 0; i < 8; i++) {
+    pieceElemMatrix[i] = Array(8);
+
+    const rowElem = document.createElement('tr');
+    rowElem.classList.add('board-row');
+
+    for (let j = 0; j < 8; j++) {
+      const cellElem = document.createElement('td');
+      const cellColorClass = (i + j) % 2 == 0 ? 'white' : 'black';
+      cellElem.classList.add('board-cell', cellColorClass);
+
+      const manPieceElem = document.createElement('div');
+      manPieceElem.classList.add('piece', 'man')
+      manPieceElem.style.visibility = 'hidden'
+
+      const kingPieceElem = document.createElement('div');
+      kingPieceElem.classList.add('piece', 'king');
+      kingPieceElem.style.visibility = 'hidden'
+
+      pieceElemMatrix[i][j] = { 
+        manElem: manPieceElem,
+        kingElem: kingPieceElem
+      };
+
+      cellElem.append(manPieceElem);
+      cellElem.append(kingPieceElem);
+
+      rowElem.append(cellElem);
+    }
+
+    tableElem.append(rowElem);
+  }
+
+  return pieceElemMatrix;
+}
+
+/**
+ * @param {Array} arr
+ * @param {HTMLTableElement} table
+ */
+function renderBoard(arr, pieceElemMatrix) {
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      const { manElem, kingElem } = pieceElemMatrix[i][j];
+      const piece = arr[i][j];
+
+      if (!piece) {
+        manElem.style.visibility = 'hidden';
+        kingElem.style.visibility = 'hidden';
+      } else {
+        let pieceElem;
+        if (piece.king) {
+          manElem.style.visibility = 'hidden';
+          kingElem.style.visibility = 'visible';
+          pieceElem = kingElem;
+        } else {
+          manElem.style.visibility = 'visible';
+          kingElem.style.visibility = 'hidden';
+          pieceElem = manElem;
+        }
+        
+        if (piece.white) {
+          pieceElem.classList.remove('black');
+          pieceElem.classList.add('white');
+        } else {
+          pieceElem.classList.remove('white');
+          pieceElem.classList.add('black');
+        }
+      }
+    }
+  }
+}
+
+function makeInitialBoard() {
+  const board = Array(8);
+  for (let i = 0; i < 8; i++) {
+    board[i] = Array(8);
+  }
+
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 8; j++) {
+      if ((i + j) % 2 != 0) {
+        board[i][j] = { white: true, king: false };
+      }
+    }
+  }
+
+  for (let i = 5; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      if ((i + j) % 2 != 0) {
+        board[i][j] = { white: false, king: false };
+      }
+    }
+  }
+
+  return board;
+}
+
+/**
+ * Creates the initial game state
+ * 
+ * @return {Object}
+ */
+function makeInitialGame() {
+  return {
+    whitesTurn: true,
+    board: makeInitialBoard()
+  };
+}
+
+</script>
+
+</body>
+</html>
