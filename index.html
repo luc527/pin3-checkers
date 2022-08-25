@@ -197,6 +197,35 @@ function makeInitialGame() {
   };
 }
 
+
+function getAttackDestinations(board, piecePosition) {
+  const src = piecePosition;
+  const piece = board[src.row][src.col];
+
+  if (!piece) return [];
+
+  const result = [];
+  const reach = piece.king ? 100 : 2;  // arbitrary large number for unlimited reach
+
+  // row and column step
+  for (let rstep of [-1, 1]) {
+    for (let cstep of [-1, 1]) {
+      
+      // captured positions and piece
+      const cap = { row: src.row + rstep, col: src.col + cstep };
+      const capPiece = board[cap.row][cap.col];
+      if (!capPiece) continue;  // empty
+      if (capPiece.white == piece.white) continue;  // same color
+
+      // TODO iterate from distance = 2 .. reach
+      // break when out of bounds
+      // add destionation positions to result
+    }
+  }
+
+  return result;
+}
+
 </script>
 
 </body>
