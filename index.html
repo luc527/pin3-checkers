@@ -82,6 +82,7 @@
 <table id="board-table"></table>
 
 <script>
+'use strict'
 
 const pieceElemMatrix = createBoardTable(document.querySelector('#board-table'))
 
@@ -91,14 +92,15 @@ renderBoard(game.board, pieceElemMatrix)
 
 const testBoard = decodeBoard([
   '........',
-  '..o.....',
-  '.x.x....',
-  '........'
+  '.x......',
+  '..@.....',
+  '.x......',
+  '....x...'
 ].join('\n'));
 
 renderBoard(testBoard, pieceElemMatrix);
 
-console.log(getAttackDestinations(testBoard, { row: 1, col: 2 }));
+console.log(getCaptureDestinations(testBoard, { row: 2, col: 2 }));
 
 /**
  * Creates the table representing the board in the DOM
@@ -191,6 +193,13 @@ function renderBoard(arr, pieceElemMatrix) {
   }
 }
 
+/**
+ * Board definition:
+ * 8x8 matrix
+ * null represents an empty cell
+ * { white: boolean, king: boolean } represents a cell containing a piece
+ */
+
 function makeEmptyBoard() {
   const board = Array(8)
   for (let i = 0; i < 8; i++) {
@@ -234,40 +243,59 @@ function makeInitialGame() {
 }
 
 
-function getAttackDestinations(board, piecePosition) {
+// TODO doc
+function getCaptureDestinations(board, piecePosition) {
   const src = piecePosition
   const srcPiece = board[src.row][src.col]
 
-  if (!srcPiece) return []
+  if (!srcPiece) {
+    return []
+  }
 
   const result = []
   const reach = srcPiece.king ? 100 : 2  // arbitrary large number for unlimited reach
 
-  // row and column step
+  // attack destination:
+  // first empty position
+  // - within reach
+  // - in a diagonal
+  // - after one and only one enemy piece
+
+  // row and column step to iterate through all four diagonals
   for (let rstep of [-1, 1]) {
     for (let cstep of [-1, 1]) {
 
+      // capture is true when the previous piece was capturable
+      let capture = false
+      const pos = { row: src.row+rstep, col: src.col+cstep };
 
-      const pos = { row: src.row + 1*rstep, col: src.col + 1*cstep }
-      for (let dist = 1; dist < reach; dist++) {
-        // out of bounds
+      for (let dist = 1; dist <= reach; dist++) {
+
         if (pos.row < 0 || pos.row > 7 || pos.col < 0 || pos.col > 7) {
           break
         }
+
         const piece = board[pos.row][pos.col]
-        if (piece) {
-          // can't capture pieces of the same color, so quit looking in this direction
-          if (piece && piece.white == srcPiece.white) {
+
+        if (piece != null) {
+          if (capture) {
+            // previous piece capturable, but no empty space to land on
             break
-          } 
-          // can't move on top of a piece, continue to look for an empty space
-          continue 
-        } else if (dist > 1) {
-
-          // TODO check if actually has a piece in the middle with different color
-
+          } else if (piece.white == srcPiece.white) {
+            // can't capture pieces of the same color
+            break
+          } else {
+            // this piece is capturable, let's see in the next iteration whether we can actually capture it
+            capture = true
+          }
+        } else if (capture) {
+          // this is the first empty position after an enemy piece
           result.push(pos)
+          break
         }
+
+        pos.row += rstep
+        pos.col += cstep
       }
     }
   }
@@ -316,7 +344,8 @@ function decodeBoard(str) {
   const rows = str.split('\n');
   const rowsLen = Math.min(8, rows.length);
 
-  for (let i = 0; i < rowsLen; i++) {
+  let i;
+  for (i = 0; i < rowsLen; i++) {
     const cols = rows[i].split('');
     if (cols.length < 8) return null;
 
@@ -331,30 +360,13 @@ function decodeBoard(str) {
       }
     }
   }
+  // explicitely fill the rest of the board, so it's null, not undefined
+  for (; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      board[i][j] = null
+    }
+  }
   return board
-}
-
-function addGuidesToEncoding(str) {
-  result = ''
-  result += ' '
-  for (let j = 0; j < 8; j++) {
-    result += j
-  }
-  result += '\n'
-
-  const rows = str.split('\n')
-  for (let i = 0; i < 8; i++) {
-    result += i
-    result += rows[i]
-    result += i
-    result += '\n'
-  }
-  result += ' '
-  for (let j = 0; j < 8; j++) {
-    result += j
-  }
-
-  return result
 }
 
 </script>
