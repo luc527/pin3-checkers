@@ -98,6 +98,8 @@ const testBoard = decodeBoard([
 
 renderBoard(testBoard, pieceElemMatrix);
 
+console.log(getAttackDestinations(testBoard, { row: 1, col: 2 }));
+
 /**
  * Creates the table representing the board in the DOM
  * Already creates both 'man' and 'king' pieces in all board cells,
@@ -239,11 +241,12 @@ function getAttackDestinations(board, piecePosition) {
   if (!srcPiece) return []
 
   const result = []
-  const reach = piece.king ? 100 : 2  // arbitrary large number for unlimited reach
+  const reach = srcPiece.king ? 100 : 2  // arbitrary large number for unlimited reach
 
   // row and column step
   for (let rstep of [-1, 1]) {
     for (let cstep of [-1, 1]) {
+
 
       const pos = { row: src.row + 1*rstep, col: src.col + 1*cstep }
       for (let dist = 1; dist < reach; dist++) {
@@ -260,6 +263,9 @@ function getAttackDestinations(board, piecePosition) {
           // can't move on top of a piece, continue to look for an empty space
           continue 
         } else if (dist > 1) {
+
+          // TODO check if actually has a piece in the middle with different color
+
           result.push(pos)
         }
       }
