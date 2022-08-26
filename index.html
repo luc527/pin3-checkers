@@ -25,6 +25,20 @@
       max-height: var(--cell-size-px);
       position: relative;
     }
+    .cell-text {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      color: white;
+      text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+      opacity: 0.05;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .cell-text:hover {
+      opacity: 0.8;
+    }
     .board-cell.black {
       background-color: var(--black0);
     }
@@ -55,6 +69,7 @@
 
     .piece.white {
       background-color: var(--white0);
+      border: 2px solid var(--black1);
     }
     .piece.black {
       background-color: var(--black0);
@@ -68,11 +83,20 @@
 
 <script>
 
-const pieceElemMatrix = createBoardTable(document.querySelector('#board-table'));
+const pieceElemMatrix = createBoardTable(document.querySelector('#board-table'))
 
-const game = makeInitialGame();
+const game = makeInitialGame()
 
-renderBoard(game.board, pieceElemMatrix);
+renderBoard(game.board, pieceElemMatrix)
+
+const testBoard = decodeBoard([
+  '........',
+  '..o.....',
+  '.x.x....',
+  '........'
+].join('\n'));
+
+renderBoard(testBoard, pieceElemMatrix);
 
 /**
  * Creates the table representing the board in the DOM
@@ -84,43 +108,48 @@ renderBoard(game.board, pieceElemMatrix);
  * @return {Array} Piece elements indexed by position
  */
 function createBoardTable(tableElem) {
-  tableElem.setAttribute('cellspacing', 0);
-  const pieceElemMatrix = Array(8);
+  tableElem.setAttribute('cellspacing', 0)
+  const pieceElemMatrix = Array(8)
 
   for (let i = 0; i < 8; i++) {
-    pieceElemMatrix[i] = Array(8);
+    pieceElemMatrix[i] = Array(8)
 
-    const rowElem = document.createElement('tr');
-    rowElem.classList.add('board-row');
+    const rowElem = document.createElement('tr')
+    rowElem.classList.add('board-row')
 
     for (let j = 0; j < 8; j++) {
       const cellElem = document.createElement('td');
       const cellColorClass = (i + j) % 2 == 0 ? 'white' : 'black';
-      cellElem.classList.add('board-cell', cellColorClass);
+      cellElem.classList.add('board-cell', cellColorClass)
 
-      const manPieceElem = document.createElement('div');
+      const manPieceElem = document.createElement('div')
       manPieceElem.classList.add('piece', 'man')
       manPieceElem.style.visibility = 'hidden'
 
-      const kingPieceElem = document.createElement('div');
-      kingPieceElem.classList.add('piece', 'king');
+      const kingPieceElem = document.createElement('div')
+      kingPieceElem.classList.add('piece', 'king')
       kingPieceElem.style.visibility = 'hidden'
 
       pieceElemMatrix[i][j] = { 
         manElem: manPieceElem,
         kingElem: kingPieceElem
-      };
+      }
 
-      cellElem.append(manPieceElem);
-      cellElem.append(kingPieceElem);
+      const text = document.createElement('span')
+      text.classList.add('cell-text')
+      text.innerHTML = `row: ${i}\ncol: ${j}`;
 
-      rowElem.append(cellElem);
+      cellElem.append(manPieceElem)
+      cellElem.append(kingPieceElem)
+      cellElem.append(text)
+
+      rowElem.append(cellElem)
     }
 
-    tableElem.append(rowElem);
+    tableElem.append(rowElem)
   }
 
-  return pieceElemMatrix;
+  return pieceElemMatrix
 }
 
 /**
@@ -130,46 +159,51 @@ function createBoardTable(tableElem) {
 function renderBoard(arr, pieceElemMatrix) {
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
-      const { manElem, kingElem } = pieceElemMatrix[i][j];
-      const piece = arr[i][j];
+      const { manElem, kingElem } = pieceElemMatrix[i][j]
+      const piece = arr[i][j]
 
       if (!piece) {
-        manElem.style.visibility = 'hidden';
-        kingElem.style.visibility = 'hidden';
+        manElem.style.visibility = 'hidden'
+        kingElem.style.visibility = 'hidden'
       } else {
-        let pieceElem;
+        let pieceElem
         if (piece.king) {
-          manElem.style.visibility = 'hidden';
-          kingElem.style.visibility = 'visible';
-          pieceElem = kingElem;
+          manElem.style.visibility = 'hidden'
+          kingElem.style.visibility = 'visible'
+          pieceElem = kingElem
         } else {
-          manElem.style.visibility = 'visible';
-          kingElem.style.visibility = 'hidden';
-          pieceElem = manElem;
+          manElem.style.visibility = 'visible'
+          kingElem.style.visibility = 'hidden'
+          pieceElem = manElem
         }
         
         if (piece.white) {
-          pieceElem.classList.remove('black');
-          pieceElem.classList.add('white');
+          pieceElem.classList.remove('black')
+          pieceElem.classList.add('white')
         } else {
-          pieceElem.classList.remove('white');
-          pieceElem.classList.add('black');
+          pieceElem.classList.remove('white')
+          pieceElem.classList.add('black')
         }
       }
     }
   }
 }
 
-function makeInitialBoard() {
-  const board = Array(8);
+function makeEmptyBoard() {
+  const board = Array(8)
   for (let i = 0; i < 8; i++) {
-    board[i] = Array(8);
+    board[i] = Array(8)
   }
+  return board
+}
+
+function makeInitialBoard() {
+  const board = makeEmptyBoard()
 
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 8; j++) {
       if ((i + j) % 2 != 0) {
-        board[i][j] = { white: true, king: false };
+        board[i][j] = { white: true, king: false }
       }
     }
   }
@@ -177,12 +211,12 @@ function makeInitialBoard() {
   for (let i = 5; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
       if ((i + j) % 2 != 0) {
-        board[i][j] = { white: false, king: false };
+        board[i][j] = { white: false, king: false }
       }
     }
   }
 
-  return board;
+  return board
 }
 
 /**
@@ -194,36 +228,127 @@ function makeInitialGame() {
   return {
     whitesTurn: true,
     board: makeInitialBoard()
-  };
+  }
 }
 
 
 function getAttackDestinations(board, piecePosition) {
-  const src = piecePosition;
-  const piece = board[src.row][src.col];
+  const src = piecePosition
+  const srcPiece = board[src.row][src.col]
 
-  if (!piece) return [];
+  if (!srcPiece) return []
 
-  const result = [];
-  const reach = piece.king ? 100 : 2;  // arbitrary large number for unlimited reach
+  const result = []
+  const reach = piece.king ? 100 : 2  // arbitrary large number for unlimited reach
 
   // row and column step
   for (let rstep of [-1, 1]) {
     for (let cstep of [-1, 1]) {
-      
-      // captured positions and piece
-      const cap = { row: src.row + rstep, col: src.col + cstep };
-      const capPiece = board[cap.row][cap.col];
-      if (!capPiece) continue;  // empty
-      if (capPiece.white == piece.white) continue;  // same color
 
-      // TODO iterate from distance = 2 .. reach
-      // break when out of bounds
-      // add destionation positions to result
+      const pos = { row: src.row + 1*rstep, col: src.col + 1*cstep }
+      for (let dist = 1; dist < reach; dist++) {
+        // out of bounds
+        if (pos.row < 0 || pos.row > 7 || pos.col < 0 || pos.col > 7) {
+          break
+        }
+        const piece = board[pos.row][pos.col]
+        if (piece) {
+          // can't capture pieces of the same color, so quit looking in this direction
+          if (piece && piece.white == srcPiece.white) {
+            break
+          } 
+          // can't move on top of a piece, continue to look for an empty space
+          continue 
+        } else if (dist > 1) {
+          result.push(pos)
+        }
+      }
     }
   }
 
-  return result;
+  return result
+}
+
+/**
+ * --- Debugging functions
+ */
+
+/**
+ * Encodes the given board as a string
+ * 
+ * @param {Array}
+ * 
+ * @return {string}
+ */
+function encodeBoard(board) {
+  let enc = '';
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      const piece = board[i][j];
+      if (piece) {
+        if (piece.white) enc += piece.king ? '@' : 'o';
+        else             enc += piece.king ? '#' : 'x';
+      } else {
+        enc += '.';
+      }
+    }
+    if (i < 7) enc += '\n';
+  }
+  return enc
+}
+
+/**
+ * Decodes the given string as a board
+ * 
+ * @param {string}
+ * 
+ * @return {Array}
+ */
+function decodeBoard(str) {
+  const board = makeEmptyBoard()
+
+  const rows = str.split('\n');
+  const rowsLen = Math.min(8, rows.length);
+
+  for (let i = 0; i < rowsLen; i++) {
+    const cols = rows[i].split('');
+    if (cols.length < 8) return null;
+
+    for (let j = 0; j < 8; j++) {
+      const ch = cols[j];
+      switch (ch) {
+        case 'x': board[i][j] = { white: false, king: false }; break;
+        case '#': board[i][j] = { white: false, king: true }; break;
+        case 'o': board[i][j] = { white: true,  king: false }; break;
+        case '@': board[i][j] = { white: true,  king: true }; break;
+        case '.': default: board[i][j] = null; break;
+      }
+    }
+  }
+  return board
+}
+
+function addGuidesToEncoding(str) {
+  result = ''
+  result += ' '
+  for (let j = 0; j < 8; j++) {
+    result += j
+  }
+  result += '\n'
+
+  const rows = str.split('\n')
+  for (let i = 0; i < 8; i++) {
+    result += i
+    result += rows[i]
+    result += i
+    result += '\n'
+  }
+  result += ' '
+  for (let j = 0; j < 8; j++) {
+    result += j
+  }
+
+  return result
 }
 
 </script>
