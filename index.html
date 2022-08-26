@@ -86,9 +86,7 @@
 
 const pieceElemMatrix = createBoardTable(document.querySelector('#board-table'))
 
-const game = makeInitialGame()
-
-renderBoard(game.board, pieceElemMatrix)
+renderBoard(makeInitialBoard(), pieceElemMatrix)
 
 // const testBoard = decodeBoard([
 //   '........',
@@ -98,7 +96,7 @@ renderBoard(game.board, pieceElemMatrix)
 //   '....x...'
 // ].join('\n'));
 // renderBoard(testBoard, pieceElemMatrix);
-// console.log(getCaptureDestinations(testBoard, { row: 2, col: 2 }));
+// console.log(getSingleCaptureDestinations(testBoard, { row: 2, col: 2 }));
 
 const testBoard = decodeBoard([
   '....o...',
@@ -114,7 +112,7 @@ console.log({ row: 3, col: 1 }, getRegularMoves(testBoard, { row: 3, col: 1 }));
 console.log({ row: 4, col: 4 }, getRegularMoves(testBoard, { row: 4, col: 4 }));
 
 /**
- * Creates the table representing the board in the DOM
+ * Takes an empty table and creates the rows/cells to represent a board
  * Already creates both 'man' and 'king' pieces in all board cells,
  * so to render a particular board we just toggle the visibility and colors of existing elements
  * 
@@ -205,7 +203,7 @@ function renderBoard(arr, pieceElemMatrix) {
 }
 
 /**
- * Board definition:
+ * --- Board definition:
  * 8x8 matrix
  * null represents an empty cell
  * { white: boolean, king: boolean } represents a cell containing a piece
@@ -241,21 +239,100 @@ function makeInitialBoard() {
   return board
 }
 
-/**
- * Creates the initial game state
- * 
- * @return {Object}
- */
-function makeInitialGame() {
-  return {
-    whitesTurn: true,
-    board: makeInitialBoard()
+// we'll do/undo moves
+// because instead of always generating brand new states when examining possibilites
+// we'll do backtracking: do moves on the way down the tree (just before recursive call),
+// undo on the way up (just after recursive call)
+
+// TODO when doing/undoing moves
+// also undo captures
+// also undo crowning
+// need to return both as extra information
+
+function moveDo(board, from, to) {
+  // assumes positions are in bounds, and that the move is diagonal (from.row-to.row = from.col-to.col)
+  const diff = Math.abs(from.row - to.row);
+
+  let crowned = null
+  let captured = null
+
+  // capture
+  if (diff > 1) {
+    // there's always only one capture, the position just before 'to'
+    // TODO
   }
+
+  const piece = board[from.row][from.col]
+  board[to.row][from.row] = piece
+  board[from.row][from.col] = null
+
+  const crown = (piece.white && to.row == 7) || (!piece.white && to.row == 0)
+  if (!piece.king && crown) {
+    piece.king = true
+    crowned = { row: to.row, col: to.col }
+  }
+  return { crowned, captured }
+
+
+  // returns { crowned: null|{row, col}, captured: null|{row, col, piece} }, where piece = {white, king}
+  return { crowned, captured }
 }
 
+function moveUndo(board, from, to, { crowned, capture }) {
+  // TODO
+}
+
+/**
+ * --- Movement generation
+ */
 
 // TODO doc
-function getCaptureDestinations(board, piecePosition) {
+function getRegularMoveDestinations(board, piecePosition) {
+  const src = piecePosition
+  const srcPiece = board[src.row][src.col]
+
+  if (!srcPiece) return []
+
+  const csteps = [-1, 1]
+
+  let rsteps
+  if (srcPiece.king) {
+    rsteps = [-1, 1]
+  } else if (srcPiece.white) {
+    rsteps = [1]
+  } else {
+    rsteps = [-1]
+  }
+
+  const result = []
+  const reach = srcPiece.king ? 100 : 1
+
+  for (const rstep of rsteps) {
+    for (const cstep of csteps) {
+      const pos = { row: src.row+rstep, col: src.col+cstep }
+      for (let dist = 1; dist <= reach; dist++) {
+        if (pos.row < 0 || pos.row > 7 || pos.col < 0 || pos.col > 7) {
+          break
+        }
+
+        const piece = board[pos.row][pos.col]
+        if (piece != null) {
+          break
+        }
+
+        result.push({ row: pos.row, col: pos.col })
+
+        pos.row += rstep
+        pos.col += cstep
+      }
+    }
+  }
+
+  return result
+}
+
+// TODO doc
+function getSingleCaptureDestinations(board, piecePosition) {
   const src = piecePosition
   const srcPiece = board[src.row][src.col]
 
@@ -304,51 +381,6 @@ function getCaptureDestinations(board, piecePosition) {
           result.push({ row: pos.row, col: pos.col })
           break
         }
-
-        pos.row += rstep
-        pos.col += cstep
-      }
-    }
-  }
-
-  return result
-}
-
-// TODO doc
-function getRegularMoves(board, piecePosition) {
-  const src = piecePosition
-  const srcPiece = board[src.row][src.col]
-
-  if (!srcPiece) return []
-
-  const csteps = [-1, 1]
-
-  let rsteps
-  if (srcPiece.king) {
-    rsteps = [-1, 1]
-  } else if (srcPiece.white) {
-    rsteps = [1]
-  } else {
-    rsteps = [-1]
-  }
-
-  const result = []
-  const reach = srcPiece.king ? 100 : 1
-
-  for (const rstep of rsteps) {
-    for (const cstep of csteps) {
-      const pos = { row: src.row+rstep, col: src.col+cstep }
-      for (let dist = 1; dist <= reach; dist++) {
-        if (pos.row < 0 || pos.row > 7 || pos.col < 0 || pos.col > 7) {
-          break
-        }
-
-        const piece = board[pos.row][pos.col]
-        if (piece != null) {
-          break
-        }
-
-        result.push({ row: pos.row, col: pos.col })
 
         pos.row += rstep
         pos.col += cstep
