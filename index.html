@@ -90,17 +90,28 @@ const game = makeInitialGame()
 
 renderBoard(game.board, pieceElemMatrix)
 
+// const testBoard = decodeBoard([
+//   '........',
+//   '.x......',
+//   '..@.....',
+//   '.x......',
+//   '....x...'
+// ].join('\n'));
+// renderBoard(testBoard, pieceElemMatrix);
+// console.log(getCaptureDestinations(testBoard, { row: 2, col: 2 }));
+
 const testBoard = decodeBoard([
+  '....o...',
   '........',
-  '.x......',
   '..@.....',
   '.x......',
   '....x...'
 ].join('\n'));
-
 renderBoard(testBoard, pieceElemMatrix);
-
-console.log(getCaptureDestinations(testBoard, { row: 2, col: 2 }));
+console.log({ row: 2, col: 2 }, getRegularMoves(testBoard, { row: 2, col: 2 }));
+console.log({ row: 0, col: 4 }, getRegularMoves(testBoard, { row: 0, col: 4 }));
+console.log({ row: 3, col: 1 }, getRegularMoves(testBoard, { row: 3, col: 1 }));
+console.log({ row: 4, col: 4 }, getRegularMoves(testBoard, { row: 4, col: 4 }));
 
 /**
  * Creates the table representing the board in the DOM
@@ -262,8 +273,8 @@ function getCaptureDestinations(board, piecePosition) {
   // - after one and only one enemy piece
 
   // row and column step to iterate through all four diagonals
-  for (let rstep of [-1, 1]) {
-    for (let cstep of [-1, 1]) {
+  for (const rstep of [-1, 1]) {
+    for (const cstep of [-1, 1]) {
 
       // capture is true when the previous piece was capturable
       let capture = false
@@ -290,9 +301,54 @@ function getCaptureDestinations(board, piecePosition) {
           }
         } else if (capture) {
           // this is the first empty position after an enemy piece
-          result.push(pos)
+          result.push({ row: pos.row, col: pos.col })
           break
         }
+
+        pos.row += rstep
+        pos.col += cstep
+      }
+    }
+  }
+
+  return result
+}
+
+// TODO doc
+function getRegularMoves(board, piecePosition) {
+  const src = piecePosition
+  const srcPiece = board[src.row][src.col]
+
+  if (!srcPiece) return []
+
+  const csteps = [-1, 1]
+
+  let rsteps
+  if (srcPiece.king) {
+    rsteps = [-1, 1]
+  } else if (srcPiece.white) {
+    rsteps = [1]
+  } else {
+    rsteps = [-1]
+  }
+
+  const result = []
+  const reach = srcPiece.king ? 100 : 1
+
+  for (const rstep of rsteps) {
+    for (const cstep of csteps) {
+      const pos = { row: src.row+rstep, col: src.col+cstep }
+      for (let dist = 1; dist <= reach; dist++) {
+        if (pos.row < 0 || pos.row > 7 || pos.col < 0 || pos.col > 7) {
+          break
+        }
+
+        const piece = board[pos.row][pos.col]
+        if (piece != null) {
+          break
+        }
+
+        result.push({ row: pos.row, col: pos.col })
 
         pos.row += rstep
         pos.col += cstep
