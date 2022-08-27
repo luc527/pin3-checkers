@@ -167,8 +167,8 @@ for (let moveIdx = moveSequence.length-1; moveIdx >= 1; moveIdx--) {
 
 /**
  * Takes an empty table and creates the rows/cells to represent a board
- * Already creates both 'man' and 'king' pieces in all board cells,
- * so to render a particular board we just toggle the visibility and colors of existing elements
+ * Already creates a piece element in all board cells
+ * so to render a particular board we just toggle visibility and classes.
  * 
  * @param {HTMLTableElement} tableElem
  * @param {boolean} overlayCoords Whether to overlay "row: n", "col: m" onto the cells
@@ -190,21 +190,13 @@ function createBoardTable(tableElem, overlayCoords=true) {
       const cellColorClass = (i + j) % 2 == 0 ? 'white' : 'black';
       cellElem.classList.add('board-cell', cellColorClass)
 
-      const manPieceElem = document.createElement('div')
-      manPieceElem.classList.add('piece', 'man')
-      manPieceElem.style.visibility = 'hidden'
+      const pieceElem = document.createElement('div')
+      pieceElem.classList.add('piece')
+      pieceElem.style.visibility = 'hidden'
 
-      const kingPieceElem = document.createElement('div')
-      kingPieceElem.classList.add('piece', 'king')
-      kingPieceElem.style.visibility = 'hidden'
+      pieceElemMatrix[i][j] = pieceElem
 
-      pieceElemMatrix[i][j] = { 
-        manElem: manPieceElem,
-        kingElem: kingPieceElem
-      }
-
-      cellElem.append(manPieceElem)
-      cellElem.append(kingPieceElem)
+      cellElem.append(pieceElem)
 
       if (overlayCoords) {
         const text = document.createElement('span')
@@ -229,30 +221,27 @@ function createBoardTable(tableElem, overlayCoords=true) {
 function renderBoard(arr, pieceElemMatrix) {
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
-      const { manElem, kingElem } = pieceElemMatrix[i][j]
+      const elem = pieceElemMatrix[i][j]
       const piece = arr[i][j]
 
       if (!piece) {
-        manElem.style.visibility = 'hidden'
-        kingElem.style.visibility = 'hidden'
+        elem.style.visibility = 'hidden'
       } else {
-        let pieceElem
+        elem.style.visibility = 'visible'
         if (piece.king) {
-          manElem.style.visibility = 'hidden'
-          kingElem.style.visibility = 'visible'
-          pieceElem = kingElem
+          elem.classList.remove('man')
+          elem.classList.add('king')
         } else {
-          manElem.style.visibility = 'visible'
-          kingElem.style.visibility = 'hidden'
-          pieceElem = manElem
+          elem.classList.remove('king')
+          elem.classList.add('man')
         }
         
         if (piece.white) {
-          pieceElem.classList.remove('black')
-          pieceElem.classList.add('white')
+          elem.classList.remove('black')
+          elem.classList.add('white')
         } else {
-          pieceElem.classList.remove('white')
-          pieceElem.classList.add('black')
+          elem.classList.remove('white')
+          elem.classList.add('black')
         }
       }
     }
