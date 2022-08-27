@@ -96,8 +96,8 @@
 // TODO make the functions more robust (check if in bounds, move is diagonal etc. then throw when these conditions aren't met)
 
 // test rendering
-// const pieceElemMatrix = createBoardTable(document.querySelector('#board-table'), false)
-// renderBoard(makeInitialBoard(), pieceElemMatrix)
+// const elemMatrix = createBoardTable(document.querySelector('#board-table'), false)
+// renderBoard(makeInitialBoard(), elemMatrix)
 
 // test getSingleCaptureDestinations
 // const testBoard = decodeBoard([
@@ -107,7 +107,7 @@
 //   '.x......',
 //   '....x...'
 // ].join('\n'));
-// renderBoard(testBoard, pieceElemMatrix);
+// renderBoard(testBoard, elemMatrix);
 // console.log(getSingleCaptureDestinations(testBoard, { row: 2, col: 2 }));
 
 const testBoard = decodeBoard([
@@ -119,7 +119,7 @@ const testBoard = decodeBoard([
 ].join('\n'));
 
 // test getRegularMoves
-// renderBoard(testBoard, pieceElemMatrix);
+// renderBoard(testBoard, elemMatrix);
 // console.log({ row: 2, col: 2 }, getRegularMoves(testBoard, { row: 2, col: 2 }));
 // console.log({ row: 0, col: 4 }, getRegularMoves(testBoard, { row: 0, col: 4 }));
 // console.log({ row: 3, col: 1 }, getRegularMoves(testBoard, { row: 3, col: 1 }));
@@ -177,10 +177,10 @@ for (let moveIdx = moveSequence.length-1; moveIdx >= 1; moveIdx--) {
  */
 function createBoardTable(tableElem, overlayCoords=true) {
   tableElem.setAttribute('cellspacing', 0)
-  const pieceElemMatrix = Array(8)
+  const elemMatrix = Array(8)
 
   for (let i = 0; i < 8; i++) {
-    pieceElemMatrix[i] = Array(8)
+    elemMatrix[i] = Array(8)
 
     const rowElem = document.createElement('tr')
     rowElem.classList.add('board-row')
@@ -194,7 +194,7 @@ function createBoardTable(tableElem, overlayCoords=true) {
       pieceElem.classList.add('piece')
       pieceElem.style.visibility = 'hidden'
 
-      pieceElemMatrix[i][j] = pieceElem
+      elemMatrix[i][j] = pieceElem
 
       cellElem.append(pieceElem)
 
@@ -211,17 +211,17 @@ function createBoardTable(tableElem, overlayCoords=true) {
     tableElem.append(rowElem)
   }
 
-  return pieceElemMatrix
+  return elemMatrix
 }
 
 /**
  * @param {Array} arr
  * @param {HTMLTableElement} table
  */
-function renderBoard(arr, pieceElemMatrix) {
+function renderBoard(arr, elemMatrix) {
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
-      const elem = pieceElemMatrix[i][j]
+      const elem = elemMatrix[i][j]
       const piece = arr[i][j]
 
       if (!piece) {
