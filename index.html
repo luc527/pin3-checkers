@@ -34,7 +34,7 @@
       transform: translateY(-50%);
       color: white;
       text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-      opacity: 0.05;
+      opacity: 0.2;
       font-family: monospace;
       font-size: 13px;
     }
@@ -110,68 +110,137 @@
 // renderBoard(testBoard, elemMatrix);
 // console.log(getSingleCaptureDestinations(testBoard, { row: 2, col: 2 }));
 
-const testBoard = decodeBoard([
-  '....o...',
-  '........',
-  '..@.....',
-  '.x......',
-  '....x...'
-].join('\n'));
+// const testBoard = decodeBoard([
+//   '........',
+//   '........',
+//   '........',
+//   '..o.....',
+//   '.....@..',
+//   '......#.'
+// ].join('\n'));
 
-// test getRegularMoves
+// test getRegularMoveDestinations
 // renderBoard(testBoard, elemMatrix);
-// console.log({ row: 2, col: 2 }, getRegularMoves(testBoard, { row: 2, col: 2 }));
-// console.log({ row: 0, col: 4 }, getRegularMoves(testBoard, { row: 0, col: 4 }));
-// console.log({ row: 3, col: 1 }, getRegularMoves(testBoard, { row: 3, col: 1 }));
-// console.log({ row: 4, col: 4 }, getRegularMoves(testBoard, { row: 4, col: 4 }));
+// console.log({ row: 2, col: 2 }, getRegularMoveDestinations(testBoard, { row: 2, col: 2 }));
+// console.log({ row: 0, col: 4 }, getRegularMoveDestinations(testBoard, { row: 0, col: 4 }));
+// console.log({ row: 3, col: 1 }, getRegularMoveDestinations(testBoard, { row: 3, col: 1 }));
+// console.log({ row: 4, col: 4 }, getRegularMoveDestinations(testBoard, { row: 4, col: 4 }));
 
-//                     v source                            v capture dame    v become king
-const moveSequence = [ {row: 4, col: 4}, {row: 3, col: 3}, {row: 1, col: 1}, {row: 0, col: 2} ]
-const moveInfoStack = []
-const tableContainer1 = document.querySelector('#container1')
 
-const table = document.createElement('table')
-table.style.display = 'inline'
-renderBoard(testBoard, createBoardTable(table))
-tableContainer1.append(table)
+// Test do/undo
 
-for (let moveIdx = 1; moveIdx < moveSequence.length; moveIdx++) {
-  const from = moveSequence[moveIdx-1]
-  const to   = moveSequence[moveIdx]
+//                     v source
+// const moveSequence = [ {row: 5, col: 6}, {row: 2, col: 3}, {row: 4, col: 1} ]
+// const moveInfoStack = []
+// const tableContainer1 = document.querySelector('#container1')
 
-  const moveInfo = moveDo(testBoard, from, to)
-  console.log('moveInfo', moveInfo)
-  moveInfoStack.push(moveInfo)
+// const table = document.createElement('table')
+// table.style.display = 'inline'
+// renderBoard(testBoard, createBoardTable(table))
+// tableContainer1.append(table)
 
-  const table = document.createElement('table')
-  table.style.display = 'inline'
-  table.style.marginLeft = '10px'
-  renderBoard(testBoard, createBoardTable(table))
-  tableContainer1.append(table)
-}
+// for (let moveIdx = 1; moveIdx < moveSequence.length; moveIdx++) {
+//   const from = moveSequence[moveIdx-1]
+//   const to   = moveSequence[moveIdx]
 
-const tableContainer2 = document.querySelector('#container2')
+//   const moveInfo = singleMoveDo(testBoard, from, to)
+//   moveInfoStack.push(moveInfo)
 
-for (let moveIdx = moveSequence.length-1; moveIdx >= 1; moveIdx--) {
-  const from = moveSequence[moveIdx-1]
-  const to   = moveSequence[moveIdx]
-  const moveInfo = moveInfoStack.pop()
-  moveUndo(testBoard, from, to, moveInfo)
+//   const table = document.createElement('table')
+//   table.style.display = 'inline'
+//   table.style.marginLeft = '10px'
+//   renderBoard(testBoard, createBoardTable(table))
+//   tableContainer1.append(table)
+// }
 
-  const table = document.createElement('table')
-  table.style.display = 'inline'
-  table.style.marginLeft = moveIdx == moveSequence.length-1 ? '' : '10px'
-  renderBoard(testBoard, createBoardTable(table))
-  tableContainer2.append(table)
+// const tableContainer2 = document.querySelector('#container2')
+
+// for (let moveIdx = moveSequence.length-1; moveIdx >= 1; moveIdx--) {
+//   const from = moveSequence[moveIdx-1]
+//   const to   = moveSequence[moveIdx]
+//   const moveInfo = moveInfoStack.pop()
+//   singleMoveUndo(testBoard, from, to, moveInfo)
+
+//   const table = document.createElement('table')
+//   table.style.display = 'inline'
+//   table.style.marginLeft = moveIdx == moveSequence.length-1 ? '' : '10px'
+//   renderBoard(testBoard, createBoardTable(table))
+//   tableContainer2.append(table)
+// }
+
+// Test getFullCaptures
+
+// http://www.damasciencias.com.br/regras-jogo-de-damas/tab10.gif
+// const testBoard = decodeBoard([
+//   '........',
+//   '..x.x.x.',
+//   '........',
+//   '..x.x.x.',
+//   '.......o',
+// ].join('\n'))
+// const caps = getFullCaptures(testBoard, { row: 4, col: 7 })
+
+// http://www.damasciencias.com.br/regras-jogo-de-damas/tab11.gif
+const testBoard = decodeBoard([
+  '.....#..',
+  '........',
+  '...o....',
+  '........',
+  '.....o..',
+  '..o.....',
+  '.....o..',
+  '........',
+].join('\n'))
+let sequences = getFullCaptures(testBoard, { row: 0, col: 5 })
+
+// const elemMatrix = createBoardTable(document.querySelector('#board-table'))
+// renderBoard(testBoard, elemMatrix)
+
+// console.log(encodeBoard(testBoard))
+// console.log(sequence)
+
+// // should remain unchanged
+// console.log(encodeBoard(testBoard))
+
+const from = { row: 0, col: 5}
+for (const sequence of sequences) {
+  console.log(from, sequence)
+  const tableRow = document.createElement('div')
+  tableRow.style.marginTop = '10px'
+  document.body.append(tableRow)
+
+  const tableElem0 = document.createElement('table')
+  tableElem0.style.display='inline'
+  const elemMatrix0 = createBoardTable(tableElem0)
+  renderBoard(testBoard, elemMatrix0)
+  tableRow.append(tableElem0)
+
+  const moveInfo = fullMoveDo(testBoard, from, sequence)
+
+  const tableElem1 = document.createElement('table')
+  tableElem1.style.display='inline'
+  tableElem1.style.marginLeft = '10px'
+  const elemMatrix1 = createBoardTable(tableElem1)
+  renderBoard(testBoard, elemMatrix1)
+  tableRow.append(tableElem1)
+
+  fullMoveUndo(testBoard, from, sequence, moveInfo)
+
+  const tableElem2 = document.createElement('table')
+  tableElem2.style.display='inline'
+  tableElem2.style.marginLeft = '10px'
+  const elemMatrix2 = createBoardTable(tableElem2)
+  renderBoard(testBoard, elemMatrix2)
+  tableRow.append(tableElem2)
 }
 
 /**
  * Takes an empty table and creates the rows/cells to represent a board
  * Already creates a piece element in all board cells
- * so to render a particular board we just toggle visibility and classes.
+ * so to render a particular board we just toggle the visibility and classes of the pieces.
  * 
  * @param {HTMLTableElement} tableElem
- * @param {boolean} overlayCoords Whether to overlay "row: n", "col: m" onto the cells
+ * @param {boolean} overlayCoords Whether to overlay coordinates over the cells (like "r0 c7")
  * 
  * @return {Array} Piece elements indexed by position
  */
@@ -215,34 +284,25 @@ function createBoardTable(tableElem, overlayCoords=true) {
 }
 
 /**
- * @param {Array} arr
+ * @param {Array} board
  * @param {HTMLTableElement} table
  */
-function renderBoard(arr, elemMatrix) {
+function renderBoard(board, elemMatrix) {
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
       const elem = elemMatrix[i][j]
-      const piece = arr[i][j]
+      const piece = board[i][j]
 
       if (!piece) {
         elem.style.visibility = 'hidden'
       } else {
         elem.style.visibility = 'visible'
-        if (piece.king) {
-          elem.classList.remove('man')
-          elem.classList.add('king')
-        } else {
-          elem.classList.remove('king')
-          elem.classList.add('man')
-        }
-        
-        if (piece.white) {
-          elem.classList.remove('black')
-          elem.classList.add('white')
-        } else {
-          elem.classList.remove('white')
-          elem.classList.add('black')
-        }
+
+        elem.classList.remove(piece.king ? 'man' : 'king')
+        elem.classList.add(piece.king ? 'king' : 'man')
+
+        elem.classList.remove(piece.white ? 'black' : 'white')
+        elem.classList.add(piece.white ? 'white' : 'black')
       }
     }
   }
@@ -285,30 +345,28 @@ function makeInitialBoard() {
   return board
 }
 
-// we'll do/undo moves
-// because instead of always generating brand new states when examining possibilites
-// we'll do backtracking: do moves on the way down the tree (just before recursive call),
-// undo on the way up (just after recursive call)
+/**
+ * --- Move do-ing and undo-ing
+ */
 
-// TODO when doing/undoing moves
-// also undo captures
-// also undo crowning
-// need to return both as extra information
+function singleMoveDo(board, from, to) {
+  // singleMoveDo assumes positions are in bounds, and that the move is diagonal (from.row-to.row = from.col-to.col)
 
-function moveDo(board, from, to) {
-  // assumes positions are in bounds, and that the move is diagonal (from.row-to.row = from.col-to.col)
-  const diff = Math.abs(from.row - to.row);
-
-  let crowned = null
   let captured = null
-
-  if (diff > 1) {
-    // go one step back from 'to' to 'from'
-    const rstep = to.row > from.row ? -1 : 1
-    const cstep = to.col > from.col ? -1 : 1
-    // store and make the capture
-    captured = { row: to.row+rstep, col: to.col+cstep }
-    captured.piece = board[captured.row][captured.col]
+  if (Math.abs(from.row - to.row) > 1) {
+    const rowStep = to.row > from.row ? 1 : -1
+    const colStep = to.col > from.col ? 1 : -1
+    // find captured piece, save it, and make the capture
+    const mid = { row: from.row + rowStep, col: from.col + colStep }
+    while (mid.row != to.row) {
+      const midPiece = board[mid.row][mid.col]
+      if (midPiece != null) {
+        captured = { row: mid.row, col: mid.col, piece: midPiece }
+        break
+      }
+      mid.row += rowStep
+      mid.col += colStep
+    }
     board[captured.row][captured.col] = null
   }
 
@@ -316,30 +374,59 @@ function moveDo(board, from, to) {
   board[to.row][to.col] = piece
   board[from.row][from.col] = null
 
-  const crown = (piece.white && to.row == 7) || (!piece.white && to.row == 0)
-  if (!piece.king && crown) {
-    piece.king = true
-    crowned = { row: to.row, col: to.col }
-  }
-
-  // returns { crowned: null|{row, col}, captured: null|{row, col, piece} }, where piece = {white, king}
-  return { crowned, captured }
+  return captured
 }
 
-function moveUndo(board, from, to, { crowned, captured }) {
-  const piece = board[to.row][to.col]
-  if (crowned != null) {
-    piece.king = false
-  }
+function singleMoveUndo(board, from, to, captured) {
   if (captured != null) {
     board[captured.row][captured.col] = captured.piece
   }
+  const piece = board[to.row][to.col]
   board[to.row][to.col] = null
   board[from.row][from.col] = piece
 }
 
+function fullMoveDo(board, from, sequence) {
+  const captured = []
+  let crowned = false
+
+  const piece = board[from.row][from.col]
+
+  for (const to of sequence) {
+    const singleCaptured = singleMoveDo(board, from, to)
+    if (singleCaptured != null) captured.push(singleCaptured)
+    from = to
+  }
+
+  const final = sequence[sequence.length-1]
+  const crown = piece.white ? final.row == 7 : final.row == 0
+  if (!piece.king && crown) {
+    crowned = true
+  }
+
+  return { crowned, captured }
+}
+
+function fullMoveUndo(board, from, sequence, { crowned, captured }) {
+  const final = sequence[sequence.length-1]
+  if (crowned) {
+    board[final.row][final.col].king = false
+  }
+  // Restore
+  const piece = board[final.row][final.col]
+  board[from.row][from.col] = piece
+  board[final.row][final.col] = null
+
+  // This needs to be done after the restore
+  // It's possible that the moving piece ends up on the same position a captured piece was ('final')
+  // If we first run the loop below, it'll end up overwriting the moving piece at 'final'
+  for (const cap of captured) {
+    board[cap.row][cap.col] = cap.piece
+  }
+}
+
 /**
- * --- Movement generation
+ * --- Move generation
  */
 
 // TODO doc
@@ -349,23 +436,15 @@ function getRegularMoveDestinations(board, piecePosition) {
 
   if (!srcPiece) return []
 
-  const csteps = [-1, 1]
-
-  let rsteps
-  if (srcPiece.king) {
-    rsteps = [-1, 1]
-  } else if (srcPiece.white) {
-    rsteps = [1]
-  } else {
-    rsteps = [-1]
-  }
+  const colSteps = [-1, 1]
+  const rowSteps = srcPiece.king ? [-1, 1] : (srcPiece.white ? [1] : [-1])
 
   const result = []
   const reach = srcPiece.king ? 100 : 1
 
-  for (const rstep of rsteps) {
-    for (const cstep of csteps) {
-      const pos = { row: src.row+rstep, col: src.col+cstep }
+  for (const rowStep of rowSteps) {
+    for (const colStep of colSteps) {
+      const pos = { row: src.row+rowStep, col: src.col+colStep }
       for (let dist = 1; dist <= reach; dist++) {
         if (pos.row < 0 || pos.row > 7 || pos.col < 0 || pos.col > 7) {
           break
@@ -378,8 +457,8 @@ function getRegularMoveDestinations(board, piecePosition) {
 
         result.push({ row: pos.row, col: pos.col })
 
-        pos.row += rstep
-        pos.col += cstep
+        pos.row += rowStep
+        pos.col += colStep
       }
     }
   }
@@ -392,26 +471,19 @@ function getSingleCaptureDestinations(board, piecePosition) {
   const src = piecePosition
   const srcPiece = board[src.row][src.col]
 
-  if (!srcPiece) {
-    return []
-  }
+  if (srcPiece == null) return []
 
-  const result = []
-  const reach = srcPiece.king ? 100 : 2  // arbitrary large number for unlimited reach
+  const destinations = []
 
-  // attack destination:
-  // first empty position
-  // - within reach
-  // - in a diagonal
-  // - after one and only one enemy piece
+  // Arbitrary large number for unlimited reach
+  const reach = srcPiece.king ? 100 : 2
 
-  // row and column step to iterate through all four diagonals
-  for (const rstep of [-1, 1]) {
-    for (const cstep of [-1, 1]) {
+  // Iterate through all four diagonals
+  for (const rowStep of [-1, 1]) {
+    for (const colStep of [-1, 1]) {
 
-      // capture is true when the previous piece was capturable
-      let capture = false
-      const pos = { row: src.row+rstep, col: src.col+cstep };
+      let didCapture = false
+      const pos = { row: src.row + rowStep, col: src.col + colStep };
 
       for (let dist = 1; dist <= reach; dist++) {
 
@@ -422,29 +494,41 @@ function getSingleCaptureDestinations(board, piecePosition) {
         const piece = board[pos.row][pos.col]
 
         if (piece != null) {
-          if (capture) {
-            // previous piece capturable, but no empty space to land on
-            break
-          } else if (piece.white == srcPiece.white) {
-            // can't capture pieces of the same color
-            break
-          } else {
-            // this piece is capturable, let's see in the next iteration whether we can actually capture it
-            capture = true
-          }
-        } else if (capture) {
-          // this is the first empty position after an enemy piece
-          result.push({ row: pos.row, col: pos.col })
-          break
+          if (didCapture) break
+          else if (piece.white == srcPiece.white) break
+          else didCapture = true
+        } else if (didCapture) {
+          // Every empty space after the captured piece and within reach is a possible destination
+          destinations.push({ row: pos.row, col: pos.col })
         }
 
-        pos.row += rstep
-        pos.col += cstep
+        pos.row += rowStep
+        pos.col += colStep
       }
     }
   }
 
+  return destinations
+}
+
+function getFullCaptures(board, piecePosition) {
+  const result = []
+  getFullCapturesImpl(board, piecePosition, [], result)
   return result
+}
+
+function getFullCapturesImpl(board, piecePosition, previousPositions, result) {
+  const src = piecePosition
+  const destinations = getSingleCaptureDestinations(board, src)
+  if (destinations.length == 0) {
+    result.push([...previousPositions, src].slice(1))
+  } else {
+    for (const dest of destinations) {
+      const captured = singleMoveDo(board, src, dest)
+      getFullCapturesImpl(board, dest, [...previousPositions, src], result)
+      singleMoveUndo(board, src, dest, captured)
+    }
+  }
 }
 
 /**
