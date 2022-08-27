@@ -7,7 +7,7 @@
   <title>Checkers</title>
   <style>
     :root {
-      --cell-size-px: 64px;
+      --cell-size-px: 36px;
       --white0: rgb(220, 220, 220);
       --black0: rgb(50, 50, 50);
       --white1: rgb(180, 180, 180);
@@ -29,6 +29,8 @@
       position: absolute;
       top: 50%;
       left: 0;
+      width: 100%;
+      height: 100%;
       transform: translateY(-50%);
       color: white;
       text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
@@ -37,6 +39,7 @@
       font-size: 13px;
     }
     .cell-text:hover {
+      cursor: default;
       opacity: 0.8;
     }
     .board-cell.black {
@@ -81,13 +84,22 @@
 
 <table id="board-table"></table>
 
+<div id="container1"></div>
+<div id="container2" style="margin-top: 10px"></div>
+
 <script>
 'use strict'
 
-const pieceElemMatrix = createBoardTable(document.querySelector('#board-table'))
+// some quick and dirty code just to test the functions
 
-renderBoard(makeInitialBoard(), pieceElemMatrix)
+// TODO organize these tests, maybe
+// TODO make the functions more robust (check if in bounds, move is diagonal etc. then throw when these conditions aren't met)
 
+// test rendering
+// const pieceElemMatrix = createBoardTable(document.querySelector('#board-table'), false)
+// renderBoard(makeInitialBoard(), pieceElemMatrix)
+
+// test getSingleCaptureDestinations
 // const testBoard = decodeBoard([
 //   '........',
 //   '.x......',
@@ -105,11 +117,53 @@ const testBoard = decodeBoard([
   '.x......',
   '....x...'
 ].join('\n'));
-renderBoard(testBoard, pieceElemMatrix);
-console.log({ row: 2, col: 2 }, getRegularMoves(testBoard, { row: 2, col: 2 }));
-console.log({ row: 0, col: 4 }, getRegularMoves(testBoard, { row: 0, col: 4 }));
-console.log({ row: 3, col: 1 }, getRegularMoves(testBoard, { row: 3, col: 1 }));
-console.log({ row: 4, col: 4 }, getRegularMoves(testBoard, { row: 4, col: 4 }));
+
+// test getRegularMoves
+// renderBoard(testBoard, pieceElemMatrix);
+// console.log({ row: 2, col: 2 }, getRegularMoves(testBoard, { row: 2, col: 2 }));
+// console.log({ row: 0, col: 4 }, getRegularMoves(testBoard, { row: 0, col: 4 }));
+// console.log({ row: 3, col: 1 }, getRegularMoves(testBoard, { row: 3, col: 1 }));
+// console.log({ row: 4, col: 4 }, getRegularMoves(testBoard, { row: 4, col: 4 }));
+
+//                     v source                            v capture dame    v become king
+const moveSequence = [ {row: 4, col: 4}, {row: 3, col: 3}, {row: 1, col: 1}, {row: 0, col: 2} ]
+const moveInfoStack = []
+const tableContainer1 = document.querySelector('#container1')
+
+const table = document.createElement('table')
+table.style.display = 'inline'
+renderBoard(testBoard, createBoardTable(table))
+tableContainer1.append(table)
+
+for (let moveIdx = 1; moveIdx < moveSequence.length; moveIdx++) {
+  const from = moveSequence[moveIdx-1]
+  const to   = moveSequence[moveIdx]
+
+  const moveInfo = moveDo(testBoard, from, to)
+  console.log('moveInfo', moveInfo)
+  moveInfoStack.push(moveInfo)
+
+  const table = document.createElement('table')
+  table.style.display = 'inline'
+  table.style.marginLeft = '10px'
+  renderBoard(testBoard, createBoardTable(table))
+  tableContainer1.append(table)
+}
+
+const tableContainer2 = document.querySelector('#container2')
+
+for (let moveIdx = moveSequence.length-1; moveIdx >= 1; moveIdx--) {
+  const from = moveSequence[moveIdx-1]
+  const to   = moveSequence[moveIdx]
+  const moveInfo = moveInfoStack.pop()
+  moveUndo(testBoard, from, to, moveInfo)
+
+  const table = document.createElement('table')
+  table.style.display = 'inline'
+  table.style.marginLeft = moveIdx == moveSequence.length-1 ? '' : '10px'
+  renderBoard(testBoard, createBoardTable(table))
+  tableContainer2.append(table)
+}
 
 /**
  * Takes an empty table and creates the rows/cells to represent a board
@@ -117,10 +171,11 @@ console.log({ row: 4, col: 4 }, getRegularMoves(testBoard, { row: 4, col: 4 }));
  * so to render a particular board we just toggle the visibility and colors of existing elements
  * 
  * @param {HTMLTableElement} tableElem
+ * @param {boolean} overlayCoords Whether to overlay "row: n", "col: m" onto the cells
  * 
  * @return {Array} Piece elements indexed by position
  */
-function createBoardTable(tableElem) {
+function createBoardTable(tableElem, overlayCoords=true) {
   tableElem.setAttribute('cellspacing', 0)
   const pieceElemMatrix = Array(8)
 
@@ -148,13 +203,15 @@ function createBoardTable(tableElem) {
         kingElem: kingPieceElem
       }
 
-      const text = document.createElement('span')
-      text.classList.add('cell-text')
-      text.innerHTML = `row: ${i}\ncol: ${j}`;
-
       cellElem.append(manPieceElem)
       cellElem.append(kingPieceElem)
-      cellElem.append(text)
+
+      if (overlayCoords) {
+        const text = document.createElement('span')
+        text.classList.add('cell-text')
+        text.innerHTML = `r${i}<br>c${j}`;
+        cellElem.append(text)
+      }
 
       rowElem.append(cellElem)
     }
@@ -256,14 +313,18 @@ function moveDo(board, from, to) {
   let crowned = null
   let captured = null
 
-  // capture
   if (diff > 1) {
-    // there's always only one capture, the position just before 'to'
-    // TODO
+    // go one step back from 'to' to 'from'
+    const rstep = to.row > from.row ? -1 : 1
+    const cstep = to.col > from.col ? -1 : 1
+    // store and make the capture
+    captured = { row: to.row+rstep, col: to.col+cstep }
+    captured.piece = board[captured.row][captured.col]
+    board[captured.row][captured.col] = null
   }
 
   const piece = board[from.row][from.col]
-  board[to.row][from.row] = piece
+  board[to.row][to.col] = piece
   board[from.row][from.col] = null
 
   const crown = (piece.white && to.row == 7) || (!piece.white && to.row == 0)
@@ -271,15 +332,21 @@ function moveDo(board, from, to) {
     piece.king = true
     crowned = { row: to.row, col: to.col }
   }
-  return { crowned, captured }
-
 
   // returns { crowned: null|{row, col}, captured: null|{row, col, piece} }, where piece = {white, king}
   return { crowned, captured }
 }
 
-function moveUndo(board, from, to, { crowned, capture }) {
-  // TODO
+function moveUndo(board, from, to, { crowned, captured }) {
+  const piece = board[to.row][to.col]
+  if (crowned != null) {
+    piece.king = false
+  }
+  if (captured != null) {
+    board[captured.row][captured.col] = captured.piece
+  }
+  board[to.row][to.col] = null
+  board[from.row][from.col] = piece
 }
 
 /**
