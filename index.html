@@ -349,16 +349,27 @@ function makeInitialBoard() {
  * --- Move do-ing and undo-ing
  */
 
-function singleMoveDo(board, from, to) {
-  // singleMoveDo assumes positions are in bounds, and that the move is diagonal (from.row-to.row = from.col-to.col)
+/**
+ * A single move is just a movement between a pair of positions.
+ * They are not always valid game moves. The functions are used
+ * to perform the 'full' moves, which are valid game moves, and
+ * also for generating them (see getFullCapturesImpl).
+ */
+
+/**
+ * Performs a move from 'src' to 'dst' modifying the given board.
+ * Also captures the piece between 'src' and 'dst', and returns its info ({ row, col, { white, king } })
+ */
+function singleMoveDo(board, src, dst) {
+  // singleMoveDo assumes positions are in bounds, and that the move is diagonal (src.row-dst.row = src.col-dst.col)
 
   let captured = null
-  if (Math.abs(from.row - to.row) > 1) {
-    const rowStep = to.row > from.row ? 1 : -1
-    const colStep = to.col > from.col ? 1 : -1
+  if (Math.abs(src.row - dst.row) > 1) {
+    const rowStep = dst.row > src.row ? 1 : -1
+    const colStep = dst.col > src.col ? 1 : -1
     // find captured piece, save it, and make the capture
-    const mid = { row: from.row + rowStep, col: from.col + colStep }
-    while (mid.row != to.row) {
+    const mid = { row: src.row + rowStep, col: src.col + colStep }
+    while (mid.row != dst.row) {
       const midPiece = board[mid.row][mid.col]
       if (midPiece != null) {
         captured = { row: mid.row, col: mid.col, piece: midPiece }
@@ -370,32 +381,42 @@ function singleMoveDo(board, from, to) {
     board[captured.row][captured.col] = null
   }
 
-  const piece = board[from.row][from.col]
-  board[to.row][to.col] = piece
-  board[from.row][from.col] = null
+  const piece = board[src.row][src.col]
+  board[dst.row][dst.col] = piece
+  board[src.row][src.col] = null
 
   return captured
 }
 
-function singleMoveUndo(board, from, to, captured) {
+/**
+ * Un-does a move from 'src' to 'dst', also un-doing the capture described in 'captured'.
+ */
+function singleMoveUndo(board, src, dst, captured) {
   if (captured != null) {
     board[captured.row][captured.col] = captured.piece
   }
-  const piece = board[to.row][to.col]
-  board[to.row][to.col] = null
-  board[from.row][from.col] = piece
+  const piece = board[dst.row][dst.col]
+  board[dst.row][dst.col] = null
+  board[src.row][src.col] = piece
 }
 
-function fullMoveDo(board, from, sequence) {
+/**
+ * Performs a move starting at 'src' and moving to each position in 'sequence'
+ * by modifying the given board. Performs captures and crowns the piece if it
+ * ends up at the opposite last row. Returns {crowned, captured}, where
+ * 'crowned' is a boolean describing whether the piece at 'src' got promoted to a king
+ * at the end, and 'captured' is a {row, col, {white, king}} array describing the
+ * pieces that got captured. */
+function fullMoveDo(board, src, sequence) {
   const captured = []
   let crowned = false
 
-  const piece = board[from.row][from.col]
+  const piece = board[src.row][src.col]
 
-  for (const to of sequence) {
-    const singleCaptured = singleMoveDo(board, from, to)
+  for (const dst of sequence) {
+    const singleCaptured = singleMoveDo(board, src, dst)
     if (singleCaptured != null) captured.push(singleCaptured)
-    from = to
+    src = dst
   }
 
   const final = sequence[sequence.length-1]
@@ -407,14 +428,19 @@ function fullMoveDo(board, from, sequence) {
   return { crowned, captured }
 }
 
-function fullMoveUndo(board, from, sequence, { crowned, captured }) {
+/**
+ * Un-does a move starting at 'src' moving to each position in 'sequence'.
+ * Also demotes the piece if crowned=true and restores the captured pieces
+ * in 'captured' (i.e. also un-does crownings and captures).
+ */
+function fullMoveUndo(board, src, sequence, { crowned, captured }) {
   const final = sequence[sequence.length-1]
   if (crowned) {
     board[final.row][final.col].king = false
   }
   // Restore
   const piece = board[final.row][final.col]
-  board[from.row][from.col] = piece
+  board[src.row][src.col] = piece
   board[final.row][final.col] = null
 
   // This needs to be done after the restore
@@ -429,11 +455,21 @@ function fullMoveUndo(board, from, sequence, { crowned, captured }) {
  * --- Move generation
  */
 
-// TODO doc
-function getRegularMoveDestinations(board, piecePosition) {
-  const src = piecePosition
-  const srcPiece = board[src.row][src.col]
+/**
+ * Regular moves are non-capture moves. For men pieces, this
+ * means moving just one diagonal forward, left or right. On the
+ * other hand, king pieces can move arbitrarily along their four
+ * diagonals until reaching the end of the board or bumping into
+ * another piece.
+ */
 
+/**
+ * Returns an array of the positions the piece at 'src' can end up
+ * as a consequence of a regular move in the given board.
+ */
+function getRegularMoveDestinations(board, src) {
+
+  const srcPiece = board[src.row][src.col]
   if (!srcPiece) return []
 
   const colSteps = [-1, 1]
@@ -466,11 +502,17 @@ function getRegularMoveDestinations(board, piecePosition) {
   return result
 }
 
-// TODO doc
-function getSingleCaptureDestinations(board, piecePosition) {
-  const src = piecePosition
-  const srcPiece = board[src.row][src.col]
 
+/**
+ * Returns an array of the positions the piece at 'src' can
+ * end up if it performs a single capture along each of its
+ * four diagonals. For men pieces, this is at most four positions.
+ * For king pieces, every position after an enemy piece in each
+ * diagonal counts.
+ */
+function getSingleCaptureDestinations(board, src) {
+
+  const srcPiece = board[src.row][src.col]
   if (srcPiece == null) return []
 
   const destinations = []
@@ -511,14 +553,34 @@ function getSingleCaptureDestinations(board, piecePosition) {
   return destinations
 }
 
-function getFullCaptures(board, piecePosition) {
+/**
+ * In checkers, every player is obliged to make the move that captures the most
+ * pieces at each turn. This means sequential captures are mandatory, so the single
+ * captures described above are not always valid moves. A 'full' capture is one
+ * that makes sequential captures until there are no pieces available to capture
+ * in the position it ended up.
+ */
+
+/**
+ * Return an array of all 'full' captures the piece at 'src' can perform in the given board.
+ * getFullCapturesImpl is the real implementation, but it has to take some extra state arguments.
+ * getFullCaptures is the interface used to call it, providing the initial empty state for those arguments.
+ */
+function getFullCaptures(board, src) {
   const result = []
-  getFullCapturesImpl(board, piecePosition, [], result)
+  getFullCapturesImpl(board, src, [], result)
   return result
 }
 
-function getFullCapturesImpl(board, piecePosition, previousPositions, result) {
-  const src = piecePosition
+/**
+ * The implementation is a depth-first traversal of the tree where
+ * each node is a game state and has one children for each single
+ * capture destination available at the current position. This traversal
+ * is done by not literally creating this tree (making brand new states),
+ * but by performing the single capture on the way down and undoing it
+ * on the way up the tree -- backtracking.
+ */
+function getFullCapturesImpl(board, src, previousPositions, result) {
   const destinations = getSingleCaptureDestinations(board, src)
   if (destinations.length == 0) {
     result.push([...previousPositions, src].slice(1))
@@ -537,10 +599,6 @@ function getFullCapturesImpl(board, piecePosition, previousPositions, result) {
 
 /**
  * Encodes the given board as a string
- * 
- * @param {Array}
- * 
- * @return {string}
  */
 function encodeBoard(board) {
   let enc = '';
@@ -561,10 +619,6 @@ function encodeBoard(board) {
 
 /**
  * Decodes the given string as a board
- * 
- * @param {string}
- * 
- * @return {Array}
  */
 function decodeBoard(str) {
   const board = makeEmptyBoard()
