@@ -351,8 +351,10 @@ function makeInitialBoard() {
 
 // First, some helpers for better error messages
 
+// We can turn off (comment out) the "validate ..." functions for efficiency once we're confident the functions they test work correctly
+
 function inbounds(pos) {
-  return pos.row >= 0 && pos.col <= 7
+  return pos.row >= 0 && pos.row <= 7 && pos.col >= 0 && pos.col <= 7
 }
 
 function positionString(pos) {
