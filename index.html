@@ -349,6 +349,37 @@ function makeInitialBoard() {
  * --- Move do-ing and undo-ing
  */
 
+// First, some helpers for better error messages
+
+function inbounds(pos) {
+  return pos.row >= 0 && pos.col <= 7
+}
+
+function positionString(pos) {
+  return `{row: ${pos.row}, col: ${pos.col}}`
+}
+
+function validatePosition(pos, name) {
+  if (!inbounds(pos)) {
+    throw new `position ${ name ? name+' ' : '' }out of bounds`
+  }
+}
+
+function validatePositionList(list, listName) {
+  for (let i=0; i<list.length; i++) {
+    validatePosition(list[i], listName+'['+i+']')
+  }
+}
+
+function validateMove(src, dst) {
+  validatePosition(src, 'source')
+  validatePosition(dst, 'destination')
+  const diagonal = Math.abs(src.row - dst.row) == Math.abs(src.col - dst.col)
+  if (!diagonal) {
+    throw `move from ${positionString(src)} to ${positionString(dst)} is not diagonal`
+  }
+}
+
 /**
  * A single move is just a movement between a pair of positions.
  * They are not always valid game moves. The functions are used
@@ -361,7 +392,7 @@ function makeInitialBoard() {
  * Also captures the piece between 'src' and 'dst', and returns its info ({ row, col, { white, king } })
  */
 function singleMoveDo(board, src, dst) {
-  // singleMoveDo assumes positions are in bounds, and that the move is diagonal (src.row-dst.row = src.col-dst.col)
+  validateMove(src, dst)
 
   let captured = null
   if (Math.abs(src.row - dst.row) > 1) {
@@ -392,6 +423,8 @@ function singleMoveDo(board, src, dst) {
  * Un-does a move from 'src' to 'dst', also un-doing the capture described in 'captured'.
  */
 function singleMoveUndo(board, src, dst, captured) {
+  validateMove(src, dst)
+
   if (captured != null) {
     board[captured.row][captured.col] = captured.piece
   }
@@ -408,6 +441,9 @@ function singleMoveUndo(board, src, dst, captured) {
  * at the end, and 'captured' is a {row, col, {white, king}} array describing the
  * pieces that got captured. */
 function fullMoveDo(board, src, sequence) {
+  validatePosition(src, 'src')
+  validatePositionList(sequence, 'sequence')
+
   const captured = []
   let crowned = false
 
@@ -434,6 +470,9 @@ function fullMoveDo(board, src, sequence) {
  * in 'captured' (i.e. also un-does crownings and captures).
  */
 function fullMoveUndo(board, src, sequence, { crowned, captured }) {
+  validatePosition(src, 'src')
+  validatePositionList(sequence, 'sequence')
+
   const final = sequence[sequence.length-1]
   if (crowned) {
     board[final.row][final.col].king = false
@@ -455,6 +494,15 @@ function fullMoveUndo(board, src, sequence, { crowned, captured }) {
  * --- Move generation
  */
 
+// First some helpers for more helpful error messages
+
+function validateMoveSource(board, src) {
+  validatePosition(src)
+  if (board[src.row][src.col] == null) {
+    throw `empty move source position ${positionString(src)}`
+  }
+}
+
 /**
  * Regular moves are non-capture moves. For men pieces, this
  * means moving just one diagonal forward, left or right. On the
@@ -468,6 +516,7 @@ function fullMoveUndo(board, src, sequence, { crowned, captured }) {
  * as a consequence of a regular move in the given board.
  */
 function getRegularMoveDestinations(board, src) {
+  validateMoveSource(board, src)
 
   const srcPiece = board[src.row][src.col]
   if (!srcPiece) return []
@@ -511,6 +560,7 @@ function getRegularMoveDestinations(board, src) {
  * diagonal counts.
  */
 function getSingleCaptureDestinations(board, src) {
+  validateMoveSource(board, src)
 
   const srcPiece = board[src.row][src.col]
   if (srcPiece == null) return []
@@ -536,9 +586,11 @@ function getSingleCaptureDestinations(board, src) {
         const piece = board[pos.row][pos.col]
 
         if (piece != null) {
+
           if (didCapture) break
           else if (piece.white == srcPiece.white) break
           else didCapture = true
+
         } else if (didCapture) {
           // Every empty space after the captured piece and within reach is a possible destination
           destinations.push({ row: pos.row, col: pos.col })
@@ -567,6 +619,8 @@ function getSingleCaptureDestinations(board, src) {
  * getFullCaptures is the interface used to call it, providing the initial empty state for those arguments.
  */
 function getFullCaptures(board, src) {
+  validateMoveSource(board, src)
+
   const result = []
   getFullCapturesImpl(board, src, [], result)
   return result
@@ -581,6 +635,8 @@ function getFullCaptures(board, src) {
  * on the way up the tree -- backtracking.
  */
 function getFullCapturesImpl(board, src, previousPositions, result) {
+  validateMoveSource(board, src)
+
   const destinations = getSingleCaptureDestinations(board, src)
   if (destinations.length == 0) {
     result.push([...previousPositions, src].slice(1))
