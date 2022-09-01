@@ -84,157 +84,65 @@
 
 <table id="board-table"></table>
 
-<div id="container1"></div>
-<div id="container2" style="margin-top: 10px"></div>
+<textarea id="log" style="width: 500px; height: 200px;"></textarea>
+<input type="text" id="prompt"/>
+<button id="btn" type="button">Choose</button>
 
 <script type="module">
-import { decodeBoard, fullMoveDo, fullMoveUndo } from './board.js'
-import { createBoardTable, renderBoard } from './board-render.js'
-import { getCaptureSequences } from './move-generation.js'
+import * as br from './board.js'
+import * as gfx from './board-render.js'
+import * as mov from './move-generation.js'
 
-// some quick and dirty code just to test the functions
+// just testing generateMoves
 
-// TODO organize these tests, maybe
-// TODO make the functions more robust (check if in bounds, move is diagonal etc. then throw when these conditions aren't met)
+// const board = br.makeInitialBoard()
+const board = br.makeEmptyBoard()
 
-// test rendering
-// const elemMatrix = createBoardTable(document.querySelector('#board-table'), false)
-// renderBoard(makeInitialBoard(), elemMatrix)
+board[2][1] = { white: true }
+board[3][2] = { white: false }
+board[3][4] = { white: false }
+board[1][4] = { white: false } 
 
-// test getSingleCaptureDestinations
-// const testBoard = decodeBoard([
-//   '........',
-//   '.x......',
-//   '..@.....',
-//   '.x......',
-//   '....x...'
-// ].join('\n'));
-// renderBoard(testBoard, elemMatrix);
-// console.log(getSingleCaptureDestinations(testBoard, { row: 2, col: 2 }));
+let currentPlayerWhite = true
+let currentMovementChoices = []
 
-// const testBoard = decodeBoard([
-//   '........',
-//   '........',
-//   '........',
-//   '..o.....',
-//   '.....@..',
-//   '......#.'
-// ].join('\n'));
+const elemMatrix = gfx.createBoardTable(
+  document.querySelector('#board-table')
+);
+gfx.renderBoard(board, elemMatrix)
 
-// test getSimpleMoveDestinations
-// renderBoard(testBoard, elemMatrix);
-// console.log({ row: 2, col: 2 }, getSimpleMoveDestinations(testBoard, { row: 2, col: 2 }));
-// console.log({ row: 0, col: 4 }, getSimpleMoveDestinations(testBoard, { row: 0, col: 4 }));
-// console.log({ row: 3, col: 1 }, getSimpleMoveDestinations(testBoard, { row: 3, col: 1 }));
-// console.log({ row: 4, col: 4 }, getSimpleMoveDestinations(testBoard, { row: 4, col: 4 }));
+const log = document.querySelector('#log')
+const prompt = document.querySelector('#prompt')
+const btn = document.querySelector('#btn')
 
+function generateAndLogCurrentMoves() {
+  var currentPlayerPieces = br.getPlayerPiecePositions(board, currentPlayerWhite);
+  currentMovementChoices = mov.generateMoves(board, currentPlayerPieces);
 
-// Test do/undo
-
-//                     v source
-// const moveSequence = [ {row: 5, col: 6}, {row: 2, col: 3}, {row: 4, col: 1} ]
-// const moveInfoStack = []
-// const tableContainer1 = document.querySelector('#container1')
-
-// const table = document.createElement('table')
-// table.style.display = 'inline'
-// renderBoard(testBoard, createBoardTable(table))
-// tableContainer1.append(table)
-
-// for (let moveIdx = 1; moveIdx < moveSequence.length; moveIdx++) {
-//   const from = moveSequence[moveIdx-1]
-//   const to   = moveSequence[moveIdx]
-
-//   const moveInfo = singleMoveDo(testBoard, from, to)
-//   moveInfoStack.push(moveInfo)
-
-//   const table = document.createElement('table')
-//   table.style.display = 'inline'
-//   table.style.marginLeft = '10px'
-//   renderBoard(testBoard, createBoardTable(table))
-//   tableContainer1.append(table)
-// }
-
-// const tableContainer2 = document.querySelector('#container2')
-
-// for (let moveIdx = moveSequence.length-1; moveIdx >= 1; moveIdx--) {
-//   const from = moveSequence[moveIdx-1]
-//   const to   = moveSequence[moveIdx]
-//   const moveInfo = moveInfoStack.pop()
-//   singleMoveUndo(testBoard, from, to, moveInfo)
-
-//   const table = document.createElement('table')
-//   table.style.display = 'inline'
-//   table.style.marginLeft = moveIdx == moveSequence.length-1 ? '' : '10px'
-//   renderBoard(testBoard, createBoardTable(table))
-//   tableContainer2.append(table)
-// }
-
-// Test getCaptureSequences
-
-// http://www.damasciencias.com.br/regras-jogo-de-damas/tab10.gif
-// const testBoard = decodeBoard([
-//   '........',
-//   '..x.x.x.',
-//   '........',
-//   '..x.x.x.',
-//   '.......o',
-// ].join('\n'))
-// const caps = getCaptureSequences(testBoard, { row: 4, col: 7 })
-
-// http://www.damasciencias.com.br/regras-jogo-de-damas/tab11.gif
-const testBoard = decodeBoard([
-  '.....#..',
-  '........',
-  '...o....',
-  '........',
-  '.....o..',
-  '..o.....',
-  '.....o..',
-  '........',
-].join('\n'))
-let sequences = getCaptureSequences(testBoard, { row: 0, col: 5 })
-
-// const elemMatrix = createBoardTable(document.querySelector('#board-table'))
-// renderBoard(testBoard, elemMatrix)
-
-// console.log(encodeBoard(testBoard))
-// console.log(sequence)
-
-// // should remain unchanged
-// console.log(encodeBoard(testBoard))
-
-const from = { row: 0, col: 5}
-for (const sequence of sequences) {
-  console.log(from, sequence)
-  const tableRow = document.createElement('div')
-  tableRow.style.marginTop = '10px'
-  document.body.append(tableRow)
-
-  const tableElem0 = document.createElement('table')
-  tableElem0.style.display='inline'
-  const elemMatrix0 = createBoardTable(tableElem0)
-  renderBoard(testBoard, elemMatrix0)
-  tableRow.append(tableElem0)
-
-  const moveInfo = fullMoveDo(testBoard, from, sequence)
-
-  const tableElem1 = document.createElement('table')
-  tableElem1.style.display='inline'
-  tableElem1.style.marginLeft = '10px'
-  const elemMatrix1 = createBoardTable(tableElem1)
-  renderBoard(testBoard, elemMatrix1)
-  tableRow.append(tableElem1)
-
-  fullMoveUndo(testBoard, from, sequence, moveInfo)
-
-  const tableElem2 = document.createElement('table')
-  tableElem2.style.display='inline'
-  tableElem2.style.marginLeft = '10px'
-  const elemMatrix2 = createBoardTable(tableElem2)
-  renderBoard(testBoard, elemMatrix2)
-  tableRow.append(tableElem2)
+  let movString = 'Current moves\n' 
+  for (let i = 0; i < currentMovementChoices.length; i++) {
+    const mov = currentMovementChoices[i];
+    movString += '' + i + ') ' + mov.map(it => `{row: ${it.row}, col: ${it.col}}`).join(', ') + '.\n'
+  }
+  log.innerHTML += movString
+  log.innerHTML += 'Enter your choice\n'
+  log.scrollTop = log.scrollHeight
 }
+
+generateAndLogCurrentMoves();
+
+btn.addEventListener('click', () => {
+  const choice = prompt.value
+  if (choice >= 0 && choice < currentMovementChoices.length) {
+    const moveTaken = currentMovementChoices[choice]
+    br.fullMoveDo(board, moveTaken[0], moveTaken.slice(1))
+    gfx.renderBoard(board, elemMatrix)
+    currentPlayerWhite = !currentPlayerWhite
+    generateAndLogCurrentMoves()
+  } else {
+    log.innerHtml += 'Invalid choice\n'
+  }
+});
 
 </script>
 
