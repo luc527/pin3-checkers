@@ -200,7 +200,7 @@ export function generateMoves(board, piecePositions) {
     let longestMoveLength = 0
     for (const move of result) {
       if (move.length > longestMoveLength) {
-        longestMoveLength = sequence.length
+        longestMoveLength = move.length
       }
     }
     return result.filter(move => move.length == longestMoveLength)
