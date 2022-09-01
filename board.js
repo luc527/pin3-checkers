@@ -57,7 +57,8 @@ export function positionString(pos) {
 
 export function validatePosition(pos, name) {
   if (!inbounds(pos)) {
-    throw new `position ${ name ? name+' ' : '' }out of bounds`
+    console.trace(`position ${ name ? name+' ' : '' }out of bounds`)
+    throw {}
   }
 }
 
@@ -72,7 +73,8 @@ export function validateMove(src, dst) {
   validatePosition(dst, 'destination')
   const diagonal = Math.abs(src.row - dst.row) == Math.abs(src.col - dst.col)
   if (!diagonal) {
-    throw `move from ${positionString(src)} to ${positionString(dst)} is not diagonal`
+    console.trace(`move from ${positionString(src)} to ${positionString(dst)} is not diagonal`)
+    throw {}
   }
 }
 

@@ -9,7 +9,8 @@ import { inbounds, validatePosition, singleMoveDo, singleMoveUndo } from './boar
 function validateMoveSource(board, src) {
   validatePosition(src)
   if (board[src.row][src.col] == null) {
-    throw `empty move source position ${positionString(src)}`
+    console.trace(`empty move source position ${positionString(src)}`)
+    throw {}
   }
 }
 
