@@ -152,7 +152,9 @@ function getCaptureSequencesImpl(board, src, previousPositions, result) {
 
   const destinations = getSingleCaptureDestinations(board, src)
   if (destinations.length == 0) {
-    result.push([...previousPositions, src].slice(1))
+    if (previousPositions.length > 0) {
+      result.push([...previousPositions, src].slice(1))
+    }
   } else {
     for (const dest of destinations) {
       const captured = singleMoveDo(board, src, dest)
