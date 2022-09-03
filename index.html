@@ -95,13 +95,13 @@ import * as mov from './move-generation.js'
 
 // just testing generateMoves
 
-// const board = br.makeInitialBoard()
-const board = br.makeEmptyBoard()
+const board = br.makeInitialBoard()
+// const board = br.makeEmptyBoard()
 
-board[2][1] = { white: true }
-board[3][2] = { white: false }
-board[3][4] = { white: false }
-board[1][4] = { white: false } 
+// board[2][1] = { white: true }
+// board[3][2] = { white: false }
+// board[3][4] = { white: false }
+// board[1][4] = { white: false } 
 
 let currentPlayerWhite = true
 let currentMovementChoices = []
@@ -119,10 +119,10 @@ function generateAndLogCurrentMoves() {
   var currentPlayerPieces = br.getPlayerPiecePositions(board, currentPlayerWhite);
   currentMovementChoices = mov.generateMoves(board, currentPlayerPieces);
 
-  let movString = 'Current moves\n' 
+  let movString = 'Current moves ('+(currentPlayerWhite ? 'white' : 'black')+' player)\n' 
   for (let i = 0; i < currentMovementChoices.length; i++) {
     const mov = currentMovementChoices[i];
-    movString += '' + i + ') ' + mov.map(it => `{row: ${it.row}, col: ${it.col}}`).join(', ') + '.\n'
+    movString += '' + i + ') ' + ([ mov.from, ...mov.sequence ].map(br.positionString).join(', ') + '.\n')
   }
   log.innerHTML += movString
   log.innerHTML += 'Enter your choice\n'
@@ -135,7 +135,7 @@ btn.addEventListener('click', () => {
   const choice = prompt.value
   if (choice >= 0 && choice < currentMovementChoices.length) {
     const moveTaken = currentMovementChoices[choice]
-    br.fullMoveDo(board, moveTaken[0], moveTaken.slice(1))
+    br.fullMoveDo(board, moveTaken.from, moveTaken.sequence)
     gfx.renderBoard(board, elemMatrix)
     currentPlayerWhite = !currentPlayerWhite
     generateAndLogCurrentMoves()

@@ -183,7 +183,7 @@ export function generateMoves(board, piecePositions) {
   for (const src of piecePositions) {
     const captureSequences = getCaptureSequences(board, src);
     for (const sequence of captureSequences) {
-      result.push([ src, ...sequence ])
+      result.push({ from: src, sequence })
     }
   }
 
@@ -192,7 +192,7 @@ export function generateMoves(board, piecePositions) {
     for (const src of piecePositions) {
       const destinations = getSimpleMoveDestinations(board, src)
       for (const dst of destinations) {
-        result.push([ src, dst ])
+        result.push({ from: src, sequence: [dst] })
       }
     }
     return result
@@ -201,10 +201,10 @@ export function generateMoves(board, piecePositions) {
     // Remove suboptimal moves
     let longestMoveLength = 0
     for (const move of result) {
-      if (move.length > longestMoveLength) {
-        longestMoveLength = move.length
+      if (move.sequence.length > longestMoveLength) {
+        longestMoveLength = move.sequence.length
       }
     }
-    return result.filter(move => move.length == longestMoveLength)
+    return result.filter(move => move.sequence.length == longestMoveLength)
   }
 }
