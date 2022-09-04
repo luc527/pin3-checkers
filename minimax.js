@@ -5,16 +5,23 @@ export class Minimax {
   constructor(maximizeWhite, utilityFunction) {
     this.maximizeWhite = maximizeWhite
     this.utilityFunction = utilityFunction
+    this.leafCount = 0
+  }
+
+  resetLeafCount() {
+    this.leafCount = 0
   }
 
   get(state, depthLeft) {
     if (depthLeft == 0) { //cutoff
+      this.leafCount++
       return { value: this.utilityFunction(state, this.maximizeWhite) }
     }
 
     const actions = s.getActions(state)
 
     if (actions.length == 0) { //terminal
+      this.leafCount++
       return { value: this.utilityFunction(state, this.maximizeWhite) }
     }
 

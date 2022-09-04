@@ -137,15 +137,19 @@ btn.addEventListener('click', () => {
   s.actionDo(state, moveTaken)
   gfx.renderBoard(state.board, elemMatrix)
 
-  const depth = 2
+  btn.setAttribute('disabled', 'disabled')
+
+  const depth = 8  // <- TODO fixme bug after choosing 0
   console.log('minimax.get...')
+  minimax.resetLeafCount()
   const { action: aiAction } = minimax.get(state, depth)
-  console.log('got', aiAction)
+  console.log('got', aiAction, 'leaves', minimax.leafCount)
 
   setTimeout(() => {
     s.actionDo(state, aiAction)
     gfx.renderBoard(state.board, elemMatrix)
     generateAndLogCurrentMoves()
+    btn.removeAttribute('disabled')
   }, 1000)
 })
 
