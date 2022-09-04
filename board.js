@@ -146,6 +146,8 @@ export function singleMoveDo(board, src, dst) {
       mid.row += rowStep
       mid.col += colStep
     }
+  }
+  if (captured != null) {
     board[captured.row][captured.col] = null
   }
 
