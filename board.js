@@ -39,6 +39,37 @@ export function makeInitialBoard() {
   return board
 }
 
+export function copyBoard(b0) {
+  const b1 = new Array(8)
+  for (let i = 0; i < 8; i++) {
+    b1[i] = new Array(8)
+  }
+
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      b1[i][j] = b0[i][j]
+    }
+  }
+
+  return b1
+}
+
+export function areBoardsEqual(b0, b1) {
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      const p0 = b0[i][j];
+      const p1 = b1[i][j];
+
+      if (p0 == null && p1 == null) return true
+      if (p0 == null) return false
+      if (p1 == null) return false
+      if (p0.white != p1.white) return false
+      if (p0.king != p1.king) return false
+    }
+  }
+  return true
+}
+
 /**
  * --- Move do-ing and undo-ing
  */
@@ -68,12 +99,20 @@ export function validatePositionList(list, listName) {
   }
 }
 
-export function validateMove(src, dst) {
+export function validateMove(board, src, dst) {
   validatePosition(src, 'source')
   validatePosition(dst, 'destination')
   const diagonal = Math.abs(src.row - dst.row) == Math.abs(src.col - dst.col)
   if (!diagonal) {
     console.trace(`move from ${positionString(src)} to ${positionString(dst)} is not diagonal`)
+    throw {}
+  }
+  if (board[src.row][src.col] == null) {
+    console.trace(`moving empty piece from >${positionString(src)}< to ${positionString(dst)} in\n`+ encodeBoard(board))
+    throw {}
+  }
+  if (board[dst.row][dst.col]) {
+    console.trace(`moving onto non-empty piece from ${positionString(src)} to >${positionString(dst)}< in\n`+ encodeBoard(board))
     throw {}
   }
 }
@@ -90,7 +129,7 @@ export function validateMove(src, dst) {
  * Also captures the piece between 'src' and 'dst', and returns its info ({ row, col, { white, king } })
  */
 export function singleMoveDo(board, src, dst) {
-  validateMove(src, dst)
+  validateMove(board, src, dst)
 
   let captured = null
   if (Math.abs(src.row - dst.row) > 1) {
@@ -121,7 +160,7 @@ export function singleMoveDo(board, src, dst) {
  * Un-does a move from 'src' to 'dst', also un-doing the capture described in 'captured'.
  */
 export function singleMoveUndo(board, src, dst, captured) {
-  validateMove(src, dst)
+  validateMove(board, dst, src)
 
   if (captured != null) {
     board[captured.row][captured.col] = captured.piece
