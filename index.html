@@ -51,11 +51,11 @@
 
     .piece {
       position: absolute;
+      top: 50%;
+      left: 50%;
     }
 
     .piece.man {
-      top: 50%;
-      left: 50%;
       transform: translateY(-50%) translateX(-50%);
       width: calc(3/4 * var(--cell-size-px));
       height: calc(3/4 * var(--cell-size-px));
@@ -63,8 +63,6 @@
     }
 
     .piece.king {
-      top: 50%;
-      left: 50%;
       transform: translateY(-50%) translateX(-50%) rotate(45deg);
       width: calc(1/2 * var(--cell-size-px));
       height: calc(1/2 * var(--cell-size-px));
