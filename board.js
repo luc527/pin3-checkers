@@ -198,6 +198,7 @@ export function fullMoveDo(board, src, sequence) {
   const crown = piece.white ? final.row == 7 : final.row == 0
   if (!piece.king && crown) {
     crowned = true
+    board[final.row][final.col].king = true
   }
 
   return { crowned, captured }
