@@ -1,4 +1,4 @@
-import { inbounds, validatePosition, singleMoveDo, singleMoveUndo } from './board.js'
+import * as bo from './board.js'
 
 /**
  * --- Move generation
@@ -7,7 +7,7 @@ import { inbounds, validatePosition, singleMoveDo, singleMoveUndo } from './boar
 // First some helpers for more helpful error messages
 
 function validateMoveSource(board, src) {
-  validatePosition(src)
+  bo.validatePosition(src)
   if (board[src.row][src.col] == null) {
     console.trace(`empty move source position ${positionString(src)}`)
     throw {}
@@ -90,7 +90,7 @@ function getSingleCaptureDestinations(board, src) {
 
       for (let dist = 1; dist <= reach; dist++) {
 
-        if (!inbounds(pos)) {
+        if (!bo.inbounds(pos)) {
           break
         }
 
@@ -151,15 +151,16 @@ function getCaptureSequencesImpl(board, src, previousPositions, result) {
   validateMoveSource(board, src)
 
   const destinations = getSingleCaptureDestinations(board, src)
+
   if (destinations.length == 0) {
     if (previousPositions.length > 0) {
       result.push([...previousPositions, src].slice(1))
     }
   } else {
     for (const dest of destinations) {
-      const captured = singleMoveDo(board, src, dest)
+      const captured = bo.singleMoveDo(board, src, dest)
       getCaptureSequencesImpl(board, dest, [...previousPositions, src], result)
-      singleMoveUndo(board, src, dest, captured)
+      bo.singleMoveUndo(board, src, dest, captured)
     }
   }
 }
