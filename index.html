@@ -87,60 +87,67 @@
 <button id="btn" type="button">Choose</button>
 
 <script type="module">
-import * as br from './board.js'
+
+import * as s from './game-state.js'
+import * as bo from './board.js'
 import * as gfx from './board-render.js'
 import * as mov from './move-generation.js'
+import * as mm from './minimax.js'
 
-// just testing generateMoves
+// First player = white = human
 
-const board = br.makeInitialBoard()
-// const board = br.makeEmptyBoard()
+const state = s.makeInitialState()
 
-// board[2][1] = { white: true }
-// board[3][2] = { white: false }
-// board[3][4] = { white: false }
-// board[1][4] = { white: false } 
+let humanMovementChoices = []
 
-let currentPlayerWhite = true
-let currentMovementChoices = []
+const minimax = new mm.Minimax(false, mm.utilityCountPieces)
 
 const elemMatrix = gfx.createBoardTable(
   document.querySelector('#board-table')
-);
-gfx.renderBoard(board, elemMatrix)
+)
+gfx.renderBoard(state.board, elemMatrix)
 
-const log = document.querySelector('#log')
+const log    = document.querySelector('#log')
 const prompt = document.querySelector('#prompt')
-const btn = document.querySelector('#btn')
+const btn    = document.querySelector('#btn')
 
 function generateAndLogCurrentMoves() {
-  var currentPlayerPieces = br.getPlayerPiecePositions(board, currentPlayerWhite);
-  currentMovementChoices = mov.generateMoves(board, currentPlayerPieces);
+  humanMovementChoices = s.getActions(state)
 
-  let movString = 'Current moves ('+(currentPlayerWhite ? 'white' : 'black')+' player)\n' 
-  for (let i = 0; i < currentMovementChoices.length; i++) {
-    const mov = currentMovementChoices[i];
-    movString += '' + i + ') ' + ([ mov.from, ...mov.sequence ].map(br.positionString).join(', ') + '.\n')
+  let movString = 'Current moves ('+(state.whiteToMove ? 'white' : 'black')+')\n'
+  for (let i=0; i<humanMovementChoices.length; i++) {
+    const mov = humanMovementChoices[i]
+    movString += '' + i + ') ' + ([mov.from, ...mov.sequence].map(bo.positionString).join(', ') + '.\n')
   }
   log.innerHTML += movString
   log.innerHTML += 'Enter your choice\n'
   log.scrollTop = log.scrollHeight
 }
 
-generateAndLogCurrentMoves();
+generateAndLogCurrentMoves()
 
 btn.addEventListener('click', () => {
   const choice = prompt.value
-  if (choice >= 0 && choice < currentMovementChoices.length) {
-    const moveTaken = currentMovementChoices[choice]
-    br.fullMoveDo(board, moveTaken.from, moveTaken.sequence)
-    gfx.renderBoard(board, elemMatrix)
-    currentPlayerWhite = !currentPlayerWhite
-    generateAndLogCurrentMoves()
-  } else {
-    log.innerHtml += 'Invalid choice\n'
+  if (choice < 0 || choice >= humanMovementChoices.length) {
+    log.innerHTML += 'Invalid choice\n'
+    return
   }
-});
+
+  const moveTaken = humanMovementChoices[choice]
+  s.actionDo(state, moveTaken)
+  gfx.renderBoard(state.board, elemMatrix)
+
+  const depth = 2
+  console.log('minimax.get...')
+  const { action: aiAction } = minimax.get(state, depth)
+  console.log('got', aiAction)
+
+  setTimeout(() => {
+    s.actionDo(state, aiAction)
+    gfx.renderBoard(state.board, elemMatrix)
+    generateAndLogCurrentMoves()
+  }, 1000)
+})
 
 </script>
 
