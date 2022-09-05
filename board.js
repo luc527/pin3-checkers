@@ -218,9 +218,11 @@ export function fullMoveUndo(board, src, sequence, { crowned, captured }) {
     board[final.row][final.col].king = false
   }
   // Restore
-  const piece = board[final.row][final.col]
-  board[src.row][src.col] = piece
-  board[final.row][final.col] = null
+  if (src.row != final.row || src.col != final.col) {
+    const piece = board[final.row][final.col]
+    board[src.row][src.col] = piece
+    board[final.row][final.col] = null
+  }
 
   // This needs to be done after the restore
   // It's possible that the moving piece ends up on the same position a captured piece was ('final')

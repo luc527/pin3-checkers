@@ -5,23 +5,21 @@ export class Minimax {
   constructor(maximizeWhite, utilityFunction) {
     this.maximizeWhite = maximizeWhite
     this.utilityFunction = utilityFunction
-    this.leafCount = 0
-  }
-
-  resetLeafCount() {
-    this.leafCount = 0
+    // this.dbgStack = []
   }
 
   get(state, depthLeft) {
+    // this.dbgStack.push(bo.encodeBoard(state.board))
+
     if (depthLeft == 0) { //cutoff
-      this.leafCount++
+      // this.dbgStack.pop()
       return { value: this.utilityFunction(state, this.maximizeWhite) }
     }
 
     const actions = s.getActions(state)
 
     if (actions.length == 0) { //terminal
-      this.leafCount++
+      // this.dbgStack.pop()
       return { value: this.utilityFunction(state, this.maximizeWhite) }
     }
 
@@ -43,11 +41,13 @@ export class Minimax {
       s.actionUndo(state, action, undoInfo)
     }
 
+    // this.dbgStack.pop()
     return { value: value, action: actionTaken }
   }
 }
 
 export function utilityCountPieces(state, maximizeWhite) {
+  // TODO 1000 utility for win, -1000 utility for loss
   const board = state.board
 
   let utility = 0
