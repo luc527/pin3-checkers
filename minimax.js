@@ -1,17 +1,17 @@
-import * as bo from './board.js'
 import * as s from './game-state.js'
 
 export class Minimax {
-  constructor(maximizeWhite, utilityFunction) {
+  constructor(maximizeWhite, utilityFunction, cutoffDepth) {
     this.maximizeWhite = maximizeWhite
     this.utilityFunction = utilityFunction
+    this.cutoffDepth = cutoffDepth
     // this.dbgStack = []
   }
 
-  get(state, depthLeft) {
+  get(state, depth=0) {
     // this.dbgStack.push(bo.encodeBoard(state.board))
 
-    if (depthLeft == 0) { //cutoff
+    if (depth == this.cutoffDepth) {
       // this.dbgStack.pop()
       return { value: this.utilityFunction(state, this.maximizeWhite) }
     }
@@ -23,6 +23,10 @@ export class Minimax {
       return { value: this.utilityFunction(state, this.maximizeWhite) }
     }
 
+    if (depth == 0 && actions.length == 1) { //no choice
+      return { action: actions[0], value: 0 }
+    }
+
     const maximizing = state.whiteToMove === this.maximizeWhite
 
     let value = maximizing ? -Infinity : +Infinity
@@ -31,7 +35,7 @@ export class Minimax {
     for (const action of actions) {
       const undoInfo = s.actionDo(state, action)
 
-      const { value: subValue } = this.get(state, depthLeft-1)
+      const { value: subValue } = this.get(state, depth+1)
 
       if ((maximizing && subValue > value) || (!maximizing && subValue < value)) {
         actionTaken = action

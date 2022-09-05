@@ -100,7 +100,8 @@ const state = s.makeInitialState()
 
 let humanMovementChoices = []
 
-const minimax = new mm.Minimax(false, mm.utilityCountPieces)
+const depth = 8
+const minimax = new mm.Minimax(false, mm.utilityCountPieces, depth)
 
 const elemMatrix = gfx.createBoardTable(
   document.querySelector('#board-table')
@@ -139,13 +140,9 @@ btn.addEventListener('click', () => {
 
   btn.setAttribute('disabled', 'disabled')
 
-  const depth = 8  // <- TODO fixme bug after choosing 0
-  console.log('minimax.get...')
-  minimax.resetLeafCount()
-  const { action: aiAction } = minimax.get(state, depth)
-  console.log('got', aiAction, 'leaves', minimax.leafCount)
-
   setTimeout(() => {
+    const { action: aiAction } = minimax.get(state)
+
     s.actionDo(state, aiAction)
     gfx.renderBoard(state.board, elemMatrix)
     generateAndLogCurrentMoves()
