@@ -51,10 +51,12 @@ export class Minimax {
 }
 
 export function utilityCountPieces(state, maximizeWhite) {
-  // TODO 1000 utility for win, -1000 utility for loss
   const board = state.board
 
   let utility = 0
+
+  let blackHasPieces = false
+  let whiteHasPieces = false
 
   for (let i=0; i<8; i++) {
     for (let j=0; j<8; j++) {
@@ -63,7 +65,18 @@ export function utilityCountPieces(state, maximizeWhite) {
       const value = piece.king ? 2 : 1
       const sign = piece.white === maximizeWhite ? 1 : -1
       utility += sign * value
+
+      if (piece.white) whiteHasPieces = true
+      else blackHasPieces = true
     }
+  }
+
+  if (maximizeWhite) {
+    if (!blackHasPieces) return +1000
+    if (!whiteHasPieces) return -1000
+  } else {
+    if (!blackHasPieces) return -1000
+    if (!whiteHasPieces) return +1000
   }
 
   return utility

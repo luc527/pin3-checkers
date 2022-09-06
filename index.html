@@ -100,7 +100,7 @@ const state = s.makeInitialState()
 
 let humanMovementChoices = []
 
-const depth = 8
+const depth = 6
 const minimax = new mm.Minimax(false, mm.utilityCountPieces, depth)
 
 const elemMatrix = gfx.createBoardTable(
@@ -147,7 +147,7 @@ btn.addEventListener('click', () => {
     gfx.renderBoard(state.board, elemMatrix)
     generateAndLogCurrentMoves()
     btn.removeAttribute('disabled')
-  }, 1000)
+  }, 500)
 })
 
 </script>
