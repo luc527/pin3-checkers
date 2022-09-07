@@ -1,9 +1,10 @@
 import * as s from './game-state.js'
+import * as bo from './board.js'
 
 export class Minimax {
-  constructor(maximizeWhite, utilityFunction, cutoffDepth) {
+  constructor(maximizeWhite, heuristicFunction, cutoffDepth) {
     this.maximizeWhite = maximizeWhite
-    this.utilityFunction = utilityFunction
+    this.heuristicFunction = heuristicFunction
     this.cutoffDepth = cutoffDepth
     // this.dbgStack = []
   }
@@ -11,23 +12,43 @@ export class Minimax {
   get(state, depth=0) {
     // this.dbgStack.push(bo.encodeBoard(state.board))
 
-    if (depth == this.cutoffDepth) {
+    if (depth >= this.cutoffDepth) {
       // this.dbgStack.pop()
-      return { value: this.utilityFunction(state, this.maximizeWhite) }
+      return { value: this.heuristicFunction(state, this.maximizeWhite) }
     }
 
     const actions = s.getActions(state)
 
     if (actions.length == 0) { //terminal
+      const count = bo.countPieces(state.board)
+
+      const WIN = +1000
+      const LOSS = -1000
+
+      let value
+
       // this.dbgStack.pop()
-      return { value: this.utilityFunction(state, this.maximizeWhite) }
+      if (count.white == 0) {
+        value = this.maximizeWhite ? LOSS : WIN
+      } else if (count.black == 0) {
+        value = this.maximizeWhite ? WIN : LOSS
+      } else {
+        // current player has pieces but can't move, so loses
+        if (state.whiteToMove) {
+          value = this.maximizeWhite ? LOSS : WIN
+        } else {
+          value = this.maximizeWhite ? WIN : LOSS
+        }
+      }
+
+      return { value }
     }
 
     if (depth == 0 && actions.length == 1) { //no choice
       return { action: actions[0], value: 0 }
     }
 
-    const maximizing = state.whiteToMove === this.maximizeWhite
+    const maximizing = state.whiteToMove == this.maximizeWhite
 
     let value = maximizing ? -Infinity : +Infinity
     let actionTaken = null
@@ -45,18 +66,17 @@ export class Minimax {
       s.actionUndo(state, action, undoInfo)
     }
 
+    console.log(value, depth, actionTaken, actions)
+
     // this.dbgStack.pop()
     return { value: value, action: actionTaken }
   }
 }
 
-export function utilityCountPieces(state, maximizeWhite) {
+export function heuristicCountPieces(state, maximizeWhite) {
   const board = state.board
 
-  let utility = 0
-
-  let blackHasPieces = false
-  let whiteHasPieces = false
+  let boardValue = 0
 
   for (let i=0; i<8; i++) {
     for (let j=0; j<8; j++) {
@@ -64,20 +84,9 @@ export function utilityCountPieces(state, maximizeWhite) {
       const piece = board[i][j]
       const value = piece.king ? 2 : 1
       const sign = piece.white === maximizeWhite ? 1 : -1
-      utility += sign * value
-
-      if (piece.white) whiteHasPieces = true
-      else blackHasPieces = true
+      boardValue += sign * value
     }
   }
 
-  if (maximizeWhite) {
-    if (!blackHasPieces) return +1000
-    if (!whiteHasPieces) return -1000
-  } else {
-    if (!blackHasPieces) return -1000
-    if (!whiteHasPieces) return +1000
-  }
-
-  return utility
+  return boardValue
 }

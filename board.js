@@ -250,6 +250,23 @@ export function getPlayerPiecePositions(board, playerWhite) {
 }
 
 /**
+ * Counts pieces grouped by color (returns a { white, black } object)
+ */
+export function countPieces(board) {
+  let black = 0
+  let white = 0
+  for (let i=0; i<8; i++) {
+    for (let j=0; j<8; j++) {
+      if (!board[i][j]) continue
+      const piece = board[i][j]
+      if (piece.white) white++
+      else black++
+    }
+  }
+  return { white, black }
+}
+
+/**
  * Encodes the given board as a string
  */
 export function encodeBoard(board) {

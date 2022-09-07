@@ -100,8 +100,8 @@ const state = s.makeInitialState()
 
 let humanMovementChoices = []
 
-const depth = 6
-const minimax = new mm.Minimax(false, mm.utilityCountPieces, depth)
+const depth = 7
+const minimax = new mm.Minimax(false, mm.heuristicCountPieces, depth)
 
 const elemMatrix = gfx.createBoardTable(
   document.querySelector('#board-table')
@@ -138,16 +138,27 @@ btn.addEventListener('click', () => {
   s.actionDo(state, moveTaken)
   gfx.renderBoard(state.board, elemMatrix)
 
-  btn.setAttribute('disabled', 'disabled')
+  const whiteWins = s.getWinner(state)
+  if (whiteWins !== null) {
+    log.innerHTML += (whiteWins ? 'White' : 'Black') + ' wins!';
+    btn.setAttribute('disabled', 'disabled')
+  }
 
+  btn.setAttribute('disabled', 'disabled')
   setTimeout(() => {
     const { action: aiAction } = minimax.get(state)
-
     s.actionDo(state, aiAction)
     gfx.renderBoard(state.board, elemMatrix)
-    generateAndLogCurrentMoves()
-    btn.removeAttribute('disabled')
-  }, 500)
+
+    const whiteWins = s.getWinner(state)
+    if (whiteWins !== null) {
+      log.innerHTML += (whiteWins ? 'White' : 'Black') + ' wins!';
+      btn.setAttribute('disabled', 'disabled')
+    } else {
+      generateAndLogCurrentMoves()
+      btn.removeAttribute('disabled')
+    }
+  }, 50)
 })
 
 </script>
