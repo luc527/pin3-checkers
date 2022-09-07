@@ -33,7 +33,7 @@ function getSimpleMoveDestinations(board, src) {
   if (!srcPiece) return []
 
   const colSteps = [-1, 1]
-  const rowSteps = srcPiece.king ? [-1, 1] : (srcPiece.white ? [1] : [-1])
+  const rowSteps = srcPiece.king ? [-1, 1] : (srcPiece.white ? [-1] : [1])
 
   const result = []
   const reach = srcPiece.king ? 100 : 1

@@ -22,16 +22,16 @@ export function makeInitialBoard() {
 
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 8; j++) {
-      if ((i + j) % 2 != 0) {
-        board[i][j] = { white: true, king: false }
+      if ((i + j + 1) % 2 != 0) {
+        board[i][j] = { white: false, king: false }
       }
     }
   }
 
   for (let i = 5; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
-      if ((i + j) % 2 != 0) {
-        board[i][j] = { white: false, king: false }
+      if ((i + j + 1) % 2 != 0) {
+        board[i][j] = { white: true, king: false }
       }
     }
   }

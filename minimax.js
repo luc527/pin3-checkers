@@ -66,8 +66,6 @@ export class Minimax {
       s.actionUndo(state, action, undoInfo)
     }
 
-    console.log(value, depth, actionTaken, actions)
-
     // this.dbgStack.pop()
     return { value: value, action: actionTaken }
   }

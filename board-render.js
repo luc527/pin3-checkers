@@ -20,7 +20,7 @@ export function createBoardTable(tableElem, overlayCoords=true) {
 
     for (let j = 0; j < 8; j++) {
       const cellElem = document.createElement('td');
-      const cellColorClass = (i + j) % 2 == 0 ? 'white' : 'black';
+      const cellColorClass = (i + j + 1) % 2 == 0 ? 'white' : 'black';
       cellElem.classList.add('board-cell', cellColorClass)
 
       const pieceElem = document.createElement('div')
