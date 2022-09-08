@@ -150,7 +150,7 @@ btn.addEventListener('click', () => {
   setTimeout(() => {
 
     minimax.resetLeafCount()
-    const { action: aiAction } = minimax.get(state)
+    const { action: aiAction } = minimax.val(state)
     console.log('leafCount', fmt.format(minimax.getLeafCount()))
 
     s.actionDo(state, aiAction)
