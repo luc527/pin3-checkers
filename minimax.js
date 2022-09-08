@@ -7,6 +7,15 @@ export class Minimax {
     this.heuristicFunction = heuristicFunction
     this.cutoffDepth = cutoffDepth
     // this.dbgStack = []
+    this.leafCount = 0
+  }
+
+  resetLeafCount() {
+    this.leafCount = 0
+  }
+
+  getLeafCount() {
+    return this.leafCount
   }
 
   get(state, depth=0) {
@@ -14,6 +23,7 @@ export class Minimax {
 
     if (depth >= this.cutoffDepth) {
       // this.dbgStack.pop()
+      this.leafCount++
       return { value: this.heuristicFunction(state, this.maximizeWhite) }
     }
 
@@ -27,7 +37,6 @@ export class Minimax {
 
       let value
 
-      // this.dbgStack.pop()
       if (count.white == 0) {
         value = this.maximizeWhite ? LOSS : WIN
       } else if (count.black == 0) {
@@ -41,10 +50,14 @@ export class Minimax {
         }
       }
 
+      // this.dbgStack.pop()
+      this.leafCount++
       return { value }
     }
 
     if (depth == 0 && actions.length == 1) { //no choice
+      // this.dbgStack.pop()
+      this.leafCount++
       return { action: actions[0], value: 0 }
     }
 
@@ -67,6 +80,7 @@ export class Minimax {
     }
 
     // this.dbgStack.pop()
+    this.leafCount++
     return { value: value, action: actionTaken }
   }
 }

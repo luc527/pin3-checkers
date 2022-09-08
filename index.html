@@ -127,6 +127,8 @@ function generateAndLogCurrentMoves() {
 
 generateAndLogCurrentMoves()
 
+const fmt = Intl.NumberFormat('pt')
+
 btn.addEventListener('click', () => {
   const choice = prompt.value
   if (choice < 0 || choice >= humanMovementChoices.length) {
@@ -146,7 +148,11 @@ btn.addEventListener('click', () => {
 
   btn.setAttribute('disabled', 'disabled')
   setTimeout(() => {
+
+    minimax.resetLeafCount()
     const { action: aiAction } = minimax.get(state)
+    console.log('leafCount', fmt.format(minimax.getLeafCount()))
+
     s.actionDo(state, aiAction)
     gfx.renderBoard(state.board, elemMatrix)
 
