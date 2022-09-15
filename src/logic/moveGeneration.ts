@@ -1,4 +1,4 @@
-import * as bo from './board.js'
+import * as bo from "./board";
 
 /**
  * --- Move generation
@@ -7,10 +7,10 @@ import * as bo from './board.js'
 // First some helpers for more helpful error messages
 
 function validateMoveSource(board, src) {
-  bo.validatePosition(src)
+  bo.validatePosition(src);
   if (board[src.row][src.col] == null) {
-    console.trace(`empty move source position ${positionString(src)}`)
-    throw {}
+    console.trace(`empty move source position ${positionString(src)}`);
+    throw {};
   }
 }
 
@@ -27,41 +27,40 @@ function validateMoveSource(board, src) {
  * as a consequence of a regular move in the given board.
  */
 function getSimpleMoveDestinations(board, src) {
-  validateMoveSource(board, src)
+  validateMoveSource(board, src);
 
-  const srcPiece = board[src.row][src.col]
-  if (!srcPiece) return []
+  const srcPiece = board[src.row][src.col];
+  if (!srcPiece) return [];
 
-  const colSteps = [-1, 1]
-  const rowSteps = srcPiece.king ? [-1, 1] : (srcPiece.white ? [-1] : [1])
+  const colSteps = [-1, 1];
+  const rowSteps = srcPiece.king ? [-1, 1] : srcPiece.white ? [-1] : [1];
 
-  const result = []
-  const reach = srcPiece.king ? 100 : 1
+  const result = [];
+  const reach = srcPiece.king ? 100 : 1;
 
   for (const rowStep of rowSteps) {
     for (const colStep of colSteps) {
-      const pos = { row: src.row+rowStep, col: src.col+colStep }
+      const pos = { row: src.row + rowStep, col: src.col + colStep };
       for (let dist = 1; dist <= reach; dist++) {
         if (pos.row < 0 || pos.row > 7 || pos.col < 0 || pos.col > 7) {
-          break
+          break;
         }
 
-        const piece = board[pos.row][pos.col]
+        const piece = board[pos.row][pos.col];
         if (piece != null) {
-          break
+          break;
         }
 
-        result.push({ row: pos.row, col: pos.col })
+        result.push({ row: pos.row, col: pos.col });
 
-        pos.row += rowStep
-        pos.col += colStep
+        pos.row += rowStep;
+        pos.col += colStep;
       }
     }
   }
 
-  return result
+  return result;
 }
-
 
 /**
  * Returns an array of the positions the piece at 'src' can
@@ -71,49 +70,45 @@ function getSimpleMoveDestinations(board, src) {
  * diagonal counts.
  */
 function getSingleCaptureDestinations(board, src) {
-  validateMoveSource(board, src)
+  validateMoveSource(board, src);
 
-  const srcPiece = board[src.row][src.col]
-  if (srcPiece == null) return []
+  const srcPiece = board[src.row][src.col];
+  if (srcPiece == null) return [];
 
-  const destinations = []
+  const destinations = [];
 
   // Arbitrary large number for unlimited reach
-  const reach = srcPiece.king ? 100 : 2
+  const reach = srcPiece.king ? 100 : 2;
 
   // Iterate through all four diagonals
   for (const rowStep of [-1, 1]) {
     for (const colStep of [-1, 1]) {
-
-      let didCapture = false
+      let didCapture = false;
       const pos = { row: src.row + rowStep, col: src.col + colStep };
 
       for (let dist = 1; dist <= reach; dist++) {
-
         if (!bo.inbounds(pos)) {
-          break
+          break;
         }
 
-        const piece = board[pos.row][pos.col]
+        const piece = board[pos.row][pos.col];
 
         if (piece != null) {
-
-          if (didCapture) break
-          else if (piece.white == srcPiece.white) break
-          else didCapture = true
-
+          if (didCapture) break;
+          else if (piece.white == srcPiece.white) break;
+          else didCapture = true;
         } else if (didCapture) {
           // Every empty space after the captured piece and within reach is a possible destination
-          destinations.push({ row: pos.row, col: pos.col })
+          destinations.push({ row: pos.row, col: pos.col });
         }
 
-        pos.row += rowStep
-        pos.col += colStep
+        pos.row += rowStep;
+        pos.col += colStep;
       }
     }
   }
 
-  return destinations
+  return destinations;
 }
 
 /**
@@ -132,11 +127,11 @@ function getSingleCaptureDestinations(board, src) {
  */
 export function getCaptureSequences(board, src) {
   // in principle shouldn't be exported, but is currently for testing
-  validateMoveSource(board, src)
+  validateMoveSource(board, src);
 
-  const result = []
-  getCaptureSequencesImpl(board, src, [], result)
-  return result
+  const result = [];
+  getCaptureSequencesImpl(board, src, [], result);
+  return result;
 }
 
 /**
@@ -148,23 +143,22 @@ export function getCaptureSequences(board, src) {
  * on the way up the tree -- backtracking.
  */
 function getCaptureSequencesImpl(board, src, previousPositions, result) {
-  validateMoveSource(board, src)
+  validateMoveSource(board, src);
 
-  const destinations = getSingleCaptureDestinations(board, src)
+  const destinations = getSingleCaptureDestinations(board, src);
 
   if (destinations.length == 0) {
     if (previousPositions.length > 0) {
-      result.push([...previousPositions, src].slice(1))
+      result.push([...previousPositions, src].slice(1));
     }
   } else {
     for (const dest of destinations) {
-      const captured = bo.singleMoveDo(board, src, dest)
-      getCaptureSequencesImpl(board, dest, [...previousPositions, src], result)
-      bo.singleMoveUndo(board, src, dest, captured)
+      const captured = bo.singleMoveDo(board, src, dest);
+      getCaptureSequencesImpl(board, dest, [...previousPositions, src], result);
+      bo.singleMoveUndo(board, src, dest, captured);
     }
   }
 }
-
 
 /**
  * Generates the moves available for each of the pieces in the given positions.
@@ -177,35 +171,34 @@ function getCaptureSequencesImpl(board, src, previousPositions, result) {
  */
 export function generateMoves(board, piecePositions) {
   for (const src of piecePositions) {
-    validateMoveSource(board, src)
+    validateMoveSource(board, src);
   }
 
-  const result = []
+  const result = [];
   for (const src of piecePositions) {
     const captureSequences = getCaptureSequences(board, src);
     for (const sequence of captureSequences) {
-      result.push({ from: src, sequence })
+      result.push({ from: src, sequence });
     }
   }
 
   if (result.length == 0) {
     // No captures, so return the simple moves
     for (const src of piecePositions) {
-      const destinations = getSimpleMoveDestinations(board, src)
+      const destinations = getSimpleMoveDestinations(board, src);
       for (const dst of destinations) {
-        result.push({ from: src, sequence: [dst] })
+        result.push({ from: src, sequence: [dst] });
       }
     }
-    return result
-  }
-  else {
+    return result;
+  } else {
     // Remove suboptimal moves
-    let longestMoveLength = 0
+    let longestMoveLength = 0;
     for (const move of result) {
       if (move.sequence.length > longestMoveLength) {
-        longestMoveLength = move.sequence.length
+        longestMoveLength = move.sequence.length;
       }
     }
-    return result.filter(move => move.sequence.length == longestMoveLength)
+    return result.filter((move) => move.sequence.length == longestMoveLength);
   }
 }
