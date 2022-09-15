@@ -1,16 +1,5 @@
-<template>
-  <div class="about">
-    <table id="board-table"></table>
+import { defineComponent } from "vue";
 
-    <textarea id="log" style="width: 500px; height: 200px"></textarea>
-    <input type="text" id="prompt" />
-    <button id="btn" type="button">Choose</button>
-  </div>
-</template>
-
-<style scoped></style>
-
-<script lang="ts">
 import { positionString } from "@/logic/board";
 import { createBoardTable, renderBoard } from "@/logic/boardRender";
 import {
@@ -22,8 +11,10 @@ import {
 } from "@/logic/gameState";
 import { heuristicCountPieces, Minimax } from "@/logic/minimax";
 
-export default {
-  setup() {
+const MainView = defineComponent({
+  name: "main-view",
+
+  mounted() {
     // First player = white = human
 
     const state = makeInitialState();
@@ -32,10 +23,9 @@ export default {
 
     const depth = 7;
     const minimax = new Minimax(false, heuristicCountPieces, depth);
+    const board = this.$refs["board-table"] as HTMLTableElement;
 
-    const elemMatrix = createBoardTable(
-      document.querySelector("#board-table")!
-    );
+    const elemMatrix = createBoardTable(board);
     renderBoard(state.board, elemMatrix);
 
     const log = document.querySelector("#log")!;
@@ -103,5 +93,6 @@ export default {
       }, 50);
     });
   },
-};
-</script>
+});
+
+export default MainView;
