@@ -1,13 +1,22 @@
-import * as bo from "./board";
-
 /**
  * --- Move generation
  */
 
+import type { Position } from "@/model/position";
+import {
+  inbounds,
+  positionString,
+  singleMoveDo,
+  singleMoveUndo,
+  validatePosition,
+  type Board,
+  type Sequence,
+} from "./board";
+
 // First some helpers for more helpful error messages
 
-function validateMoveSource(board, src) {
-  bo.validatePosition(src);
+function validateMoveSource(board: Board, src: Position) {
+  validatePosition(src);
   if (board[src.row][src.col] == null) {
     console.trace(`empty move source position ${positionString(src)}`);
     throw {};
@@ -26,7 +35,7 @@ function validateMoveSource(board, src) {
  * Returns an array of the positions the piece at 'src' can end up
  * as a consequence of a regular move in the given board.
  */
-function getSimpleMoveDestinations(board, src) {
+function getSimpleMoveDestinations(board: Board, src: Position) {
   validateMoveSource(board, src);
 
   const srcPiece = board[src.row][src.col];
@@ -69,7 +78,7 @@ function getSimpleMoveDestinations(board, src) {
  * For king pieces, every position after an enemy piece in each
  * diagonal counts.
  */
-function getSingleCaptureDestinations(board, src) {
+function getSingleCaptureDestinations(board: Board, src: Position) {
   validateMoveSource(board, src);
 
   const srcPiece = board[src.row][src.col];
@@ -87,7 +96,7 @@ function getSingleCaptureDestinations(board, src) {
       const pos = { row: src.row + rowStep, col: src.col + colStep };
 
       for (let dist = 1; dist <= reach; dist++) {
-        if (!bo.inbounds(pos)) {
+        if (!inbounds(pos)) {
           break;
         }
 
@@ -125,11 +134,11 @@ function getSingleCaptureDestinations(board, src) {
  * getCaptureSequencesImpl is the real implementation, but it has to take some extra state arguments.
  * getCaptureSequences is the interface used to call it, providing the initial empty state for those arguments.
  */
-export function getCaptureSequences(board, src) {
+export function getCaptureSequences(board: Board, src: Position) {
   // in principle shouldn't be exported, but is currently for testing
   validateMoveSource(board, src);
 
-  const result = [];
+  const result: Sequence[] = [];
   getCaptureSequencesImpl(board, src, [], result);
   return result;
 }
@@ -142,7 +151,12 @@ export function getCaptureSequences(board, src) {
  * but by performing the single capture on the way down and undoing it
  * on the way up the tree -- backtracking.
  */
-function getCaptureSequencesImpl(board, src, previousPositions, result) {
+function getCaptureSequencesImpl(
+  board: Board,
+  src: Position,
+  previousPositions: Sequence,
+  result: Sequence[]
+) {
   validateMoveSource(board, src);
 
   const destinations = getSingleCaptureDestinations(board, src);
@@ -153,9 +167,11 @@ function getCaptureSequencesImpl(board, src, previousPositions, result) {
     }
   } else {
     for (const dest of destinations) {
-      const captured = bo.singleMoveDo(board, src, dest);
+      const captured = singleMoveDo(board, src, dest);
       getCaptureSequencesImpl(board, dest, [...previousPositions, src], result);
-      bo.singleMoveUndo(board, src, dest, captured);
+      if (captured) {
+        singleMoveUndo(board, src, dest, captured);
+      }
     }
   }
 }
@@ -169,7 +185,7 @@ function getCaptureSequencesImpl(board, src, previousPositions, result) {
  * - Only returns simple moves if no captures are available
  * - Only returns the longest captures
  */
-export function generateMoves(board, piecePositions) {
+export function generateMoves(board: Board, piecePositions: Position[]) {
   for (const src of piecePositions) {
     validateMoveSource(board, src);
   }

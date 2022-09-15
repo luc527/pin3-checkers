@@ -1,8 +1,16 @@
-import * as s from "./gameState";
-import * as bo from "./board";
+import { countPieces } from "./board";
+import { actionDo, actionUndo, getActions, type GameState } from "./gameState";
 
 export class Minimax {
-  constructor(maximizeWhite, heuristicFunction, cutoffDepth) {
+  maximizeWhite: boolean;
+  heuristicFunction: Function;
+  cutoffDepth: number;
+  leafCount: number;
+  constructor(
+    maximizeWhite: boolean,
+    heuristicFunction: Function,
+    cutoffDepth: number
+  ) {
     this.maximizeWhite = maximizeWhite;
     this.heuristicFunction = heuristicFunction;
     this.cutoffDepth = cutoffDepth;
@@ -17,17 +25,17 @@ export class Minimax {
     return this.leafCount;
   }
 
-  val(state, depth = 0, alpha = -Infinity, beta = +Infinity) {
+  val(state: GameState, depth = 0, alpha = -Infinity, beta = +Infinity) {
     if (depth >= this.cutoffDepth) {
       this.leafCount++;
       return { value: this.heuristicFunction(state, this.maximizeWhite) };
     }
 
-    const actions = s.getActions(state);
+    const actions = getActions(state);
 
     if (actions.length == 0) {
       //terminal
-      const count = bo.countPieces(state.board);
+      const count = countPieces(state.board);
 
       const WIN = +1000;
       const LOSS = -1000;
@@ -63,7 +71,7 @@ export class Minimax {
     let actionTaken = null;
 
     for (const action of actions) {
-      const undoInfo = s.actionDo(state, action);
+      const undoInfo = actionDo(state, action);
 
       const { value: subValue } = this.val(state, depth + 1, alpha, beta);
 
@@ -76,7 +84,7 @@ export class Minimax {
         alpha = Math.max(alpha, subValue);
 
         if (subValue >= beta) {
-          s.actionUndo(state, action, undoInfo);
+          actionUndo(state, action, undoInfo);
           this.leafCount++;
           return { value, action: actionTaken };
         }
@@ -89,13 +97,13 @@ export class Minimax {
         beta = Math.min(beta, subValue);
 
         if (subValue <= alpha) {
-          s.actionUndo(state, action, undoInfo);
+          actionUndo(state, action, undoInfo);
           this.leafCount++;
           return { value, action: actionTaken };
         }
       }
 
-      s.actionUndo(state, action, undoInfo);
+      actionUndo(state, action, undoInfo);
     }
 
     // this.dbgStack.pop()
@@ -104,7 +112,7 @@ export class Minimax {
   }
 }
 
-export function heuristicCountPieces(state, maximizeWhite) {
+export function heuristicCountPieces(state: GameState, maximizeWhite: boolean) {
   const board = state.board;
 
   let boardValue = 0;
@@ -113,9 +121,11 @@ export function heuristicCountPieces(state, maximizeWhite) {
     for (let j = 0; j < 8; j++) {
       if (!board[i][j]) continue;
       const piece = board[i][j];
-      const value = piece.king ? 2 : 1;
-      const sign = piece.white === maximizeWhite ? 1 : -1;
-      boardValue += sign * value;
+      if (piece) {
+        const value = piece.king ? 2 : 1;
+        const sign = piece.white === maximizeWhite ? 1 : -1;
+        boardValue += sign * value;
+      }
     }
   }
 

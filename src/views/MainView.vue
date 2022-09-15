@@ -11,33 +11,39 @@
 <style scoped></style>
 
 <script lang="ts">
-import * as s from "../logic/gameState";
-import * as bo from "../logic/board";
-import * as gfx from "../logic/boardRender";
-import * as mm from "../logic/minimax";
+import { positionString } from "@/logic/board";
+import { createBoardTable, renderBoard } from "@/logic/boardRender";
+import {
+  actionDo,
+  getActions,
+  getWinner,
+  makeInitialState,
+  type GameAction,
+} from "@/logic/gameState";
+import { heuristicCountPieces, Minimax } from "@/logic/minimax";
 
 export default {
   setup() {
     // First player = white = human
 
-    const state = s.makeInitialState();
+    const state = makeInitialState();
 
-    let humanMovementChoices = [];
+    let humanMovementChoices: GameAction[] = [];
 
     const depth = 7;
-    const minimax = new mm.Minimax(false, mm.heuristicCountPieces, depth);
+    const minimax = new Minimax(false, heuristicCountPieces, depth);
 
-    const elemMatrix = gfx.createBoardTable(
+    const elemMatrix = createBoardTable(
       document.querySelector("#board-table")!
     );
-    gfx.renderBoard(state.board, elemMatrix);
+    renderBoard(state.board, elemMatrix);
 
     const log = document.querySelector("#log")!;
     const prompt = document.querySelector("#prompt")!;
     const btn = document.querySelector("#btn")!;
 
     function generateAndLogCurrentMoves() {
-      humanMovementChoices = s.getActions(state);
+      humanMovementChoices = getActions(state);
 
       let movString =
         "Current moves (" + (state.whiteToMove ? "white" : "black") + ")\n";
@@ -47,8 +53,7 @@ export default {
           "" +
           i +
           ") " +
-          ([mov.from, ...mov.sequence].map(bo.positionString).join(", ") +
-            ".\n");
+          ([mov.from, ...mov.sequence].map(positionString).join(", ") + ".\n");
       }
       log.innerHTML += movString;
       log.innerHTML += "Enter your choice\n";
@@ -60,17 +65,17 @@ export default {
     const fmt = Intl.NumberFormat("pt");
 
     btn.addEventListener("click", () => {
-      const choice = prompt.value;
+      const choice = parseInt((prompt as HTMLInputElement).value);
       if (choice < 0 || choice >= humanMovementChoices.length) {
         log.innerHTML += "Invalid choice\n";
         return;
       }
 
       const moveTaken = humanMovementChoices[choice];
-      s.actionDo(state, moveTaken);
-      gfx.renderBoard(state.board, elemMatrix);
+      actionDo(state, moveTaken);
+      renderBoard(state.board, elemMatrix);
 
-      const whiteWins = s.getWinner(state);
+      const whiteWins = getWinner(state);
       if (whiteWins !== null) {
         log.innerHTML += (whiteWins ? "White" : "Black") + " wins!";
         btn.setAttribute("disabled", "disabled");
@@ -82,10 +87,12 @@ export default {
         const { action: aiAction } = minimax.val(state);
         console.log("leafCount", fmt.format(minimax.getLeafCount()));
 
-        s.actionDo(state, aiAction);
-        gfx.renderBoard(state.board, elemMatrix);
+        if (aiAction) {
+          actionDo(state, aiAction);
+          renderBoard(state.board, elemMatrix);
+        }
 
-        const whiteWins = s.getWinner(state);
+        const whiteWins = getWinner(state);
         if (whiteWins !== null) {
           log.innerHTML += (whiteWins ? "White" : "Black") + " wins!";
           btn.setAttribute("disabled", "disabled");

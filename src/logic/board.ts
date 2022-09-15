@@ -12,7 +12,12 @@ import type { Position } from "@/model/position";
  * { white: boolean, king: boolean } represents a cell containing a piece
  */
 
-export type Board = Array<Array<Piece | null>>;
+export type Board = Array<Array<Piece | null | undefined>>;
+export type Sequence = Position[];
+export type UndoInfo = {
+  crowned: boolean;
+  captured: Sequence;
+};
 
 export function makeEmptyBoard(): Board {
   const board = Array(8);
@@ -92,14 +97,14 @@ export function positionString(pos: Position) {
   return `{row: ${pos.row}, col: ${pos.col}}`;
 }
 
-export function validatePosition(pos: Position, name: string) {
+export function validatePosition(pos: Position, name = "") {
   if (!inbounds(pos)) {
-    console.trace(`position ${name ? name + " " : ""}out of bounds`);
+    console.trace(`position ${name} out of bounds`);
     throw {};
   }
 }
 
-export function validatePositionList(list, listName: string) {
+export function validatePositionList(list: Position[], listName: string) {
   for (let i = 0; i < list.length; i++) {
     validatePosition(list[i], listName + "[" + i + "]");
   }
@@ -146,7 +151,11 @@ export function validateMove(board: Board, src: Position, dst: Position) {
  * Performs a move from 'src' to 'dst' modifying the given board.
  * Also captures the piece between 'src' and 'dst', and returns its info ({ row, col, { white, king } })
  */
-export function singleMoveDo(board: Board, src, dst) {
+export function singleMoveDo(
+  board: Board,
+  src: Position,
+  dst: Position
+): Position | null {
   validateMove(board, src, dst);
 
   let captured = null;
@@ -157,7 +166,7 @@ export function singleMoveDo(board: Board, src, dst) {
     const mid = { row: src.row + rowStep, col: src.col + colStep };
     while (mid.row != dst.row) {
       const midPiece = board[mid.row][mid.col];
-      if (midPiece != null) {
+      if (midPiece) {
         captured = { row: mid.row, col: mid.col, piece: midPiece };
         break;
       }
@@ -188,7 +197,9 @@ export function singleMoveUndo(
   validateMove(board, dst, src);
 
   if (captured != null) {
-    board[captured.row][captured.col] = captured.piece;
+    if (board[captured.row][captured.col]) {
+      board[captured.row][captured.col] = captured.piece;
+    }
   }
   const piece = board[dst.row][dst.col];
   board[dst.row][dst.col] = null;
@@ -202,7 +213,7 @@ export function singleMoveUndo(
  * 'crowned' is a boolean describing whether the piece at 'src' got promoted to a king
  * at the end, and 'captured' is a {row, col, {white, king}} array describing the
  * pieces that got captured. */
-export function fullMoveDo(board, src, sequence) {
+export function fullMoveDo(board: Board, src: Position, sequence: Sequence) {
   validatePosition(src, "src");
   validatePositionList(sequence, "sequence");
 
@@ -218,10 +229,10 @@ export function fullMoveDo(board, src, sequence) {
   }
 
   const final = sequence[sequence.length - 1];
-  const crown = piece.white ? final.row == 7 : final.row == 0;
-  if (!piece.king && crown) {
+  const crown = piece?.white ? final.row == 7 : final.row == 0;
+  if (piece && !piece.king && crown) {
     crowned = true;
-    board[final.row][final.col].king = true;
+    board[final.row]![final.col]!.king = true;
   }
 
   return { crowned, captured };
@@ -232,13 +243,19 @@ export function fullMoveDo(board, src, sequence) {
  * Also demotes the piece if crowned=true and restores the captured pieces
  * in 'captured' (i.e. also un-does crownings and captures).
  */
-export function fullMoveUndo(board, src, sequence, { crowned, captured }) {
+
+export function fullMoveUndo(
+  board: Board,
+  src: Position,
+  sequence: Sequence,
+  undoInfo: UndoInfo
+) {
   validatePosition(src, "src");
   validatePositionList(sequence, "sequence");
 
   const final = sequence[sequence.length - 1];
-  if (crowned) {
-    board[final.row][final.col].king = false;
+  if (undoInfo.crowned) {
+    board[final.row]![final.col]!.king = false;
   }
   // Restore
   if (src.row != final.row || src.col != final.col) {
@@ -250,7 +267,7 @@ export function fullMoveUndo(board, src, sequence, { crowned, captured }) {
   // This needs to be done after the restore
   // It's possible that the moving piece ends up on the same position a captured piece was ('final')
   // If we first run the loop below, it'll end up overwriting the moving piece at 'final'
-  for (const cap of captured) {
+  for (const cap of undoInfo.captured) {
     board[cap.row][cap.col] = cap.piece;
   }
 }
@@ -259,7 +276,7 @@ export function fullMoveUndo(board, src, sequence, { crowned, captured }) {
  * Iterates through the given board to find which positions have pieces
  * of the given player. Returns these positions (whithout the pieces, i.e. a {row, col} array).
  */
-export function getPlayerPiecePositions(board: Board, playerWhite) {
+export function getPlayerPiecePositions(board: Board, playerWhite: boolean) {
   const result = [];
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
@@ -282,7 +299,7 @@ export function countPieces(board: Board) {
     for (let j = 0; j < 8; j++) {
       if (!board[i][j]) continue;
       const piece = board[i][j];
-      if (piece.white) white++;
+      if (piece?.white) white++;
       else black++;
     }
   }

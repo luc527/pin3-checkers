@@ -1,29 +1,49 @@
-import * as bo from "./board";
+import type { Position } from "@/model/position";
+import {
+  countPieces,
+  fullMoveDo,
+  fullMoveUndo,
+  getPlayerPiecePositions,
+  makeInitialBoard,
+  type Board,
+  type Sequence,
+  type UndoInfo,
+} from "./board";
 import { generateMoves } from "./moveGeneration";
+
+export type GameState = { board: Board; whiteToMove: boolean };
+export type GameAction = {
+  from: Position;
+  sequence: Sequence;
+};
 
 export function makeInitialState() {
   return {
-    board: bo.makeInitialBoard(),
+    board: makeInitialBoard(),
     whiteToMove: true,
   };
 }
 
-export function getActions(state) {
-  const positions = bo.getPlayerPiecePositions(state.board, state.whiteToMove);
+export function getActions(state: GameState): GameAction[] {
+  const positions = getPlayerPiecePositions(state.board, state.whiteToMove);
   if (positions.length == 0) {
     return [];
   }
   return generateMoves(state.board, positions);
 }
 
-export function actionDo(state, action) {
-  const undoInfo = bo.fullMoveDo(state.board, action.from, action.sequence);
+export function actionDo(state: GameState, action: GameAction) {
+  const undoInfo = fullMoveDo(state.board, action.from, action.sequence);
   state.whiteToMove = !state.whiteToMove;
   return undoInfo;
 }
 
-export function actionUndo(state, action, undoInfo) {
-  bo.fullMoveUndo(state.board, action.from, action.sequence, undoInfo);
+export function actionUndo(
+  state: GameState,
+  action: GameAction,
+  undoInfo: UndoInfo
+) {
+  fullMoveUndo(state.board, action.from, action.sequence, undoInfo);
   state.whiteToMove = !state.whiteToMove;
 }
 
@@ -31,12 +51,12 @@ export function actionUndo(state, action, undoInfo) {
  * Returns true if white wins, false if black wins, null if no one wins yet.
  * This means the return value needs to be compared with ===.
  */
-export function getWinner(state) {
+export function getWinner(state: GameState) {
   const WHITE = true;
   const BLACK = false;
   const NONE = null;
 
-  const count = bo.countPieces(state.board);
+  const count = countPieces(state.board);
   if (count.black == 0) return WHITE;
   if (count.white == 0) return BLACK;
 

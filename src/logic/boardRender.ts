@@ -1,3 +1,5 @@
+import type { Board } from "./board";
+
 /**
  * Takes an empty table and creates the rows/cells to represent a board
  * Already creates a piece element in all board cells
@@ -10,7 +12,7 @@
  */
 export function createBoardTable(
   tableElem: HTMLTableElement,
-  overlayCoords = true
+  overlayCoords: boolean = true
 ): Array<Array<HTMLTableElement>> {
   tableElem.setAttribute("cellspacing", "0");
   const elemMatrix = Array(8);
@@ -50,12 +52,8 @@ export function createBoardTable(
   return elemMatrix;
 }
 
-/**
- * @param {Array} board
- * @param {HTMLTableElement} table
- */
 export function renderBoard(
-  board: Array<Array<number>>,
+  board: Board,
   elemMatrix: Array<Array<HTMLElement>>
 ) {
   for (let i = 0; i < 8; i++) {
