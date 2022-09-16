@@ -6,6 +6,79 @@
   <button id="btn" type="button">Choose</button>
 </template>
 
-<style scoped></style>
-
 <script src="./MainView.ts" lang="ts"></script>
+
+<style>
+.board-table,
+.board-cell,
+.board-row {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.board-cell {
+  width: var(--cell-size-px);
+  height: var(--cell-size-px);
+  max-width: var(--cell-size-px);
+  max-height: var(--cell-size-px);
+  position: relative;
+}
+
+.cell-text {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: translateY(-50%);
+  color: white;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+    1px 1px 0 #000;
+  opacity: 0.07;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.cell-text:hover {
+  cursor: default;
+  opacity: 0.8;
+}
+
+.board-cell.black {
+  background-color: var(--black0);
+}
+
+.board-cell.white {
+  background-color: var(--white0);
+}
+
+.piece {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.piece.man {
+  transform: translateY(-50%) translateX(-50%);
+  width: calc(3 / 4 * var(--cell-size-px));
+  height: calc(3 / 4 * var(--cell-size-px));
+  border-radius: 100%;
+}
+
+.piece.king {
+  transform: translateY(-50%) translateX(-50%) rotate(45deg);
+  width: calc(1 / 2 * var(--cell-size-px));
+  height: calc(1 / 2 * var(--cell-size-px));
+}
+
+.piece.white {
+  background-color: var(--white0);
+  border: 2px solid var(--black1);
+}
+
+.piece.black {
+  background-color: var(--black0);
+  border: 2px solid var(--white1);
+}
+</style>
