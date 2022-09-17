@@ -195,7 +195,7 @@ export function fullMoveDo(board, src, sequence) {
   }
 
   const final = sequence[sequence.length-1]
-  const crown = piece.white ? final.row == 7 : final.row == 0
+  const crown = piece.white ? final.row == 0 : final.row == 7
   if (!piece.king && crown) {
     crowned = true
     board[final.row][final.col].king = true
