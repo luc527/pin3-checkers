@@ -94,14 +94,33 @@ import * as gfx from './board-render.js'
 import * as mov from './move-generation.js'
 import * as mm from './minimax.js'
 
+/* testing sameColorPieceClusters
+const board = bo.decodeBoard(`x.x.x.x.
+.x.x...x
+x.x.....
+.....x.x
+o.o.....
+.......o
+o.o.o.o.
+.o.o.o.o`)
+
+const elemMatrix = gfx.createBoardTable(
+  document.querySelector('#board-table')
+)
+gfx.renderBoard(board, elemMatrix)
+
+const clusters = mm.sameColorPieceClusters(board)
+console.log(clusters)
+*/
+
 // First player = white = human
 
 const state = s.makeInitialState()
 
 let humanMovementChoices = []
 
-const depth = 7
-const minimax = new mm.Minimax(false, mm.heuristicCountPieces, depth)
+const depth = 8
+const minimax = new mm.Minimax(false, mm.heuristicClusters, depth)
 
 const elemMatrix = gfx.createBoardTable(
   document.querySelector('#board-table')
@@ -166,7 +185,6 @@ btn.addEventListener('click', () => {
     }
   }, 50)
 })
-
 </script>
 
 </body>
