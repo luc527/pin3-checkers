@@ -1,22 +1,47 @@
 :root {
-  --cell-size-px: 36px;
-  --white0: rgb(220, 220, 220);
-  --black0: rgb(50, 50, 50);
-  --white1: rgb(180, 180, 180);
-  --black1: rgb(100, 100, 100);
+  --cell-size-px: 48px;
+  --white0: #FFFFFE;
+  --black0: #020826;
+  --white1: #F5F5F5;
+  --black1: #010516;
+  --board-cell-dark: #716040;
+  --background: #F9F4EF;
 }
-.board-table, .board-cell, .board-row {
-  border: 0;
+
+html {
+  background: var(--background);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#board-table,
+.board-cell,
+.board-row {
   padding: 0;
+  border: 0;
   margin: 0;
 }
+
 .board-cell {
   width: var(--cell-size-px);
   height: var(--cell-size-px);
   max-width: var(--cell-size-px);
   max-height: var(--cell-size-px);
+  border: 4px solid var(--black1);
+  box-sizing: border-box;
   position: relative;
 }
+
 .cell-text {
   position: absolute;
   top: 50%;
@@ -26,17 +51,21 @@
   transform: translateY(-50%);
   color: white;
   text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-  opacity: 0.07;
+  opacity: 0;
+  text-transform: uppercase;
   font-family: monospace;
   font-size: 13px;
 }
+
 .cell-text:hover {
   cursor: default;
-  opacity: 0.8;
+  opacity: 1;
 }
+
 .board-cell.black {
-  background-color: var(--black0);
+  background-color: var(--board-cell-dark);
 }
+
 .board-cell.white {
   background-color: var(--white0);
 }
@@ -49,22 +78,25 @@
 
 .piece.man {
   transform: translateY(-50%) translateX(-50%);
-  width: calc(3/4 * var(--cell-size-px));
-  height: calc(3/4 * var(--cell-size-px));
+  width: calc(3 / 4 * var(--cell-size-px));
+  height: calc(3 / 4 * var(--cell-size-px));
   border-radius: 100%;
 }
 
 .piece.king {
   transform: translateY(-50%) translateX(-50%) rotate(45deg);
-  width: calc(1/2 * var(--cell-size-px));
-  height: calc(1/2 * var(--cell-size-px));
+  width: calc(1 / 2 * var(--cell-size-px));
+  height: calc(1 / 2 * var(--cell-size-px));
 }
 
 .piece.white {
   background-color: var(--white0);
-  border: 2px solid var(--black1);
 }
+
 .piece.black {
   background-color: var(--black0);
-  border: 2px solid var(--white1);
+}
+
+.input-group {
+  display: flex;
 }
