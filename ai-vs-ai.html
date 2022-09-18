@@ -53,7 +53,7 @@ function heur(s) {
   return s == 'countPieces' ? mm.heuristicCountPieces : mm.heuristicClusters
 }
 
-qs('#btn-jogar').onclick = () => {
+qs('#btn-jogar').onclick = async () => {
   
   const heur1 = heur(qs('#heuristica1').value)
   const depth1 = Number(qs('#profundidade1').value)
@@ -78,10 +78,7 @@ qs('#btn-jogar').onclick = () => {
 
   let i = 0
 
-  // TODO detect when the AI gets stuck (last three moves were the same -> draw)
-
-  // FIXME second state usually has a king in the middle of the black pieces
-  // like some undoing is not being done correctly
+  // TODO detect when the AI gets stuck (store all previous states in a set, stop when seeing some state for the 10th time or something)
 
   console.log('Playing...')
   while (gs.getWinner(state) === null) {
