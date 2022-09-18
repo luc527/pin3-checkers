@@ -47,7 +47,8 @@ export function copyBoard(b0) {
 
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
-      b1[i][j] = b0[i][j]
+      const p1 = b1[i][j];
+      b0[i][j] = p1 == null ? null : { white: p1.white, king: p1.king }
     }
   }
 
