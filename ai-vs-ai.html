@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI vs AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div style="margin: auto; width: 50vw; min-width: 300px; padding: 20px;">
+  <div style="display: flex; padding-bottom: 20px">
+    <div style="width: 50%">
+      <h1>IA 1</h1>
+      <label for="heuristica1">Heurística</label><br/>
+      <select id="heuristica1">
+        <option value="countPieces">countPieces</option>
+        <option value="clusters">clusters</option>
+      </select><br/><br/>
+      <label for="profundidade1">Profundidade</label><br/>
+      <input type="number" min=1 step=1 max=15 value=7 id="profundidade1">
+    </div>
+    <div style="width: 50%; text-align: right">
+      <h1>IA 2</h1>
+      <label for="heuristica2">Heurística</label><br/>
+      <select id="heuristica2">
+        <option value="clusters">clusters</option>
+        <option value="countPieces">countPieces</option>
+      </select><br/></br/>
+      <label for="profundidade2">Profundidade</label><br/>
+      <input type="number" min=1 step=1 max=15 value=7 id="profundidade2">
+    </div>
+  </div>
+  <div style="text-align: center;">
+    <h1>Jogo</h1>
+    <label for="jogadas-aleatorias">Jogadas iniciais aleatórias</label><br/>
+    <input type="number" min=1 step=1 max=20 value=4 id="jogadas-aleatorias"><br/>
+    <br/>
+    <button id="btn-jogar" type="button">Jogar</button>
+  </div>
+</div>
+
+<script type="module">
+
+import * as mm from './minimax.js'
+import * as gs from './game-state.js'
+import * as bo from './board.js'
+
+function qs(s) { return document.querySelector(s); }
+
+function heur(s) {
+  return s == 'countPieces' ? mm.heuristicCountPieces : mm.heuristicClusters
+}
+
+qs('#btn-jogar').onclick = () => {
+  
+  const heur1 = heur(qs('#heuristica1').value)
+  const depth1 = Number(qs('#profundidade1').value)
+  const aiWhite = new mm.Minimax(true, heur1, depth1)
+
+  const heur2 = heur(qs('#heuristica2').value)
+  const depth2 = Number(qs('#profundidade2').value)
+  const aiBlack = new mm.Minimax(false, heur2, depth2)
+
+  const history = []
+
+  const state = gs.makeInitialState()
+  history.push(gs.copyState(state))
+
+  const randomMoves = Number(qs('#jogadas-aleatorias').value)
+  for (let i=0; i<randomMoves; i++) {
+    const actions = gs.getActions(state)
+    const rand = Math.floor(Math.random() * actions.length)
+    gs.actionDo(state, actions[rand])
+    history.push(gs.copyState(state))
+  }
+
+  let i = 0
+
+  // TODO detect when the AI gets stuck (last three moves were the same -> draw)
+
+  // FIXME second state usually has a king in the middle of the black pieces
+  // like some undoing is not being done correctly
+
+  console.log('Playing...')
+  while (gs.getWinner(state) === null) {
+    if (i++ > 500) { console.log('Breaking out!'); break; }
+    const mm = gs.whiteToMove ? aiWhite : aiBlack;
+    const { action } = mm.val(state)
+    gs.actionDo(state, action)
+    history.push(gs.copyState(state))
+  }
+  const winner = gs.getWinner(state)
+  console.log(`Done! ${winner ? 'white' : 'black'} wins in ${history.length} moves.`)
+  for (const pastState of history) {
+    console.log(bo.encodeBoard(pastState.board))
+  }
+}
+</script>
+
+</body>
+</html>

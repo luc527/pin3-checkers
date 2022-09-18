@@ -8,6 +8,13 @@ export function makeInitialState() {
   }
 }
 
+export function copyState(s) {
+  return {
+    board: bo.copyBoard(s.board),
+    whiteToMove: s.whiteToMove
+  }
+}
+
 export function getActions(state) {
   const positions = bo.getPlayerPiecePositions(state.board, state.whiteToMove)
   if (positions.length == 0) {
@@ -29,7 +36,6 @@ export function actionUndo(state, action, undoInfo) {
 
 /**
  * Returns true if white wins, false if black wins, null if no one wins yet.
- * This means the return value needs to be compared with ===.
  */
 export function getWinner(state) {
   const WHITE = true

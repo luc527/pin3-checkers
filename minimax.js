@@ -185,6 +185,8 @@ export function heuristicClusters(state, maximizeWhite) {
     // could be something like 1 + cluster.length/4 instead
     const clusterFactor = cluster.length
 
+    // clusterFactor=1 makes this heuristic equal to heuristicCountPieces
+
     const fst = cluster[0]
     const sign = state.board[fst.row][fst.col].white == maximizeWhite ? 1 : -1
 
