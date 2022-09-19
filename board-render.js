@@ -8,7 +8,7 @@
  * 
  * @return {Array} Piece elements indexed by position
  */
-export function createBoardTable(tableElem, overlayCoords=true) {
+export function createBoardTable(tableElem, overlayCoords = true) {
   tableElem.setAttribute('cellspacing', 0)
   const elemMatrix = Array(8)
 
@@ -20,7 +20,8 @@ export function createBoardTable(tableElem, overlayCoords=true) {
 
     for (let j = 0; j < 8; j++) {
       const cellElem = document.createElement('td');
-      const cellColorClass = (i + j + 1) % 2 == 0 ? 'white' : 'black';
+      cellElem.id = `${i}-${j}`
+      const cellColorClass = (i + j + 1) % 2 == 0 ? 'white' : 'black'
       cellElem.classList.add('board-cell', cellColorClass)
 
       const pieceElem = document.createElement('div')
@@ -34,7 +35,7 @@ export function createBoardTable(tableElem, overlayCoords=true) {
       if (overlayCoords) {
         const text = document.createElement('span')
         text.classList.add('cell-text')
-        text.innerHTML = `r${i}<br>c${j}`;
+        text.innerHTML = `r${i}<br>c${j}`
         cellElem.append(text)
       }
 

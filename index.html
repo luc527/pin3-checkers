@@ -1,134 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
+  <title>Temporary</title>
   <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Checkers</title>
-  <link rel="shortcut icon" type="image/png" href="/assets/image/favicon.png" />
-  <link rel="apple-touch-icon" href="/assets/image/favicon.png" />
-  <link rel="stylesheet" href="/assets/style/main.css" />
-  <link rel="stylesheet" href="/assets/style/reset.css" />
+  <meta http-equiv="refresh" content="0; URL=/player-vs-ai" />
 </head>
 
 <body>
-
-  <main>
-    <div class="board-container">
-      <table id="board-table"></table>
-    </div>
-
-    <textarea id="log" style="width: 500px; height: 200px;"></textarea>
-    <div class="input-group">
-      <input type="text" id="prompt" />
-      <button id="btn" type="button">Choose</button>
-    </div>
-  </main>
-
-  <script type="module">
-
-    // TODO test with mm.Minimax(true, ...) just to make sure
-
-    import * as s from './game-state.js'
-    import * as bo from './board.js'
-    import * as gfx from './board-render.js'
-    import * as mov from './move-generation.js'
-    import * as mm from './minimax.js'
-
-    /* testing sameColorPieceClusters
-    const board = bo.decodeBoard(`x.x.x.x.
-    .x.x...x
-    x.x.....
-    .....x.x
-    o.o.....
-    .......o
-    o.o.o.o.
-    .o.o.o.o`)
-    
-    const elemMatrix = gfx.createBoardTable(
-      document.querySelector('#board-table')
-    )
-    gfx.renderBoard(board, elemMatrix)
-    
-    const clusters = mm.sameColorPieceClusters(board)
-    console.log(clusters)
-    */
-
-    // First player = white = human
-
-    const state = s.makeInitialState()
-
-    let humanMovementChoices = []
-
-    const depth = 8
-    const minimax = new mm.Minimax(false, mm.heuristicClusters, depth)
-
-    const elemMatrix = gfx.createBoardTable(
-      document.querySelector('#board-table')
-    )
-    gfx.renderBoard(state.board, elemMatrix)
-
-    const log = document.querySelector('#log')
-    const prompt = document.querySelector('#prompt')
-    const btn = document.querySelector('#btn')
-
-    function generateAndLogCurrentMoves() {
-      humanMovementChoices = s.getActions(state)
-
-      let movString = 'Current moves (' + (state.whiteToMove ? 'white' : 'black') + ')\n'
-      for (let i = 0; i < humanMovementChoices.length; i++) {
-        const mov = humanMovementChoices[i]
-        movString += '' + i + ') ' + ([mov.from, ...mov.sequence].map(bo.positionString).join(', ') + '.\n')
-      }
-      log.innerHTML += movString
-      log.innerHTML += 'Enter your choice\n'
-      log.scrollTop = log.scrollHeight
-    }
-
-    generateAndLogCurrentMoves()
-
-    const fmt = Intl.NumberFormat('pt')
-
-    btn.addEventListener('click', () => {
-      const choice = prompt.value
-      if (choice < 0 || choice >= humanMovementChoices.length) {
-        log.innerHTML += 'Invalid choice\n'
-        return
-      }
-
-      const moveTaken = humanMovementChoices[choice]
-      s.actionDo(state, moveTaken)
-      gfx.renderBoard(state.board, elemMatrix)
-
-      const whiteWins = s.getWinner(state)
-      if (whiteWins !== null) {
-        log.innerHTML += (whiteWins ? 'White' : 'Black') + ' wins!';
-        btn.setAttribute('disabled', 'disabled')
-      }
-
-      btn.setAttribute('disabled', 'disabled')
-      setTimeout(() => {
-
-        minimax.resetLeafCount()
-        const { action: aiAction } = minimax.val(state)
-        console.log('leafCount', fmt.format(minimax.getLeafCount()))
-
-        s.actionDo(state, aiAction)
-        gfx.renderBoard(state.board, elemMatrix)
-
-        const whiteWins = s.getWinner(state)
-        if (whiteWins !== null) {
-          log.innerHTML += (whiteWins ? 'White' : 'Black') + ' wins!';
-          btn.setAttribute('disabled', 'disabled')
-        } else {
-          generateAndLogCurrentMoves()
-          btn.removeAttribute('disabled')
-        }
-      }, 50)
-    })
-  </script>
-
+  <p>This page has been moved. If you were not redirected, click <a href="/player-vs-ai/index.html">here</a> to go
+    to the player vs AI.</p>
 </body>
 
 </html>
