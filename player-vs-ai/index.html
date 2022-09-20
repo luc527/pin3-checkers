@@ -27,6 +27,14 @@
   </main>
 
   <script type="module">
+    const enableExit = (callback) => {
+      document.onkeyup = (event) => {
+        if (event.keyCode == 27) {
+          callback()
+        }
+      }
+    }
+
     const selectPiece = (row, col) => {
       clearMovablePieces()
       markPieceAllowedMovement(allowedPieceMovements(row, col))
@@ -45,6 +53,10 @@
         element.classList.add('piece-can-move')
         const [row, col] = element.id.split('-')
         element.onclick = () => selectPiece(row, col)
+        enableExit(() => {
+          clearMovablePieces()
+          markMovablePieces()
+        })
       })
     }
 
@@ -59,6 +71,7 @@
     const clearMovablePieces = () => {
       document.querySelectorAll('.piece-can-move').forEach(el => {
         el.onclick = undefined
+        document.keyup = undefined
         el.classList.remove('piece-can-move')
       })
     }
