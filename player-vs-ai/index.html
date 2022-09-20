@@ -27,21 +27,43 @@
   </main>
 
   <script type="module">
-    function onClickHandler(row, col) {
+    const selectPiece = (row, col) => {
       console.log("click", [row, col, humanMovementChoices])
+      clearMovablePieces()
+      markPieceAllowedMovement(allowedPieceMovements(row, col))
     }
 
-    function addCanMove(element) {
-      element.insertAdjacentHTML('afterbegin', '<span class="can-move"></span>')
-      const [row, col] = element.id.split('-')
-      element.onclick = () => onClickHandler(row, col)
-    }
-
-    function clearCanMove() {
-      document.querySelectorAll('can-move').forEach(el => {
-        el.parentNode.removeChild(el)
+    const markMovablePieces = () => {
+      movablePieces().forEach(element => {
+        element.classList.add('piece-can-move')
+        const [row, col] = element.id.split('-')
+        element.onclick = () => selectPiece(row, col)
       })
     }
+
+    const markPieceAllowedMovement = (tiles) => {
+      tiles.forEach(element => {
+        element.classList.add('piece-can-move')
+        const [row, col] = element.id.split('-')
+        element.onclick = () => console.log(row, col)
+      })
+    }
+
+    const clearMovablePieces = () => {
+      console.log("clearing", document.querySelectorAll('piece-can-move'))
+      document.querySelectorAll('.piece-can-move').forEach(el => {
+        console.log("removing", el)
+        el.classList.remove('piece-can-move')
+      })
+    }
+
+    const allowedPieceMovements = (row, col) =>
+      humanMovementChoices.filter(mov => mov.from.row == row && mov.from.col == col)
+        .map(mov => document.getElementById(`${mov.sequence[0].row}-${mov.sequence[0].col}`))
+
+    const movablePieces = () =>
+      new Set(humanMovementChoices.map(mov => document.getElementById(`${mov.from.row}-${mov.from.col}`)))
+
 
     // TODO test with mm.Minimax(true, ...) just to make sure
 
@@ -89,19 +111,20 @@
     const btn = document.querySelector('#btn')
 
     function generateAndLogCurrentMoves() {
+      clearMovablePieces()
+
       humanMovementChoices = s.getActions(state)
 
       let movString = 'Current moves (' + (state.whiteToMove ? 'white' : 'black') + ')\n'
-      const addMovEl = new Set()
       for (let i = 0; i < humanMovementChoices.length; i++) {
         const mov = humanMovementChoices[i]
-        addMovEl.add(document.getElementById(`${mov.from.row}-${mov.from.col}`))
         movString += '' + i + ') ' + ([mov.from, ...mov.sequence].map(bo.positionString).join(', ') + '.\n')
       }
-      addMovEl.forEach(addCanMove)
       log.innerHTML += movString
       log.innerHTML += 'Enter your choice\n'
       log.scrollTop = log.scrollHeight
+
+      markMovablePieces()
     }
 
     generateAndLogCurrentMoves()

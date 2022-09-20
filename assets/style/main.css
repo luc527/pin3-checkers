@@ -6,6 +6,7 @@
   --black1: #010516;
   --board-cell-dark: #716040;
   --background: #F9F4EF;
+  --selected-piece: #004643;
 }
 
 html {
@@ -101,17 +102,22 @@ main {
   display: flex;
 }
 
-.can-move {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 999;
-  background-color: aquamarine;
-  opacity: 0.7;
+.piece-can-move {
+  outline: 4px solid var(--selected-piece);
+  outline-offset: -2px;
 }
 
-.can-move:hover {
+.piece-can-move::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--selected-piece);
+  opacity: .5;
+}
+
+.piece-can-move>span:hover {
   cursor: pointer;
 }
