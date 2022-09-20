@@ -28,7 +28,6 @@
 
   <script type="module">
     const selectPiece = (row, col) => {
-      console.log("click", [row, col, humanMovementChoices])
       clearMovablePieces()
       markPieceAllowedMovement(allowedPieceMovements(row, col))
     }
@@ -59,6 +58,7 @@
 
     const clearMovablePieces = () => {
       document.querySelectorAll('.piece-can-move').forEach(el => {
+        el.onclick = undefined
         el.classList.remove('piece-can-move')
       })
     }
@@ -159,7 +159,6 @@
 
       btn.setAttribute('disabled', 'disabled')
       setTimeout(() => {
-
         minimax.resetLeafCount()
         const { action: aiAction } = minimax.val(state)
         console.log('leafCount', fmt.format(minimax.getLeafCount()))
