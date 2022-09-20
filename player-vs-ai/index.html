@@ -33,6 +33,14 @@
       markPieceAllowedMovement(allowedPieceMovements(row, col))
     }
 
+    const movePiece = (row, col) => {
+      const mov = humanMovementChoices.find(mov => mov.sequence.find(seq => seq.row == row && seq.col == col))
+      if (mov) {
+        doPieceMov(mov)
+        clearMovablePieces()
+      }
+    }
+
     const markMovablePieces = () => {
       movablePieces().forEach(element => {
         element.classList.add('piece-can-move')
@@ -45,14 +53,12 @@
       tiles.forEach(element => {
         element.classList.add('piece-can-move')
         const [row, col] = element.id.split('-')
-        element.onclick = () => console.log(row, col)
+        element.onclick = () => movePiece(row, col)
       })
     }
 
     const clearMovablePieces = () => {
-      console.log("clearing", document.querySelectorAll('piece-can-move'))
       document.querySelectorAll('.piece-can-move').forEach(el => {
-        console.log("removing", el)
         el.classList.remove('piece-can-move')
       })
     }
@@ -138,7 +144,10 @@
         return
       }
 
-      const moveTaken = humanMovementChoices[choice]
+      doPieceMov(humanMovementChoices[choice])
+    })
+
+    const doPieceMov = (moveTaken) => {
       s.actionDo(state, moveTaken)
       gfx.renderBoard(state.board, elemMatrix)
 
@@ -167,7 +176,7 @@
           btn.removeAttribute('disabled')
         }
       }, 50)
-    })
+    }
   </script>
 
 </body>
