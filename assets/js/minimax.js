@@ -25,6 +25,7 @@ export class Minimax {
 
     const actions = s.getActions(state)
 
+    // TODO update to use state.status
     if (actions.length == 0) { //terminal
       const count = bo.countPieces(state.board)
 
@@ -61,6 +62,9 @@ export class Minimax {
     let actionTaken = null
 
     for (const action of actions) {
+
+      const copy = s.copyState(state)
+
       const undoInfo = s.actionDo(state, action)
 
       const { value: subValue } = this.val(state, depth+1, alpha, beta)
@@ -75,6 +79,9 @@ export class Minimax {
 
         if (subValue >= beta) {
           s.actionUndo(state, action, undoInfo)
+
+          if (!s.areStatesEqual(state, copy)) console.log('oops')
+
           this.leafCount++
           return { value, action: actionTaken };
         }
@@ -88,12 +95,17 @@ export class Minimax {
 
         if (subValue <= alpha) {
           s.actionUndo(state, action, undoInfo)
+
+          if (!s.areStatesEqual(state, copy)) console.log('oops')
+
           this.leafCount++
           return { value, action: actionTaken }
         }
       }
 
       s.actionUndo(state, action, undoInfo)
+
+      if (!s.areStatesEqual(state, copy)) console.log('oops')
     }
 
     // this.dbgStack.pop()

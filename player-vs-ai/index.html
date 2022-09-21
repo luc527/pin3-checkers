@@ -124,8 +124,8 @@
 
     let humanMovementChoices = []
 
-    const depth = 8
-    const minimax = new mm.Minimax(false, mm.heuristicClusters, depth)
+    const depth = 10
+    const minimax = new mm.Minimax(false, mm.heuristicCountPieces, depth)
 
     const boardView = new BoardView(document.querySelector('#board-table'))
     boardView.render(state.board)
@@ -169,7 +169,9 @@
       s.actionDo(state, moveTaken)
       boardView.render(state.board)
 
-      checkWinner(state)
+      console.log(state)
+
+      checkStatus(state)
 
       toggleLoad()
       minimax.resetLeafCount()
@@ -179,22 +181,29 @@
       s.actionDo(state, aiAction)
       boardView.render(state.board)
 
-      if (!checkWinner(state)) {
+      console.log('leafCount', fmt.format(minimax.getLeafCount()))
+      console.log(state)
+
+      if (checkStatus(state) == s.Status.playing) {
         generateAndLogCurrentMoves()
         btn.removeAttribute('disabled')
       }
     }
 
-    const checkWinner = (state) => {
-      const whiteWon = s.getWinner(state)
-      if (whiteWon !== null) {
-        console.log('leafCount', fmt.format(minimax.getLeafCount()))
-        const message = (whiteWon ? 'White' : 'Black') + ' wins!'
+    const checkStatus = (state) => {
+      const status = state.status
+      console.log('status: ', status)
+      if (status != s.Status.playing) {
+        const message = {
+          [s.Status.whiteWon]: 'White wins!',
+          [s.Status.blackWon]: 'Black wins!',
+          [s.Status.draw]: 'Draw...',
+        }[status];
         log.innerHTML += message
         if (confirm(`${message}\nPlay again?`)) window.location.reload()
         btn.setAttribute('disabled', 'disabled')
       }
-      return whiteWon
+      return status
     }
 
     const loaderContainer = document.querySelector('.loader-container')

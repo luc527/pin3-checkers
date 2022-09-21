@@ -86,6 +86,8 @@
       // TODO detect when the AI gets stuck (store all previous states in a set, stop when seeing some state for the 10th time or something)
       // nvdd utilizar regras de empate do https://midiasstoragesec.blob.core.windows.net/001/2019/04/cbjd-regras-damas-010113.pdf
 
+      // TODO to play game automatically without freezing, do it inside a worker?
+
       console.log('Playing...')
       while (gs.getWinner(state) === null) {
         if (i++ > 500) { console.log('Breaking out!'); break; }
