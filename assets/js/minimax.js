@@ -114,6 +114,12 @@ export class Minimax {
   }
 }
 
+export const valueHeuristicFunctions = {
+  'heuristicCountPieces': heuristicCountPieces,
+  'sameColorPieceClusters': sameColorPieceClusters,
+  'heuristicClusters': heuristicClusters,
+}
+
 // TODO doc
 export function heuristicCountPieces(state, maximizeWhite) {
   const board = state.board

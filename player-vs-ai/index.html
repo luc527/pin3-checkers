@@ -32,19 +32,16 @@
   </main>
 
   <script type="module">
-    window.onload = () => {
-      const devContainer = document.querySelector('.dev')
+    const minimaxWorker = new Worker('/assets/js/minimax-worker.js', { type: 'module' })
 
-      document.addEventListener("keyup", (event) => {
-        if (event.keyCode == 68) { // key: D
-          if (window.getComputedStyle(devContainer).display == 'block') {
-            devContainer.style.display = 'none'
-          } else {
-            devContainer.style.display = 'block'
-          }
-        }
+    const loaderContainer = document.querySelector('.loader-container')
 
-      })
+    const toggleLoad = () => {
+      if (window.getComputedStyle(loaderContainer).display == 'flex') {
+        loaderContainer.style.display = 'none'
+      } else {
+        loaderContainer.style.display = 'flex'
+      }
     }
 
     const enableExit = (callback) => {
@@ -136,7 +133,6 @@
 
     function generateAndLogCurrentMoves() {
       clearMovablePieces()
-
       humanMovementChoices = s.getActions(state)
 
       let movString = 'Current moves (' + (state.whiteToMove ? 'white' : 'black') + ')\n'
@@ -174,8 +170,11 @@
       checkStatus(state)
 
       toggleLoad()
-      minimax.resetLeafCount()
-      const { action: aiAction } = minimax.val(state)
+      const stateCopy = s.copyState(state)
+      minimaxWorker.postMessage([stateCopy, [false, 'heuristicCountPieces', depth]])
+    }
+
+    const evalAction = (aiAction) => {
       toggleLoad()
 
       s.actionDo(state, aiAction)
@@ -206,14 +205,22 @@
       return status
     }
 
-    const loaderContainer = document.querySelector('.loader-container')
+    window.onload = () => {
+      const devContainer = document.querySelector('.dev')
 
-    const toggleLoad = () => {
-      if (window.getComputedStyle(loaderContainer).display == 'flex') {
-        loaderContainer.style.display = 'none'
-      } else {
-        loaderContainer.style.display = 'flex'
-      }
+      document.addEventListener("keyup", (event) => {
+        if (event.keyCode == 68) { // key: D
+          if (window.getComputedStyle(devContainer).display == 'block') {
+            devContainer.style.display = 'none'
+          } else {
+            devContainer.style.display = 'block'
+          }
+        }
+      })
+
+      minimaxWorker.addEventListener('message', function (e) {
+        evalAction(e.data.action)
+      }, false)
     }
   </script>
 
