@@ -218,8 +218,8 @@
         }
       })
 
-      minimaxWorker.addEventListener('message', function (e) {
-        evalAction(e.data.action)
+      minimaxWorker.addEventListener('message', (event) => {
+        evalAction(event.data.action)
       }, false)
     }
   </script>
