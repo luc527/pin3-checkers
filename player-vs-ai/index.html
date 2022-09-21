@@ -13,7 +13,6 @@
 </head>
 
 <body>
-
   <main>
     <div class="board-container">
       <table id="board-table"></table>
@@ -26,13 +25,16 @@
         <button id="btn" type="button">Choose</button>
       </div>
     </div>
+
+    <div class="loader-container" style="display: none;">
+      <div class="loader"></div>
+    </div>
   </main>
 
   <script type="module">
     window.onload = () => {
       const devContainer = document.querySelector('.dev')
 
-      console.log(document.querySelector('main'))
       document.addEventListener("keyup", (event) => {
         if (event.keyCode == 68) { // key: D
           if (window.getComputedStyle(devContainer).display == 'block') {
@@ -167,32 +169,42 @@
       s.actionDo(state, moveTaken)
       boardView.render(state.board)
 
-      const whiteWins = s.getWinner(state)
-      if (whiteWins !== null) {
-        log.innerHTML += (whiteWins ? 'White' : 'Black') + ' wins!';
+      checkWinner(state)
+
+      toggleLoad()
+      minimax.resetLeafCount()
+      const { action: aiAction } = minimax.val(state)
+      toggleLoad()
+
+      s.actionDo(state, aiAction)
+      boardView.render(state.board)
+
+      if (!checkWinner(state)) {
+        generateAndLogCurrentMoves()
+        btn.removeAttribute('disabled')
+      }
+    }
+
+    const checkWinner = (state) => {
+      const whiteWon = s.getWinner(state)
+      if (whiteWon !== null) {
+        console.log('leafCount', fmt.format(minimax.getLeafCount()))
+        const message = (whiteWon ? 'White' : 'Black') + ' wins!'
+        log.innerHTML += message
+        if (confirm(`${message}\nPlay again?`)) window.location.reload()
         btn.setAttribute('disabled', 'disabled')
       }
+      return whiteWon
+    }
 
-      btn.setAttribute('disabled', 'disabled')
-      setTimeout(() => {
-        minimax.resetLeafCount()
-        const { action: aiAction } = minimax.val(state)
-        console.log('leafCount', fmt.format(minimax.getLeafCount()))
+    const loaderContainer = document.querySelector('.loader-container')
 
-        s.actionDo(state, aiAction)
-        boardView.render(state.board)
-
-        const whiteWins = s.getWinner(state)
-        if (whiteWins !== null) {
-          const message = (whiteWins ? 'White' : 'Black') + ' wins!';
-          log.innerHTML += message;
-          btn.setAttribute('disabled', 'disabled')
-          if (!alert(`${message}\nPlay again?`)) window.location.reload()
-        } else {
-          generateAndLogCurrentMoves()
-          btn.removeAttribute('disabled')
-        }
-      }, 50)
+    const toggleLoad = () => {
+      if (window.getComputedStyle(loaderContainer).display == 'flex') {
+        loaderContainer.style.display = 'none'
+      } else {
+        loaderContainer.style.display = 'flex'
+      }
     }
   </script>
 
