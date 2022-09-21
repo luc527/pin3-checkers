@@ -40,8 +40,9 @@
       markPieceAllowedMovement(allowedPieceMovements(row, col))
     }
 
-    const movePiece = (row, col) => {
-      const mov = humanMovementChoices.find(mov => mov.sequence.find(seq => seq.row == row && seq.col == col))
+    const movePiece = (movement) => {
+      const mov = humanMovementChoices.find(mov => mov == movement)
+      console.log(movement, mov)
       if (mov) {
         doPieceMov(mov)
         clearMovablePieces()
@@ -60,11 +61,12 @@
       })
     }
 
-    const markPieceAllowedMovement = (tiles) => {
-      tiles.forEach(element => {
+    const markPieceAllowedMovement = (movements) => {
+      movements.forEach(mov => {
+        const element = document.getElementById(`${mov.sequence[0].row}-${mov.sequence[0].col}`)
         element.classList.add('piece-can-move')
         const [row, col] = element.id.split('-')
-        element.onclick = () => movePiece(row, col)
+        element.onclick = () => movePiece(mov)
       })
     }
 
@@ -78,7 +80,6 @@
 
     const allowedPieceMovements = (row, col) =>
       humanMovementChoices.filter(mov => mov.from.row == row && mov.from.col == col)
-        .map(mov => document.getElementById(`${mov.sequence[0].row}-${mov.sequence[0].col}`))
 
     const movablePieces = () =>
       new Set(humanMovementChoices.map(mov => document.getElementById(`${mov.from.row}-${mov.from.col}`)))
