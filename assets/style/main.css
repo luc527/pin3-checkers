@@ -113,6 +113,7 @@ main h1 {
 .piece-can-move {
   outline: 4px solid var(--green);
   outline-offset: -2px;
+  z-index: 1;
 }
 
 .piece-can-move::before {

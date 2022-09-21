@@ -112,28 +112,9 @@
 
     import * as s from '/assets/js/game-state.js'
     import * as bo from '/assets/js/board.js'
-    import * as gfx from '/assets/js/board-render.js'
+    import BoardView from '/assets/js/BoardView.js'
     import * as mov from '/assets/js/move-generation.js'
     import * as mm from '/assets/js/minimax.js'
-
-    /* testing sameColorPieceClusters
-    const board = bo.decodeBoard(`x.x.x.x.
-    .x.x...x
-    x.x.....
-    .....x.x
-    o.o.....
-    .......o
-    o.o.o.o.
-    .o.o.o.o`)
-    
-    const elemMatrix = gfx.createBoardTable(
-      document.querySelector('#board-table')
-    )
-    gfx.renderBoard(board, elemMatrix)
-    
-    const clusters = mm.sameColorPieceClusters(board)
-    console.log(clusters)
-    */
 
     // First player = white = human
 
@@ -144,10 +125,8 @@
     const depth = 8
     const minimax = new mm.Minimax(false, mm.heuristicClusters, depth)
 
-    const elemMatrix = gfx.createBoardTable(
-      document.querySelector('#board-table')
-    )
-    gfx.renderBoard(state.board, elemMatrix)
+    const boardView = new BoardView(document.querySelector('#board-table'))
+    boardView.render(state.board)
 
     const log = document.querySelector('#log')
     const prompt = document.querySelector('#prompt')
@@ -186,7 +165,7 @@
 
     const doPieceMov = (moveTaken) => {
       s.actionDo(state, moveTaken)
-      gfx.renderBoard(state.board, elemMatrix)
+      boardView.render(state.board)
 
       const whiteWins = s.getWinner(state)
       if (whiteWins !== null) {
@@ -201,7 +180,7 @@
         console.log('leafCount', fmt.format(minimax.getLeafCount()))
 
         s.actionDo(state, aiAction)
-        gfx.renderBoard(state.board, elemMatrix)
+        boardView.render(state.board)
 
         const whiteWins = s.getWinner(state)
         if (whiteWins !== null) {
