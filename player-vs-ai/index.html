@@ -19,7 +19,7 @@
       <table id="board-table"></table>
     </div>
 
-    <textarea id="log" style="width: 500px; height: 200px;"></textarea>
+    <textarea id="log" style="width: -webkit-fill-available; max-width: 512px; min-height: 192px;"></textarea>
     <div class="input-group">
       <input type="text" id="prompt" />
       <button id="btn" type="button">Choose</button>
@@ -33,19 +33,24 @@
           callback()
         }
       }
+
+      document.onclick = (event) => {
+        callback()
+      }
     }
 
-    const selectPiece = (row, col) => {
+    const selectPiece = (row, col, event) => {
+      event.stopPropagation()
       clearMovablePieces()
       markPieceAllowedMovement(allowedPieceMovements(row, col))
     }
 
-    const movePiece = (movement) => {
+    const movePiece = (movement, event) => {
+      event.stopPropagation()
       const mov = humanMovementChoices.find(mov => mov == movement)
-      console.log(movement, mov)
       if (mov) {
-        doPieceMov(mov)
         clearMovablePieces()
+        doPieceMov(mov)
       }
     }
 
@@ -53,7 +58,7 @@
       movablePieces().forEach(element => {
         element.classList.add('piece-can-move')
         const [row, col] = element.id.split('-')
-        element.onclick = () => selectPiece(row, col)
+        element.onclick = (event) => selectPiece(row, col, event)
         enableExit(() => {
           clearMovablePieces()
           markMovablePieces()
@@ -66,7 +71,7 @@
         const element = document.getElementById(`${mov.sequence[0].row}-${mov.sequence[0].col}`)
         element.classList.add('piece-can-move')
         const [row, col] = element.id.split('-')
-        element.onclick = () => movePiece(mov)
+        element.onclick = (event) => movePiece(mov, event)
       })
     }
 
