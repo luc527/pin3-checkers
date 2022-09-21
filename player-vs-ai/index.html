@@ -19,14 +19,32 @@
       <table id="board-table"></table>
     </div>
 
-    <textarea id="log" style="width: -webkit-fill-available; max-width: 512px; min-height: 192px;"></textarea>
-    <div class="input-group">
-      <input type="text" id="prompt" />
-      <button id="btn" type="button">Choose</button>
+    <div class="dev" style="display: none;">
+      <textarea id="log" style="width: -webkit-fill-available; max-width: 512px; min-height: 192px;"></textarea>
+      <div class="input-group">
+        <input type="text" id="prompt" />
+        <button id="btn" type="button">Choose</button>
+      </div>
     </div>
   </main>
 
   <script type="module">
+    window.onload = () => {
+      const devContainer = document.querySelector('.dev')
+
+      console.log(document.querySelector('main'))
+      document.addEventListener("keyup", (event) => {
+        if (event.keyCode == 68) { // key: D
+          if (window.getComputedStyle(devContainer).display == 'block') {
+            devContainer.style.display = 'none'
+          } else {
+            devContainer.style.display = 'block'
+          }
+        }
+
+      })
+    }
+
     const enableExit = (callback) => {
       document.onkeyup = (event) => {
         if (event.keyCode == 27) {

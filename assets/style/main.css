@@ -105,7 +105,9 @@ main h1 {
 }
 
 .input-group {
+  width: 100%;
   display: flex;
+  justify-content: center;
 }
 
 .piece-can-move {
@@ -155,4 +157,8 @@ main h1 {
 
 .btn-primary:not(:last-child) {
   margin-bottom: 12px;
+}
+
+.dev {
+  width: 100%;
 }
