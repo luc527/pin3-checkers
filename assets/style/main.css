@@ -129,7 +129,7 @@ main h1 {
   opacity: .5;
 }
 
-.piece-can-move>span:hover {
+.piece-can-move:hover {
   cursor: pointer;
 }
 
