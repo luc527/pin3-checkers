@@ -19,10 +19,10 @@
     </div>
 
     <div class="dev" style="display: none;">
-      <textarea id="log" style="width: -webkit-fill-available; max-width: 512px; min-height: 192px;"></textarea>
+      <textarea id="log" readonly style="width: -webkit-fill-available; max-width: 512px; min-height: 192px; margin-top: 4px; resize: none;"></textarea>
       <div class="input-group">
         <input type="text" id="prompt" />
-        <button id="btn" type="button">Choose</button>
+        <button id="btn" type="button" style="margin-left: 4px;">Choose</button>
       </div>
     </div>
 
@@ -46,7 +46,7 @@
 
     const enableExit = (callback) => {
       document.onkeyup = (event) => {
-        if (event.keyCode == 27) {
+        if (event.keyCode == 27) { // Escape
           callback()
         }
       }
@@ -209,7 +209,7 @@
       const devContainer = document.querySelector('.dev')
 
       document.addEventListener("keyup", (event) => {
-        if (event.keyCode == 68) { // key: D
+        if (event.keyCode == 68) { // D
           if (window.getComputedStyle(devContainer).display == 'block') {
             devContainer.style.display = 'none'
           } else {
