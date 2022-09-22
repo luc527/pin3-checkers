@@ -32,12 +32,12 @@
   </main>
 
   <script type="module">
-    // FIXME worker currently loading forever, might've been some problem with the merge
-
-    const minimaxWorker = new Worker('/assets/js/minimax-worker.js', { type: 'module' })
+    // const minimaxWorker = new Worker('/assets/js/minimax-worker.js', { type: 'module' })
 
     const loaderContainer = document.querySelector('.loader-container')
 
+    // TODO make the loader smaller and put it outside the board
+    // currently it's hard to see which action the AI took
     const toggleLoad = () => {
       if (window.getComputedStyle(loaderContainer).display == 'flex') {
         loaderContainer.style.display = 'none'
@@ -170,18 +170,20 @@
 
       checkStatus(state)
 
-      toggleLoad()
-      const stateCopy = state.copy()
-      minimaxWorker.postMessage([stateCopy, [false, 'heuristicCountPieces', depth]])
+      // toggleLoad()
+      // const stateCopy = state.copy()
+      // minimaxWorker.postMessage([stateCopy, [false, 'heuristicCountPieces', depth]])
+
+      // toggleLoad()
+      const {action: aiAction} = minimax.val(state)
+      setTimeout(() => evalAction(aiAction), 500)
     }
 
     const evalAction = (aiAction) => {
-      toggleLoad()
+      // toggleLoad()
 
       state.actionDo(aiAction)
       boardView.render(state.board)
-
-      console.log('leafCount', fmt.format(minimax.getLeafCount()))
 
       if (checkStatus(state) == Status.playing) {
         generateAndLogCurrentMoves()
@@ -217,9 +219,9 @@
         }
       })
 
-      minimaxWorker.addEventListener('message', (event) => {
-        evalAction(event.data.action)
-      }, false)
+      // minimaxWorker.addEventListener('message', (event) => {
+      //   evalAction(event.data.action)
+      // }, false)
     }
   </script>
 

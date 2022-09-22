@@ -1,4 +1,4 @@
-import * as bo from './board.js'
+import { Status } from './game-state.js'
 
 export class Minimax {
   constructor(maximizeWhite, valueHeuristic, cutoffDepth) {
@@ -7,6 +7,8 @@ export class Minimax {
     this.cutoffDepth = cutoffDepth
     this.leafCount = 0
   }
+
+  // leafCount for debugging, could be removed later
 
   resetLeafCount() {
     this.leafCount = 0
@@ -22,33 +24,20 @@ export class Minimax {
       return { value: this.valueHeuristic(state, this.maximizeWhite) }
     }
 
-    const actions = state.actions
-
-    // TODO update to use state.status
-    if (actions.length == 0) { //terminal
-      const count = bo.countPieces(state.board)
-
+    if (state.status != Status.playing) { //terminal
       const WIN = +1000
       const LOSS = -1000
-
-      let value
-
-      if (count.white == 0) {
-        value = this.maximizeWhite ? LOSS : WIN
-      } else if (count.black == 0) {
-        value = this.maximizeWhite ? WIN : LOSS
-      } else {
-        // current player has pieces but can't move, so loses
-        if (state.whiteToMove) {
-          value = this.maximizeWhite ? LOSS : WIN
-        } else {
-          value = this.maximizeWhite ? WIN : LOSS
-        }
+      switch (state.status) {
+        case Status.draw: value = 0; break;
+        case Status.whiteWon: value = this.maximizeWhite ? WIN : LOSS; break;
+        case Status.blackWon: value = this.maximizeWhite ? LOSS : WIN; break;
       }
 
       this.leafCount++
       return { value }
     }
+
+    const actions = state.actions
 
     if (depth == 0 && actions.length == 1) { //no choice
       this.leafCount++
@@ -103,7 +92,6 @@ export class Minimax {
 
 export const valueHeuristicFunctions = {
   'heuristicCountPieces': heuristicCountPieces,
-  'sameColorPieceClusters': sameColorPieceClusters,
   'heuristicClusters': heuristicClusters,
 }
 
@@ -126,10 +114,11 @@ export function heuristicCountPieces(state, maximizeWhite) {
   return boardValue
 }
 
-// TODO doc
+// TODO doc -- not a heuristic, but used in heuristicClusters
 function sameColorPieceClusters(board) {
   // for using positions as keys in the clusterOf Map
   function k(row, col) { return row * 8 + col }
+  // for retrieving positions objects from keys
   function p(key) { return { row: Math.floor(key / 8), col: key % 8} }
 
   const clusterOf = new Map()
@@ -144,9 +133,8 @@ function sameColorPieceClusters(board) {
         const ncol = col + colOffset
         if (nrow < 0 || nrow > 7 || ncol < 0 || ncol > 7) continue
 
-        const nkey = k(nrow, ncol)
         const npiece = board[nrow][ncol]
-        if (npiece && npiece.white == white && !clusterOf.has(nkey)) {
+        if (npiece && npiece.white == white && !clusterOf.has(k(nrow, ncol))) {
           dfs(nrow, ncol, white)
         }
       }
@@ -187,10 +175,17 @@ export function heuristicClusters(state, maximizeWhite) {
     }
 
     // this makes clusters VERY valuable
-    // could be something like 1 + cluster.length/4 instead
-    const clusterFactor = cluster.length
+    // const clusterFactor = cluster.length
 
-    // clusterFactor=1 makes this heuristic equal to heuristicCountPieces
+    // divided by 12 makes it so clusters are never more valuable than a piece
+    // (e.g. if we had clusterFactor=1+cluster.length/3
+    // then a cluster of 4 pieces would be more valuable than 5 piece far apart)
+    // but it's enough for a clustered configuration of n pieces to be more valuable than n pieces far apart
+    const clusterFactor = 1 + cluster.length / 12
+    // maybe could 'damp' the cluster.length/12 factor, because very large clusters aren't that much better than smaller clusters
+    // or do something like 1 + Math.min(4, cluster.length) / 4, so clusters bigger than 4 aren't better than clusters of size 4
+
+    // clusterFactor=1 in particular makes this heuristic equal to heuristicCountPieces
 
     const fst = cluster[0]
     const sign = state.board[fst.row][fst.col].white == maximizeWhite ? 1 : -1
