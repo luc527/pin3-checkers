@@ -19,10 +19,10 @@
     </div>
 
     <div class="dev" style="display: none;">
-      <textarea id="log" style="width: -webkit-fill-available; max-width: 512px; min-height: 192px;"></textarea>
+      <textarea id="log" readonly style="width: -webkit-fill-available; max-width: 512px; min-height: 192px; margin-top: 4px; resize: none;"></textarea>
       <div class="input-group">
         <input type="text" id="prompt" />
-        <button id="btn" type="button">Choose</button>
+        <button id="btn" type="button" style="margin-left: 4px;">Choose</button>
       </div>
     </div>
 
@@ -32,24 +32,21 @@
   </main>
 
   <script type="module">
-    window.onload = () => {
-      const devContainer = document.querySelector('.dev')
+    const minimaxWorker = new Worker('/assets/js/minimax-worker.js', { type: 'module' })
 
-      document.addEventListener("keyup", (event) => {
-        if (event.keyCode == 68) { // key: D
-          if (window.getComputedStyle(devContainer).display == 'block') {
-            devContainer.style.display = 'none'
-          } else {
-            devContainer.style.display = 'block'
-          }
-        }
+    const loaderContainer = document.querySelector('.loader-container')
 
-      })
+    const toggleLoad = () => {
+      if (window.getComputedStyle(loaderContainer).display == 'flex') {
+        loaderContainer.style.display = 'none'
+      } else {
+        loaderContainer.style.display = 'flex'
+      }
     }
 
     const enableExit = (callback) => {
       document.onkeyup = (event) => {
-        if (event.keyCode == 27) {
+        if (event.keyCode == 27) { // Escape
           callback()
         }
       }
@@ -172,8 +169,11 @@
       checkStatus(state)
 
       toggleLoad()
-      minimax.resetLeafCount()
-      const { action: aiAction } = minimax.val(state)
+      const stateCopy = s.copyState(state)
+      minimaxWorker.postMessage([stateCopy, [false, 'heuristicCountPieces', depth]])
+    }
+
+    const evalAction = (aiAction) => {
       toggleLoad()
 
       state.actionDo(aiAction)
@@ -202,14 +202,22 @@
       return status
     }
 
-    const loaderContainer = document.querySelector('.loader-container')
+    window.onload = () => {
+      const devContainer = document.querySelector('.dev')
 
-    const toggleLoad = () => {
-      if (window.getComputedStyle(loaderContainer).display == 'flex') {
-        loaderContainer.style.display = 'none'
-      } else {
-        loaderContainer.style.display = 'flex'
-      }
+      document.addEventListener("keyup", (event) => {
+        if (event.keyCode == 68) { // D
+          if (window.getComputedStyle(devContainer).display == 'block') {
+            devContainer.style.display = 'none'
+          } else {
+            devContainer.style.display = 'block'
+          }
+        }
+      })
+
+      minimaxWorker.addEventListener('message', (event) => {
+        evalAction(event.data.action)
+      }, false)
     }
   </script>
 
