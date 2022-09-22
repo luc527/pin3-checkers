@@ -87,10 +87,12 @@
 
     const markPieceAllowedMovement = (movements) => {
       movements.forEach(mov => {
-        const element = document.getElementById(`${mov.sequence[0].row}-${mov.sequence[0].col}`)
-        element.classList.add('piece-can-move')
-        const [row, col] = element.id.split('-')
-        element.onclick = (event) => movePiece(mov, event)
+        mov.sequence.forEach(seq => {
+          const element = document.getElementById(`${seq.row}-${seq.col}`)
+          element.classList.add('piece-can-move')
+          const [row, col] = element.id.split('-')
+          element.onclick = (event) => movePiece(mov, event)
+        })
       })
     }
 
