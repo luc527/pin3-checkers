@@ -3,7 +3,11 @@ import * as mm from'./minimax.js'
 onmessage = (event) => {
   const [ state, params ] = event.data
   const [ maximizeWhite, valueHeuristic, cutoffDepth ] = params
-  postMessage(processEvent(state, maximizeWhite, valueHeuristic, cutoffDepth));
+  try {
+    postMessage(processEvent(state, maximizeWhite, valueHeuristic, cutoffDepth));
+  } catch (err) {
+    postMessage(err)
+  }
 }
 
 const processEvent = (state, maximizeWhite, valueHeuristic, cutoffDepth) => {

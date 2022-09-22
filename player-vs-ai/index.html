@@ -32,6 +32,8 @@
   </main>
 
   <script type="module">
+    // FIXME worker currently loading forever, might've been some problem with the merge
+
     const minimaxWorker = new Worker('/assets/js/minimax-worker.js', { type: 'module' })
 
     const loaderContainer = document.querySelector('.loader-container')
@@ -169,7 +171,7 @@
       checkStatus(state)
 
       toggleLoad()
-      const stateCopy = s.copyState(state)
+      const stateCopy = state.copy()
       minimaxWorker.postMessage([stateCopy, [false, 'heuristicCountPieces', depth]])
     }
 
