@@ -112,19 +112,19 @@
 
     // TODO test with mm.Minimax(true, ...) just to make sure
 
-    import * as s from '/assets/js/game-state.js'
     import * as bo from '/assets/js/board.js'
     import BoardView from '/assets/js/BoardView.js'
+    import {CheckersState, Status} from '/assets/js/game-state.js'
     import * as mov from '/assets/js/move-generation.js'
     import * as mm from '/assets/js/minimax.js'
 
     // First player = white = human
 
-    const state = s.makeInitialState()
+    const state = new CheckersState()
 
     let humanMovementChoices = []
 
-    const depth = 10
+    const depth = 6
     const minimax = new mm.Minimax(false, mm.heuristicCountPieces, depth)
 
     const boardView = new BoardView(document.querySelector('#board-table'))
@@ -137,7 +137,7 @@
     function generateAndLogCurrentMoves() {
       clearMovablePieces()
 
-      humanMovementChoices = s.getActions(state)
+      humanMovementChoices = state.actions
 
       let movString = 'Current moves (' + (state.whiteToMove ? 'white' : 'black') + ')\n'
       for (let i = 0; i < humanMovementChoices.length; i++) {
@@ -166,10 +166,8 @@
     })
 
     const doPieceMov = (moveTaken) => {
-      s.actionDo(state, moveTaken)
+      state.actionDo(moveTaken)
       boardView.render(state.board)
-
-      console.log(state)
 
       checkStatus(state)
 
@@ -178,13 +176,12 @@
       const { action: aiAction } = minimax.val(state)
       toggleLoad()
 
-      s.actionDo(state, aiAction)
+      state.actionDo(aiAction)
       boardView.render(state.board)
 
       console.log('leafCount', fmt.format(minimax.getLeafCount()))
-      console.log(state)
 
-      if (checkStatus(state) == s.Status.playing) {
+      if (checkStatus(state) == Status.playing) {
         generateAndLogCurrentMoves()
         btn.removeAttribute('disabled')
       }
@@ -192,12 +189,11 @@
 
     const checkStatus = (state) => {
       const status = state.status
-      console.log('status: ', status)
-      if (status != s.Status.playing) {
+      if (status != Status.playing) {
         const message = {
-          [s.Status.whiteWon]: 'White wins!',
-          [s.Status.blackWon]: 'Black wins!',
-          [s.Status.draw]: 'Draw...',
+          [Status.whiteWon]: 'White wins!',
+          [Status.blackWon]: 'Black wins!',
+          [Status.draw]: 'Draw...',
         }[status];
         log.innerHTML += message
         if (confirm(`${message}\nPlay again?`)) window.location.reload()

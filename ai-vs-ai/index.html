@@ -49,7 +49,7 @@
   <script type="module">
 
     import * as mm from '/assets/js/minimax.js'
-    import * as gs from '/assets/js/game-state.js'
+    import {CheckersState, Status} from '/assets/js/game-state.js'
     import * as bo from '/assets/js/board.js'
 
     function qs(s) { return document.querySelector(s); }
@@ -70,15 +70,14 @@
 
       const history = []
 
-      const state = gs.makeInitialState()
-      history.push(gs.copyState(state))
+      const state = new CheckersState()
+      history.push(state.copy())
 
       const randomMoves = Number(qs('#jogadas-aleatorias').value)
       for (let i = 0; i < randomMoves; i++) {
-        const actions = gs.getActions(state)
-        const rand = Math.floor(Math.random() * actions.length)
-        gs.actionDo(state, actions[rand])
-        history.push(gs.copyState(state))
+        const rand = Math.floor(Math.random() * state.actions.length)
+        state.actionDo(state.actions[rand])
+        history.push(state.copy())
       }
 
       let i = 0
@@ -89,18 +88,24 @@
       // TODO to play game automatically without freezing, do it inside a worker?
 
       console.log('Playing...')
-      while (gs.getWinner(state) === null) {
+      while (state.status == Status.playing) {
         if (i++ > 500) { console.log('Breaking out!'); break; }
-        const mm = gs.whiteToMove ? aiWhite : aiBlack;
+        const mm = state.whiteToMove ? aiWhite : aiBlack;
         const { action } = mm.val(state)
-        gs.actionDo(state, action)
-        history.push(gs.copyState(state))
+        state.actionDo(action)
+        history.push(state.copy())
       }
-      const winner = gs.getWinner(state)
-      console.log(`Done! ${winner ? 'white' : 'black'} wins in ${history.length} moves.`)
-      for (const pastState of history) {
-        console.log(bo.encodeBoard(pastState.board))
+      if (state.status == Status.draw) {
+        console.log('Draw :/')
+      } else {
+        console.log(`Winner is ${state.status == Status.whiteWon ? 'white' : 'black'}`)
       }
+      console.log(`Game took ${history.length} moves:`)
+      setTimeout(() => {
+        for (const pastState of history) {
+          console.log(bo.encodeBoard(pastState.board))
+        }
+      }, 5000)
     }
   </script>
 

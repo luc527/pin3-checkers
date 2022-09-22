@@ -1,4 +1,3 @@
-import * as s from './game-state.js'
 import * as bo from './board.js'
 
 export class Minimax {
@@ -23,7 +22,7 @@ export class Minimax {
       return { value: this.valueHeuristic(state, this.maximizeWhite) }
     }
 
-    const actions = s.getActions(state)
+    const actions = state.actions
 
     // TODO update to use state.status
     if (actions.length == 0) { //terminal
@@ -62,10 +61,7 @@ export class Minimax {
     let actionTaken = null
 
     for (const action of actions) {
-
-      const copy = s.copyState(state)
-
-      const undoInfo = s.actionDo(state, action)
+      state.actionDo(action)
 
       const { value: subValue } = this.val(state, depth+1, alpha, beta)
 
@@ -78,10 +74,7 @@ export class Minimax {
         alpha = Math.max(alpha, subValue)
 
         if (subValue >= beta) {
-          s.actionUndo(state, action, undoInfo)
-
-          if (!s.areStatesEqual(state, copy)) console.log('oops')
-
+          state.actionUndo(action)
           this.leafCount++
           return { value, action: actionTaken };
         }
@@ -94,21 +87,15 @@ export class Minimax {
         beta = Math.min(beta, subValue)
 
         if (subValue <= alpha) {
-          s.actionUndo(state, action, undoInfo)
-
-          if (!s.areStatesEqual(state, copy)) console.log('oops')
-
+          state.actionUndo(action)
           this.leafCount++
           return { value, action: actionTaken }
         }
       }
 
-      s.actionUndo(state, action, undoInfo)
-
-      if (!s.areStatesEqual(state, copy)) console.log('oops')
+      state.actionUndo(action)
     }
 
-    // this.dbgStack.pop()
     this.leafCount++
     return { value, action: actionTaken }
   }
