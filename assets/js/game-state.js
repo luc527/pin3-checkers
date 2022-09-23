@@ -65,10 +65,7 @@ export class CheckersState {
     
     this.whiteToMove = !this.whiteToMove
 
-    // must come before updateStatus
-    this.actions = this.#generateActions() 
-
-    this.#updateStatus()
+    this.handleChange()
   }
 
   actionUndo(action) {
@@ -81,9 +78,16 @@ export class CheckersState {
     this.roundsSinceCapture = undoInfo.roundsSinceCapture
     this.status             = undoInfo.status
   }
+  
+  handleChange() {
+    this.actions = this.#generateActions()
+    this.status = this.#calculateStatus()
+  }
 
-  #updateStatus() {
-    if (this.status != Status.playing) return
+  #calculateStatus() {
+    if (this.status != Status.playing) {
+      return this.states
+    }
 
     // TODO: Finais de: 2 damas contra 2 damas; 2 damas contra uma; 2 damas contra uma dama e uma pedra; uma dama contra
     // uma dama e uma dama contra uma dama e uma pedra, são declarados empatados após 5 lances de cada jogador.
@@ -91,17 +95,18 @@ export class CheckersState {
 
     // both >= 20
     if (this.roundsSinceManMove + this.prevRoundsSinceCapture >= 40) {
-      this.status = Status.draw;
-      return
+      return Status.draw;
     }
 
     const count = bo.countPieces(this.board)
 
-    if      (count.black == 0) this.status = Status.whiteWon
-    else if (count.white == 0) this.status = Status.blackWon
-    else if (this.actions.length == 0) {
-      this.status = this.whiteToMove ? Status.blackWon : Status.whiteWon
+    if (count.black == 0) return Status.whiteWon
+    if (count.white == 0) return Status.blackWon
+    if (this.actions.length == 0) {
+      return this.whiteToMove ? Status.blackWon : Status.whiteWon
     }
+
+    return this.state
   }
 
   #generateActions() {
