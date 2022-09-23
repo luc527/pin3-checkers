@@ -15,9 +15,9 @@ function validateMoveSource(board, src) {
 }
 
 /**
- * Simple moves are non-capture moves. For men pieces, this
+ * Simple moves are non-capture moves. For pawns, this
  * means moving just one diagonal forward, left or right. On the
- * other hand, king pieces can move arbitrarily along their four
+ * other hand, kings can move arbitrarily along their four
  * diagonals until reaching the end of the board or bumping into
  * another piece.
  */
@@ -66,7 +66,7 @@ function getSimpleMoveDestinations(board, src) {
 /**
  * Returns an array of the positions the piece at 'src' can
  * end up if it performs a single capture along each of its
- * four diagonals. For men pieces, this is at most four positions.
+ * four diagonals. For pawns, this is at most four positions.
  * For king pieces, every position after an enemy piece in each
  * diagonal counts.
  */

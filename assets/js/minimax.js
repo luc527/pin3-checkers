@@ -98,21 +98,14 @@ export const valueHeuristicFunctions = {
 
 // TODO doc
 export function heuristicCountPieces(state, maximizeWhite) {
-  const board = state.board
+  const { blackPawns, blackKings, whitePawns, whiteKings } = state.pieceCount
 
-  let boardValue = 0
+  const whiteValue = whitePawns + 2 * whiteKings
+  const blackValue = blackPawns + 2 * blackKings
 
-  for (let i=0; i<8; i++) {
-    for (let j=0; j<8; j++) {
-      if (!board[i][j]) continue
-      const piece = board[i][j]
-      const value = piece.king ? 2 : 1
-      const sign = piece.white === maximizeWhite ? 1 : -1
-      boardValue += sign * value
-    }
-  }
-
-  return boardValue
+  return maximizeWhite
+       ? whiteValue - blackValue
+       : blackValue - whiteValue
 }
 
 // TODO doc -- not a heuristic, but used in heuristicClusters

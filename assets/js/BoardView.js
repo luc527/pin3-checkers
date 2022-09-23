@@ -51,8 +51,8 @@ export default class BoardView {
         } else {
           elem.style.visibility = 'visible'
 
-          elem.classList.remove(piece.king ? 'man' : 'king')
-          elem.classList.add(piece.king ? 'king' : 'man')
+          elem.classList.remove(piece.king ? 'pawn' : 'king')
+          elem.classList.add(piece.king ? 'king' : 'pawn')
 
           elem.classList.remove(piece.white ? 'black' : 'white')
           elem.classList.add(piece.white ? 'white' : 'black')

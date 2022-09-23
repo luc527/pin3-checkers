@@ -25,7 +25,7 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: cursive;
+  font-family: 'Fira Mono', Consolas, Monaco, 'SF Mono', 'Liberation Mono', 'Ubuntu Mono', monospace;
 }
 
 textarea, input {
@@ -95,7 +95,7 @@ main h1 {
   left: 50%;
 }
 
-.piece.man {
+.piece.pawn {
   transform: translateY(-50%) translateX(-50%);
   width: calc(3 / 4 * var(--cell-size-px));
   height: calc(3 / 4 * var(--cell-size-px));

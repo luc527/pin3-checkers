@@ -251,20 +251,27 @@ export function getPlayerPiecePositions(board, playerWhite) {
 }
 
 /**
- * Counts pieces grouped by color (returns a { white, black } object)
+ * Counts pieces grouped by kind (white or black, pawn or king)
  */
 export function countPieces(board) {
-  let black = 0
-  let white = 0
+  let blackPawns = 0
+  let blackKings = 0
+  let whitePawns = 0
+  let whiteKings = 0
+
   for (let i=0; i<8; i++) {
     for (let j=0; j<8; j++) {
       if (!board[i][j]) continue
       const piece = board[i][j]
-      if (piece.white) white++
-      else black++
+
+      if (piece.white) {
+        if (piece.king) whiteKings++; else whitePawns++;
+      } else {
+        if (piece.king) blackKings++; else blackPawns++;
+      }
     }
   }
-  return { white, black }
+  return { blackPawns, blackKings, whitePawns, whiteKings };
 }
 
 /**

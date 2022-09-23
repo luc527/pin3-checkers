@@ -7,21 +7,31 @@ export const Status = Object.freeze({
   blackWon: 2,
   draw: 3
 })
+
+// TODO test the draw detection logic
+
+// TODO test do/undo with pieceCount and roundsInSpecialEnding
 export class CheckersState {
 
   constructor() {
     this.board = bo.makeInitialBoard()
     this.whiteToMove = true
-    this.actions = this.#generateActions()
+
     this.status = Status.playing
 
+    // Computed only once for each state and stored (previously were functions called two or three times for each game state in different places)
+    this.actions = this.#generateActions()
+    this.pieceCount = bo.countPieces(this.board)
+
+    // For detecting draws
     this.roundsSinceCapture = 0
-    this.roundsSinceManMove = 0
+    this.roundsSincePawnMove = 0
+    this.roundsInSpecialEnding = -1
   }
 
   // copy() and equals() methods are just for debugging
   // in them, we deep-copy 'board' because it changes in actionDo
-  // but we just shallow-copy 'actions' because it's not supposed to be modified
+  // but we just shallow-copy 'actions' and 'pieceCount' because they're not supposed to be modified
 
   copy() {
     const copy = new CheckersState()
@@ -43,22 +53,29 @@ export class CheckersState {
     return true;
   }
 
-  // Stores the undo info in the given action object
   actionDo(action) {
+    // Stores the undo info in the given action object
+    // expects the same object (same reference) to be passed to actionUndo
     action.undoInfo = {
       roundsSinceCapture: this.roundsSinceCapture,
-      roundsSinceManMove: this.roundsSinceManMove,
+      roundsSincePawnMove: this.roundsSincePawnMove,
+      roundsInSpecialEnding: this.roundsInSpecialEnding,
       status: this.status,
-      actions: this.actions
+      actions: this.actions,
+      pieceCount: this.pieceCount
     }
 
-    const manMoved = !this.board[action.from.row][action.from.col].king
-    if (manMoved) this.roundsSinceManMove = 0
-    else          this.roundsSinceManMove++
+    const pawnMoved = !this.board[action.from.row][action.from.col].king
+    if (pawnMoved) this.roundsSincePawnMove = 0
+    else           this.roundsSincePawnMove++
 
     const isCapture = Math.abs(action.from.row - action.sequence[0].row) > 1
     if (isCapture) this.roundsSinceCapture = 0
     else           this.roundsSinceCapture++
+
+    if (this.roundsInSpecialEnding != -1) {
+      this.roundsInSpecialEnding++
+    }
 
     const moveUndoInfo = bo.fullMoveDo(this.board, action.from, action.sequence)
     Object.assign(action.undoInfo, moveUndoInfo)
@@ -73,40 +90,61 @@ export class CheckersState {
     this.whiteToMove = !this.whiteToMove
 
     const undoInfo = action.undoInfo
-    this.actions            = undoInfo.actions
-    this.roundsSinceManMove = undoInfo.roundsSinceManMove
-    this.roundsSinceCapture = undoInfo.roundsSinceCapture
-    this.status             = undoInfo.status
+    this.status                = undoInfo.status
+    this.actions               = undoInfo.actions
+    this.pieceCount            = undoInfo.pieceCount
+    this.roundsSincePawnMove   = undoInfo.roundsSincePawnMove
+    this.roundsSinceCapture    = undoInfo.roundsSinceCapture
+    this.roundsInSpecialEnding = undoInfo.roundsInSpecialEnding
   }
   
   handleChange() {
     this.actions = this.#generateActions()
+    this.pieceCount = bo.countPieces(this.board)
+    // #calculateStatus depends on actions and pieceCount being updated, so this order matters
     this.status = this.#calculateStatus()
+  }
+
+  #inSpecialEnding() {
+    // nos seguintes finais, o jogo é declarado empate após 5 lances de cada jogador:
+    // - 2 damas vs. 2 damas
+    // - 2 damas vs. 1 dama
+    // - 2 damas vs. 1 dama e 1 pedra
+    // - 1 dama  vs. 1 dama
+    // - 1 dama  vs. 1 dama e 1 pedra
+    // TODO ^, using .pieceCount
+    return false
   }
 
   #calculateStatus() {
     if (this.status != Status.playing) {
-      return this.states
+      return this.status
     }
 
-    // TODO: Finais de: 2 damas contra 2 damas; 2 damas contra uma; 2 damas contra uma dama e uma pedra; uma dama contra
-    // uma dama e uma dama contra uma dama e uma pedra, são declarados empatados após 5 lances de cada jogador.
-    // ^ requires a different count for each kind of piece, which we could do once in actionDo, cache in a property, and undo in actionUndo
+    const blackCount = this.pieceCount.blackPawns + this.pieceCount.blackKings
+    const whiteCount = this.pieceCount.whitePawns + this.pieceCount.whiteKings
 
-    // both >= 20
-    if (this.roundsSinceManMove + this.prevRoundsSinceCapture >= 40) {
-      return Status.draw;
-    }
-
-    const count = bo.countPieces(this.board)
-
-    if (count.black == 0) return Status.whiteWon
-    if (count.white == 0) return Status.blackWon
+    if (blackCount == 0) return Status.whiteWon
+    if (whiteCount == 0) return Status.blackWon
     if (this.actions.length == 0) {
       return this.whiteToMove ? Status.blackWon : Status.whiteWon
     }
 
-    return this.state
+    // only kings have moved 20+ times
+    if (this.roundsSincePawnMove >= 20 && this.prevRoundsSinceCapture >= 20) {
+      return Status.draw;
+    }
+
+    if (this.roundsInSpecialEnding == 5) {
+      return Status.draw
+    }
+
+    // detect if just got in a special ending
+    if (this.roundsInSpecialEnding == -1 && this.#inSpecialEnding()) {
+      this.roundsInSpecialEnding = 0
+    }
+
+    return this.status
   }
 
   #generateActions() {

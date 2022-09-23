@@ -215,7 +215,8 @@
           [Status.draw]: 'Draw...',
         }[status];
         log.innerHTML += message
-        if (confirm(`${message}\nPlay again?`)) window.location.reload()
+        if (confirm(`${message}\nPlay again?`) || true) window.location.reload()
+        // || true because 'cancel' will try to keep the game going when it has just endend, causing some errors
         btn.setAttribute('disabled', 'disabled')
       }
       return status
