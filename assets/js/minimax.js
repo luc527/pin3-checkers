@@ -25,6 +25,7 @@ export class Minimax {
     }
 
     if (state.status != Status.playing) { //terminal
+      let value
       const WIN = +1000
       const LOSS = -1000
       switch (state.status) {
