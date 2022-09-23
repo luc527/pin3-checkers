@@ -123,6 +123,19 @@
 
     const state = new CheckersState()
 
+    // for testing how to show all possible movement options of a piece (particularly complex example, but we should be able to handle it)
+    state.board = bo.decodeBoard([
+      '.....@..',
+      '........',
+      '...x....',
+      '........',
+      '.....x..',
+      '..x.....',
+      '.....x..',
+      '........',
+    ].join('\n'));
+    state.handleChange()
+
     let humanMovementChoices = []
 
     const depth = 6
