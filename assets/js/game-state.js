@@ -69,9 +69,8 @@ export class CheckersState {
     if (pawnMoved) this.roundsSincePawnMove = 0
     else           this.roundsSincePawnMove++
 
-    const isCapture = Math.abs(action.from.row - action.sequence[0].row) > 1
-    if (isCapture) this.roundsSinceCapture = 0
-    else           this.roundsSinceCapture++
+    if (action.isCapture) this.roundsSinceCapture = 0
+    else                  this.roundsSinceCapture++
 
     if (this.roundsInSpecialEnding != -1) {
       this.roundsInSpecialEnding++
@@ -101,19 +100,36 @@ export class CheckersState {
   handleChange() {
     this.actions = this.#generateActions()
     this.pieceCount = bo.countPieces(this.board)
+
     // #calculateStatus depends on actions and pieceCount being updated, so this order matters
     this.status = this.#calculateStatus()
+
+    // detect if just got in a special ending
+    if (this.roundsInSpecialEnding == -1 && this.#inSpecialEnding()) {
+      this.roundsInSpecialEnding = 0
+    }
+  }
+
+  #inSpecialEndingImpl(ourKings, ourPawns, theirKings, theirPawns) {
+    // a) 2 damas vs 2 damas 
+    // b) 2 damas vs 1 dama
+    // c) 2 damas vs 1 dama e 1 pedra
+    // d) 1 dama  vs 1 dama
+    // e) 1 dama  vs 1 dama e 1 pedra
+    if (ourPawns > 0) return false;
+    if (ourKings == 2) {
+      return (theirPawns == 0 && (theirKings == 1 || theirKings == 2)) // a ou b
+          || (theirPawns == 1 && theirKings == 1) // c
+    }
+    if (ourKings == 1) {
+      return theirKings == 1 && (theirPawns == 0 || theirPawns == 1) // d ou e
+    }
   }
 
   #inSpecialEnding() {
-    // nos seguintes finais, o jogo é declarado empate após 5 lances de cada jogador:
-    // - 2 damas vs. 2 damas
-    // - 2 damas vs. 1 dama
-    // - 2 damas vs. 1 dama e 1 pedra
-    // - 1 dama  vs. 1 dama
-    // - 1 dama  vs. 1 dama e 1 pedra
-    // TODO ^, using .pieceCount
-    return false
+    const c = this.pieceCount
+    return this.#inSpecialEndingImpl(c.whiteKings, c.whitePawns, c.blackKings, c.blackPawns)
+        || this.#inSpecialEndingImpl(c.blackKings, c.blackPawns, c.whiteKings, c.whitePawns)
   }
 
   #calculateStatus() {
@@ -131,17 +147,12 @@ export class CheckersState {
     }
 
     // only kings have moved 20+ times
-    if (this.roundsSincePawnMove >= 20 && this.prevRoundsSinceCapture >= 20) {
+    if (this.roundsSincePawnMove >= 20 && this.roundsSinceCapture >= 20) {
       return Status.draw;
     }
 
     if (this.roundsInSpecialEnding == 5) {
       return Status.draw
-    }
-
-    // detect if just got in a special ending
-    if (this.roundsInSpecialEnding == -1 && this.#inSpecialEnding()) {
-      this.roundsInSpecialEnding = 0
     }
 
     return this.status

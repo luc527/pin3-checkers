@@ -184,7 +184,7 @@ export function generateMoves(board, piecePositions) {
   for (const src of piecePositions) {
     const captureSequences = getCaptureSequences(board, src);
     for (const sequence of captureSequences) {
-      result.push({ from: src, sequence })
+      result.push({ from: src, sequence, isCapture: true })
     }
   }
 
@@ -193,7 +193,7 @@ export function generateMoves(board, piecePositions) {
     for (const src of piecePositions) {
       const destinations = getSimpleMoveDestinations(board, src)
       for (const dst of destinations) {
-        result.push({ from: src, sequence: [dst] })
+        result.push({ from: src, sequence: [dst], isCapture: false })
       }
     }
     return result

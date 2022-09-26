@@ -17,7 +17,7 @@
   <div style="margin: auto; width: 50vw; min-width: 300px; padding: 20px;">
     <div style="display: flex; padding-bottom: 20px">
       <div style="width: 50%">
-        <h1>IA 1</h1>
+        <h1>IA (peças brancas)</h1>
         <label for="heuristica1">Heurística</label><br />
         <select id="heuristica1">
           <option value="countPieces">countPieces</option>
@@ -27,7 +27,7 @@
         <input type="number" min=1 step=1 max=15 value=7 id="profundidade1">
       </div>
       <div style="width: 50%; text-align: right">
-        <h1>IA 2</h1>
+        <h1>IA (peças pretas)</h1>
         <label for="heuristica2">Heurística</label><br />
         <select id="heuristica2">
           <option value="clusters">clusters</option>
@@ -82,9 +82,6 @@
 
       let i = 0
 
-      // TODO detect when the AI gets stuck (store all previous states in a set, stop when seeing some state for the 10th time or something)
-      // nvdd utilizar regras de empate do https://midiasstoragesec.blob.core.windows.net/001/2019/04/cbjd-regras-damas-010113.pdf
-
       // TODO to play game automatically without freezing, do it inside a worker?
 
       console.log('Playing...')
@@ -103,9 +100,9 @@
       console.log(`Game took ${history.length} moves:`)
       setTimeout(() => {
         for (const pastState of history) {
-          console.log(bo.encodeBoard(pastState.board))
+          console.log(bo.encodeBoard(pastState.board), pastState.roundsSincePawnMove, pastState.roundsSinceCapture, pastState.roundsInSpecialEnding)
         }
-      }, 5000)
+      }, 500)
     }
   </script>
 
