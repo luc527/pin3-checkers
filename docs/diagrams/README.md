@@ -1,0 +1,1 @@
+All diagrams where made using UMLet extension on Visual Studio Code, available under (UMLet)[https://marketplace.visualstudio.com/items?itemName=TheUMLetTeam.umlet]

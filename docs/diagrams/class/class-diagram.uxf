@@ -1,0 +1,58 @@
+<diagram program="umletino" version="15.0.0"><zoom_level>9</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>468</x><y>333</y><w>207</w><h>234</h></coordinates><panel_attributes>CheckersState
+--
+-board: Board
+-whiteToMove: boolean
+-status: Status
+-actions: Action[]
+-pieceCount = Map&lt;int&gt;
+-roundsSinceCapture: int
+-roundsSincePawnMove: int
+--
++copy(): CheckersState
++equals(that: CheckersState): boolean
++actionDo(action: Action): void
++actionUndo(action: Action): void
++handleChange(): void
++inSpecialEnding(): boolean
++calculateStatus(): Status
++generateActions(): Action</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>198</x><y>27</y><w>99</w><h>72</h></coordinates><panel_attributes>Position
+--
+-col: int
+-row: int
+-piece: Piece</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>342</x><y>36</y><w>90</w><h>54</h></coordinates><panel_attributes>Piece
+--
+-white: boolean
+-king: boolean</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>189</x><y>297</y><w>117</w><h>54</h></coordinates><panel_attributes>Action
+--
+-from: Position
+-sequence: Position[]</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>522</x><y>0</y><w>99</w><h>99</h></coordinates><panel_attributes>&lt;&lt;enumeration&gt;&gt;
+Status
+--
+-playing
+-whiteWon
+-blackWon
+-draw</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>351</x><y>153</y><w>72</w><h>45</h></coordinates><panel_attributes>Board
+--
+-Piece[][]</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>297</y><w>162</w><h>72</h></coordinates><panel_attributes>BoardView
+--
+-tableElement: Document
+-pieceMatrix: Board
+--
++render(board: Board): void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>450</y><w>396</w><h>117</h></coordinates><panel_attributes>Minimax
+--
+-maximizeWhite: boolean
+-heuristicFunction: Function(state: CheckersState, maximizeWhite: boolean)
+-cutoffDepth: int
+--
++resetLeafCount(): void
++getLeafCount(): int
++val(state: CheckersState, depth: int, alpha: int, beta: int)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>558</x><y>90</y><w>81</w><h>261</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1
+has state &gt;</panel_attributes><additional_attributes>10;10;10;270</additional_attributes></element><element><id>Relation</id><coordinates><x>378</x><y>81</y><w>27</w><h>90</h></coordinates><panel_attributes>lt=&lt;..</panel_attributes><additional_attributes>10;80;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>234</x><y>90</y><w>27</w><h>225</h></coordinates><panel_attributes>lt=&lt;..</panel_attributes><additional_attributes>10;230;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>288</x><y>54</y><w>72</w><h>27</h></coordinates><panel_attributes>lt=&lt;..</panel_attributes><additional_attributes>10;10;60;10</additional_attributes></element><element><id>Relation</id><coordinates><x>234</x><y>342</y><w>252</w><h>108</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=0..*
+contains &gt;</panel_attributes><additional_attributes>10;10;10;90;260;90</additional_attributes></element><element><id>Relation</id><coordinates><x>72</x><y>153</y><w>297</w><h>162</h></coordinates><panel_attributes>lt=-
+m1=0..*
+m2=1
+has board &gt;</panel_attributes><additional_attributes>310;20;10;20;10;160</additional_attributes></element></diagram>
