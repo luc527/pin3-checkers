@@ -9,8 +9,7 @@ import * as bo from './board.js'
 function validateMoveSource(board, src) {
   bo.validatePosition(src)
   if (board[src.row][src.col] == null) {
-    console.trace(`empty move source position ${positionString(src)}`)
-    throw {}
+    throw new Error(`empty move source position ${positionString(src)}`)
   }
 }
 

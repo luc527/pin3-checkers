@@ -89,8 +89,7 @@ export function positionString(pos) {
 
 export function validatePosition(pos, name) {
   if (!inbounds(pos)) {
-    console.trace(`position ${ name ? name+' ' : '' }out of bounds`)
-    throw {}
+    throw new Error(`position ${ name ? name+' ' : '' }out of bounds`)
   }
 }
 
@@ -105,16 +104,13 @@ export function validateMove(board, src, dst) {
   validatePosition(dst, 'destination')
   const diagonal = Math.abs(src.row - dst.row) == Math.abs(src.col - dst.col)
   if (!diagonal) {
-    console.trace(`move from ${positionString(src)} to ${positionString(dst)} is not diagonal`)
-    throw {}
+    throw new Error(`move from ${positionString(src)} to ${positionString(dst)} is not diagonal`)
   }
   if (board[src.row][src.col] == null) {
-    console.trace(`moving empty piece from >${positionString(src)}< to ${positionString(dst)} in\n`+ encodeBoard(board))
-    throw {}
+    throw new Error(`moving empty piece from >${positionString(src)}< to ${positionString(dst)} in\n`+ encodeBoard(board))
   }
   if (board[dst.row][dst.col]) {
-    console.trace(`moving onto non-empty piece from ${positionString(src)} to >${positionString(dst)}< in\n`+ encodeBoard(board))
-    throw {}
+    throw new Error(`moving onto non-empty piece from ${positionString(src)} to >${positionString(dst)}< in\n`+ encodeBoard(board))
   }
 }
 
