@@ -121,19 +121,10 @@
 
     // First player = white = human
 
-    //TODO
-    const url = new URL(location)
-    const ruleOptions = {
-      capturesMandatoy: url.searchParams.get('capturesMandatory') == 1,
-    }
-    ruleOptions.bestCapturesMandatory = ruleOptions.capturesMandatory && url.searchParams.get('bestCapturesMandatory') == 1
-
-    console.log(ruleOptions)
-
-    const state = new CheckersState(ruleOptions)
+    const captureOptions = mov.captureOptionsFromURL(new URL(location))
 
     // for testing how to show all possible movement options of a piece (particularly complex example, but we should be able to handle it)
-    state.board = bo.decodeBoard([
+    const initialBoard = bo.decodeBoard([
       '.....@..',
       '........',
       '...x....',
@@ -143,7 +134,9 @@
       '.....x..',
       '........',
     ].join('\n'));
-    state.handleChange()
+
+    const state = new CheckersState(true, initialBoard, captureOptions)
+
 
     let humanMovementChoices = []
 

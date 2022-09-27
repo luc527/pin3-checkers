@@ -1,5 +1,26 @@
 import * as bo from './board.js'
 
+export const CaptureOptions = Object.freeze({
+  notMandatory:  0,  // 00
+  mandatory:     1,  // 01
+  bestMandatory: 3   // 11
+});
+
+export function captureOptionsFromBools(capturesMandatory, bestCapturesMandatory) {
+  const bits = ((bestCapturesMandatory ? 1 : 0) << 1) | (capturesMandatory ? 1 : 0);
+  return bits == 2 ? 3 : bits;
+  // 2 = binary 10 = best mandatory but captures not mandatory, doesn't make sense
+  // best mandatory implies captures are mandatory, so we'll just return 3 instead
+}
+
+export function captureOptionsFromURL(url) {
+  const mandatory = url.searchParams.get('capturesMandatory') == 1
+  const bestMandatory = url.searchParams.get('bestCapturesMandatory') == 1
+  return captureOptionsFromBools(mandatory, bestMandatory)
+}
+
+
+
 /**
  * --- Move generation
  */
@@ -128,13 +149,16 @@ function getSingleCaptureDestinations(board, src) {
  * It includes sequential captures, but also returns simple captures (just between a pair of positions), despite the name.
  * getCaptureSequencesImpl is the real implementation, but it has to take some extra state arguments.
  * getCaptureSequences is the interface used to call it, providing the initial empty state for those arguments.
+ * 
+ * 'collectIntermediary':
+ * If true, this function returns all intermediary capture sequences: instead of
+ * just returning one A -> B -> C -> D, it also returns its 'prefixes' A->B and A->B->C. 
  */
-export function getCaptureSequences(board, src) {
-  // in principle shouldn't be exported, but is currently for testing
+function getCaptureSequences(board, src, collectIntermediary=false) {
   validateMoveSource(board, src)
 
   const result = []
-  getCaptureSequencesImpl(board, src, [], result)
+  getCaptureSequencesImpl(board, src, [], result, collectIntermediary)
   return result
 }
 
@@ -146,21 +170,21 @@ export function getCaptureSequences(board, src) {
  * but by performing the single capture on the way down and undoing it
  * on the way up the tree -- backtracking.
  */
-function getCaptureSequencesImpl(board, src, previousPositions, result) {
+function getCaptureSequencesImpl(board, src, previousPositions, result, collectIntermediary) {
   validateMoveSource(board, src)
 
   const destinations = getSingleCaptureDestinations(board, src)
 
-  if (destinations.length == 0) {
-    if (previousPositions.length > 0) {
-      result.push([...previousPositions, src].slice(1))
-    }
-  } else {
-    for (const dest of destinations) {
-      const captured = bo.singleMoveDo(board, src, dest)
-      getCaptureSequencesImpl(board, dest, [...previousPositions, src], result)
-      bo.singleMoveUndo(board, src, dest, captured)
-    }
+  const isIntermediary = destinations.length > 0
+
+  if ((collectIntermediary || !isIntermediary) && previousPositions.length > 0) {
+    result.push([...previousPositions, src].slice(1))
+  }
+
+  for (const dest of destinations) {
+    const captured = bo.singleMoveDo(board, src, dest)
+    getCaptureSequencesImpl(board, dest, [...previousPositions, src], result, collectIntermediary)
+    bo.singleMoveUndo(board, src, dest, captured)
   }
 }
 
@@ -174,25 +198,18 @@ function getCaptureSequencesImpl(board, src, previousPositions, result) {
  * - Only returns simple moves if no captures are available
  * - Only returns the longest captures
  */
-export function generateMoves(board, piecePositions, options={}) {
+export function generateMoves(board, piecePositions, options=CaptureOptions.bestMandatory) {
   for (const src of piecePositions) {
     validateMoveSource(board, src)
   }
 
-  // { capturesMandatory: false, bestCapturesMandatory: true }
-  // should it be invalid?
-  // not capturesMandatory implies bestCapturesMandatory
-
-  // Default options
-  options = Object.assign({
-    capturesMandatory: true,
-    bestCapturesMandatory: true
-  }, options)
-
   let result = []
 
+  const capturesMandatory     = options > 0
+  const bestCapturesMandatory = options == CaptureOptions.bestMandatory
+
   for (const src of piecePositions) {
-    const captureSequences = getCaptureSequences(board, src);
+    const captureSequences = getCaptureSequences(board, src, !bestCapturesMandatory);
     for (const sequence of captureSequences) {
       result.push({ from: src, sequence, isCapture: true })
     }
@@ -200,7 +217,7 @@ export function generateMoves(board, piecePositions, options={}) {
 
   const didCapture = result.length > 0
 
-  if (!didCapture || !options.capturesMandatory) {
+  if (!didCapture || !capturesMandatory) {
     for (const src of piecePositions) {
       const destinations = getSimpleMoveDestinations(board, src)
       for (const dst of destinations) {
@@ -209,7 +226,7 @@ export function generateMoves(board, piecePositions, options={}) {
     }
   }
 
-  if (didCapture && options.capturesMandatory && options.bestCapturesMandatory) {
+  if (didCapture && bestCapturesMandatory) {
     let longestMoveLength = 0
     for (const move of result) {
       if (move.sequence.length > longestMoveLength) {

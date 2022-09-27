@@ -1,5 +1,5 @@
 import * as bo from './board.js'
-import { generateMoves } from './move-generation.js'
+import { CaptureOptions, generateMoves } from './move-generation.js'
 
 export const Status = Object.freeze({
   playing: 0,
@@ -13,11 +13,11 @@ export const Status = Object.freeze({
 // TODO test do/undo with pieceCount and roundsInSpecialEnding
 export class CheckersState {
 
-  constructor(ruleOptions={}) {
-    this.ruleOptions = ruleOptions
+  constructor(firstPlayerWhite=true, initialBoard=null, captureOptions=CaptureOptions.bestMandatory) {
+    this.captureOptions = captureOptions
 
-    this.board = bo.makeInitialBoard()
-    this.whiteToMove = true
+    this.board = initialBoard ?? bo.makeInitialBoard()
+    this.whiteToMove = firstPlayerWhite
 
     this.status = Status.playing
 
@@ -166,7 +166,7 @@ export class CheckersState {
   #generateActions() {
     const positions = bo.getPlayerPiecePositions(this.board, this.whiteToMove)
     if (positions.length == 0) return []
-    const actions = generateMoves(this.board, positions, this.ruleOptions)
+    const actions = generateMoves(this.board, positions, this.captureOptions)
     return actions
   }
 }
