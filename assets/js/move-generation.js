@@ -175,12 +175,23 @@ function getCaptureSequencesImpl(board, src, previousPositions, result) {
  * - Only returns simple moves if no captures are available
  * - Only returns the longest captures
  */
-export function generateMoves(board, piecePositions) {
+export function generateMoves(board, piecePositions, options={}) {
   for (const src of piecePositions) {
     validateMoveSource(board, src)
   }
 
-  const result = []
+  // { capturesMandatory: false, bestCapturesMandatory: true }
+  // should it be invalid?
+  // not capturesMandatory implies bestCapturesMandatory
+
+  // Default options
+  options = Object.assign({
+    capturesMandatory: true,
+    bestCapturesMandatory: true
+  }, options)
+
+  let result = []
+
   for (const src of piecePositions) {
     const captureSequences = getCaptureSequences(board, src);
     for (const sequence of captureSequences) {
@@ -188,24 +199,26 @@ export function generateMoves(board, piecePositions) {
     }
   }
 
-  if (result.length == 0) {
-    // No captures, so return the simple moves
+  const didCapture = result.length > 0
+
+  if (!didCapture || !options.capturesMandatory) {
     for (const src of piecePositions) {
       const destinations = getSimpleMoveDestinations(board, src)
       for (const dst of destinations) {
         result.push({ from: src, sequence: [dst], isCapture: false })
       }
     }
-    return result
   }
-  else {
-    // Remove suboptimal moves
+
+  if (didCapture && options.capturesMandatory && options.bestCapturesMandatory) {
     let longestMoveLength = 0
     for (const move of result) {
       if (move.sequence.length > longestMoveLength) {
         longestMoveLength = move.sequence.length
       }
     }
-    return result.filter(move => move.sequence.length == longestMoveLength)
+    result = result.filter(move => move.sequence.length == longestMoveLength)
   }
+
+  return result
 }

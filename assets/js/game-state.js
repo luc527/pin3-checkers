@@ -13,7 +13,9 @@ export const Status = Object.freeze({
 // TODO test do/undo with pieceCount and roundsInSpecialEnding
 export class CheckersState {
 
-  constructor() {
+  constructor(ruleOptions={}) {
+    this.ruleOptions = ruleOptions
+
     this.board = bo.makeInitialBoard()
     this.whiteToMove = true
 
@@ -161,7 +163,7 @@ export class CheckersState {
   #generateActions() {
     const positions = bo.getPlayerPiecePositions(this.board, this.whiteToMove)
     if (positions.length == 0) return []
-    const actions = generateMoves(this.board, positions)
+    const actions = generateMoves(this.board, positions, this.ruleOptions)
     return actions
   }
 }

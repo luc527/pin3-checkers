@@ -121,7 +121,9 @@
 
     // First player = white = human
 
-    const state = new CheckersState()
+    const state = new CheckersState({
+      capturesMandatory: false
+    })
 
     // for testing how to show all possible movement options of a piece (particularly complex example, but we should be able to handle it)
     state.board = bo.decodeBoard([
