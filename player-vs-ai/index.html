@@ -124,16 +124,17 @@
     const captureOptions = mov.captureOptionsFromURL(new URL(location))
 
     // for testing how to show all possible movement options of a piece (particularly complex example, but we should be able to handle it)
-    const initialBoard = bo.decodeBoard([
-      '.....@..',
-      '........',
-      '...x....',
-      '........',
-      '.....x..',
-      '..x.....',
-      '.....x..',
-      '........',
-    ].join('\n'));
+    //const initialBoard = bo.decodeBoard([
+      //'.....@..',
+      //'........',
+      //'...x....',
+      //'........',
+      //'.....x..',
+      //'..x.....',
+      //'.....x..',
+      //'........',
+    //].join('\n'));
+    const initialBoard=null
 
     const state = new CheckersState(captureOptions, initialBoard)
 
