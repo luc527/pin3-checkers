@@ -57,7 +57,7 @@ export class CheckersState {
 
   actionDo(action) {
     // Stores the undo info in the given action object
-    // expects the same object (same reference) to be passed to actionUndo
+    // Expects the same object to be passed to actionUndo
     action.undoInfo = {
       roundsSinceCapture: this.roundsSinceCapture,
       roundsSincePawnMove: this.roundsSincePawnMove,
@@ -67,9 +67,9 @@ export class CheckersState {
       pieceCount: this.pieceCount
     }
 
-    const pawnMoved = !this.board[action.from.row][action.from.col].king
-    if (pawnMoved) this.roundsSincePawnMove = 0
-    else           this.roundsSincePawnMove++
+    const pawnMove = !this.board[action.from.row][action.from.col].king
+    if (pawnMove) this.roundsSincePawnMove = 0
+    else          this.roundsSincePawnMove++
 
     if (action.isCapture) this.roundsSinceCapture = 0
     else                  this.roundsSinceCapture++
@@ -83,7 +83,7 @@ export class CheckersState {
     
     this.whiteToMove = !this.whiteToMove
 
-    this.handleChange()
+    this.#handleChange()
   }
 
   actionUndo(action) {
@@ -97,9 +97,11 @@ export class CheckersState {
     this.roundsSincePawnMove   = undoInfo.roundsSincePawnMove
     this.roundsSinceCapture    = undoInfo.roundsSinceCapture
     this.roundsInSpecialEnding = undoInfo.roundsInSpecialEnding
+
+    // no handleChange here, undoInfo already has the appropriate actions/pieceCount/rounds count etc.
   }
-  
-  handleChange() {
+
+  #handleChange() {
     this.actions = this.#generateActions()
     this.pieceCount = bo.countPieces(this.board)
 
@@ -118,9 +120,10 @@ export class CheckersState {
     // c) 2 damas vs 1 dama e 1 pedra
     // d) 1 dama  vs 1 dama
     // e) 1 dama  vs 1 dama e 1 pedra
+    //    ^ our   vs ^ their
     if (ourPawns > 0) return false;
     if (ourKings == 2) {
-      return (theirPawns == 0 && (theirKings == 1 || theirKings == 2)) // a ou b
+      return (theirPawns == 0 && (theirKings == 2 || theirKings == 1)) // a ou b
           || (theirPawns == 1 && theirKings == 1) // c
     }
     if (ourKings == 1) {
@@ -148,7 +151,7 @@ export class CheckersState {
       return this.whiteToMove ? Status.blackWon : Status.whiteWon
     }
 
-    // only kings have moved 20+ times
+    // only kings have moved 20+ times without captures
     if (this.roundsSincePawnMove >= 20 && this.roundsSinceCapture >= 20) {
       return Status.draw;
     }
