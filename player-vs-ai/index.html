@@ -121,9 +121,16 @@
 
     // First player = white = human
 
-    const state = new CheckersState({
-      capturesMandatory: false
-    })
+    //TODO
+    const url = new URL(location)
+    const ruleOptions = {
+      capturesMandatoy: url.searchParams.get('capturesMandatory') == 1,
+    }
+    ruleOptions.bestCapturesMandatory = ruleOptions.capturesMandatory && url.searchParams.get('bestCapturesMandatory') == 1
+
+    console.log(ruleOptions)
+
+    const state = new CheckersState(ruleOptions)
 
     // for testing how to show all possible movement options of a piece (particularly complex example, but we should be able to handle it)
     state.board = bo.decodeBoard([
