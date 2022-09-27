@@ -28,17 +28,17 @@
     <form>
 
       <div class="options-group">
-        <label for="url">
-          <input type="radio" name="url" value="player-vs-player"
+        <label for="url-pvp">
+          <input type="radio" id="url-pvp" name="url" value="player-vs-player"
                  disabled/> <!-- unimplemented yet-->
           Player vs. Player
         </label>
-        <label for="url">
-          <input type="radio" name="url" value="player-vs-ai"/>
+        <label for="url-pva">
+          <input type="radio" id="url-pva" name="url" value="player-vs-ai"/>
           Player vs. AI
         </label>
-        <label for="url">
-          <input type="radio" name="url" value="player-vs-ai"
+        <label for="url-ava">
+          <input type="radio" id="url-ava" name="url" value="ai-vs-ai"
                  required/>
           AI vs. AI
         </label>
@@ -46,11 +46,11 @@
 
       <div class="options-group">
         <label for="capturesMandatory">
-          <input type="checkbox" name="capturesMandatory"/>
+          <input type="checkbox" id="capturesMandatory" name="capturesMandatory"/>
           Captures mandatory
         </label>
         <label for="bestCapturesMandatory">
-          <input type="checkbox" name="bestCapturesMandatory"/>
+          <input type="checkbox" id="bestCapturesMandatory" name="bestCapturesMandatory"/>
           Best captures mandatory
         </label>
       </div>

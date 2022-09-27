@@ -13,7 +13,7 @@ export const Status = Object.freeze({
 // TODO test do/undo with pieceCount and roundsInSpecialEnding
 export class CheckersState {
 
-  constructor(firstPlayerWhite=true, initialBoard=null, captureOptions=CaptureOptions.bestMandatory) {
+  constructor(captureOptions=CaptureOptions.bestMandatory, initialBoard=null, firstPlayerWhite=true) {
     this.captureOptions = captureOptions
 
     this.board = initialBoard ?? bo.makeInitialBoard()

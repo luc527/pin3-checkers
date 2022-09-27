@@ -51,6 +51,7 @@
     import * as mm from '/assets/js/minimax.js'
     import {CheckersState, Status} from '/assets/js/game-state.js'
     import * as bo from '/assets/js/board.js'
+    import {captureOptionsFromURL} from '/assets/js/move-generation.js';
 
     function qs(s) { return document.querySelector(s); }
 
@@ -58,7 +59,7 @@
       return s == 'countPieces' ? mm.heuristicCountPieces : mm.heuristicClusters
     }
 
-    qs('#btn-jogar').onclick = async () => {
+    qs('#btn-jogar').onclick = () => {
 
       const heur1 = heur(qs('#heuristica1').value)
       const depth1 = Number(qs('#profundidade1').value)
@@ -70,7 +71,9 @@
 
       const history = []
 
-      const state = new CheckersState()
+      const captureOptions = captureOptionsFromURL(new URL(location));
+
+      const state = new CheckersState(captureOptions)
       history.push(state.copy())
 
       const randomMoves = Number(qs('#jogadas-aleatorias').value)
