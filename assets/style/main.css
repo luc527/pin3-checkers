@@ -8,6 +8,7 @@
   --background: #F9F4EF;
   --loader-bg: 209, 209, 233;
   --green: #004643;
+  --default-font: 'Lora', serif;
 }
 
 html {
@@ -25,7 +26,7 @@ main, main form {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: 'Fira Mono', Consolas, Monaco, 'SF Mono', 'Liberation Mono', 'Ubuntu Mono', monospace;
+  font-family: var(--default-font);
 }
 
 textarea, input {
@@ -180,15 +181,21 @@ main h1 {
   width: 100%;
   text-align: center;
   background-color: var(--green);
+  border: none;
+  outline: none;
   color: var(--white0);
   text-decoration: none;
   padding: 12px 24px;
+  font-size: 16px;
   transition: all .3s ease;
+  font-family: var(--default-font);
+  font-weight: bold;
 }
 
 .btn-primary:hover,
 .btn-primary:focus {
   opacity: .8;
+  cursor: pointer;
 }
 
 .btn-primary:active {
@@ -233,4 +240,16 @@ main h1 {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.options-group {
+  accent-color: var(--green);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  user-select: none;
+}
+
+.options-group > label {
+  cursor: pointer;
 }
