@@ -7,10 +7,6 @@ export const Status = Object.freeze({
   blackWon: 2,
   draw: 3
 })
-
-// TODO test the draw detection logic
-
-// TODO test do/undo with pieceCount and roundsInSpecialEnding
 export class CheckersState {
 
   constructor(captureOptions=CaptureOptions.bestMandatory, initialBoard=null, firstPlayerWhite=true) {

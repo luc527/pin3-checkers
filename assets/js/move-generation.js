@@ -37,7 +37,7 @@ function validateMoveSource(board, src) {
 /**
  * Simple moves are non-capture moves. For pawns, this
  * means moving just one diagonal forward, left or right. On the
- * other hand, kings can move arbitrarily along their four
+ * other hand, kings can move arbitrarily far along their four
  * diagonals until reaching the end of the board or bumping into
  * another piece.
  */

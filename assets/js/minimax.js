@@ -8,7 +8,7 @@ export class Minimax {
     this.leafCount = 0
   }
 
-  // leafCount for debugging, could be removed later
+  // leafCount just for getting an idea of how much work the algorithm is doing, could be removed later
 
   resetLeafCount() {
     this.leafCount = 0
@@ -91,12 +91,15 @@ export class Minimax {
   }
 }
 
+// TODO could instead just do
+//  import * as mm from '/assets/js/minimax.js'
+//  const s = 'heuristicCountPieces'
+//  mm[s]
 export const valueHeuristicFunctions = {
   'heuristicCountPieces': heuristicCountPieces,
   'heuristicClusters': heuristicClusters,
 }
 
-// TODO doc
 export function heuristicCountPieces(state, maximizeWhite) {
   const { blackPawns, blackKings, whitePawns, whiteKings } = state.pieceCount
 
@@ -108,7 +111,14 @@ export function heuristicCountPieces(state, maximizeWhite) {
        : blackValue - whiteValue
 }
 
-// TODO doc -- not a heuristic, but used in heuristicClusters
+/** 
+ * Returns positions containig pieces grouped by clusters (adjacent pieces of the same color) that they belong to.
+ * It does so by treating the board as a graph and finding its connected components.
+ * 
+ * @param Array board The board (8x8 array of {white, king})
+ * 
+ * @return object Array of clusters, where each cluster is a list of positions
+ */
 function sameColorPieceClusters(board) {
   // for using positions as keys in the clusterOf Map
   function k(row, col) { return row * 8 + col }
@@ -157,7 +167,6 @@ function sameColorPieceClusters(board) {
   return clusters
 }
 
-// TODO doc
 export function heuristicClusters(state, maximizeWhite) {
 
   let value = 0

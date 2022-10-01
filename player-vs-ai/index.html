@@ -21,235 +21,45 @@
 
 <body>
   <main>
-    <div class="board-container">
-      <table id="board-table"></table>
-    </div>
 
-    <div class="dev" style="display: none;">
-      <textarea id="log" readonly style="width: -webkit-fill-available; max-width: 512px; min-height: 192px; margin-top: 4px; resize: none;"></textarea>
-      <div class="input-group">
-        <input type="text" id="prompt" />
-        <button id="btn" type="button" style="margin-left: 4px;">Choose</button>
-      </div>
-    </div>
+    <form action="/player-vs-ai/play">
+      <label for="heuristic">Heuristic</label>
+      <select name="heuristic" id="heuristic">
+        <option value="heuristicCountPieces">countPieces</option>
+        <option value="heuristicClusters">clusters</option>
+      </select>
+      <br/>
 
-    <div class="loader-container" style="display: none;">
-      <div class="loader"></div>
-    </div>
+      <label for="depth">Search depth</label>
+      <input name="depth" type="number" min=1 step=1 max=15 value=7 id="depth"/>
+      <br/>
+
+      <input type="submit" value="Play"/>
+    </form>
+
   </main>
 
-  <script type="module">
-    // const minimaxWorker = new Worker('/assets/js/minimax-worker.js', { type: 'module' })
+  <script>
+    const url = new URL(location)
 
-    const loaderContainer = document.querySelector('.loader-container')
+    const form = document.forms[0]
 
-    // TODO make the loader smaller and put it outside the board
-    // currently it's hard to see which action the AI took
-    const toggleLoad = () => {
-      if (window.getComputedStyle(loaderContainer).display == 'flex') {
-        loaderContainer.style.display = 'none'
-      } else {
-        loaderContainer.style.display = 'flex'
-      }
-    }
-
-    const enableExit = (callback) => {
-      document.onkeyup = (event) => {
-        if (event.keyCode == 27) { // Escape
-          callback()
-        }
-      }
-
-      document.onclick = (event) => {
-        callback()
-      }
-    }
-
-    const selectPiece = (row, col, event) => {
-      event.stopPropagation()
-      clearMovablePieces()
-      markPieceAllowedMovement(allowedPieceMovements(row, col))
-    }
-
-    const movePiece = (movement, event) => {
-      event.stopPropagation()
-      const mov = humanMovementChoices.find(mov => mov == movement)
-      if (mov) {
-        clearMovablePieces()
-        doPieceMov(mov)
-      }
-    }
-
-    const markMovablePieces = () => {
-      movablePieces().forEach(element => {
-        element.classList.add('piece-can-move')
-        const [row, col] = element.id.split('-')
-        element.onclick = (event) => selectPiece(row, col, event)
-        enableExit(() => {
-          clearMovablePieces()
-          markMovablePieces()
-        })
+    form.appendChild(
+      Object.assign(document.createElement('input'), {
+        name: 'capturesMandatory',
+        value: url.searchParams.get('capturesMandatory') ?? 0,
+        type: 'hidden'
       })
-    }
+    )
 
-    const markPieceAllowedMovement = (movements) => {
-      movements.forEach(mov => {
-        mov.sequence.forEach(seq => {
-          const element = document.getElementById(`${seq.row}-${seq.col}`)
-          element.classList.add('piece-can-move')
-          const [row, col] = element.id.split('-')
-          element.onclick = (event) => movePiece(mov, event)
-        })
+    form.appendChild(
+      Object.assign(document.createElement('input'), {
+        name: 'bestCapturesMandatory',
+        value: url.searchParams.get('bestCapturesMandatory') ?? 0,
+        type: 'hidden'
       })
-    }
+    )
 
-    const clearMovablePieces = () => {
-      document.querySelectorAll('.piece-can-move').forEach(el => {
-        el.onclick = undefined
-        document.keyup = undefined
-        el.classList.remove('piece-can-move')
-      })
-    }
-
-    const allowedPieceMovements = (row, col) =>
-      humanMovementChoices.filter(mov => mov.from.row == row && mov.from.col == col)
-
-    const movablePieces = () =>
-      new Set(humanMovementChoices.map(mov => document.getElementById(`${mov.from.row}-${mov.from.col}`)))
-
-
-    // TODO test with mm.Minimax(true, ...) just to make sure
-
-    import * as bo from '/assets/js/board.js'
-    import BoardView from '/assets/js/BoardView.js'
-    import {CheckersState, Status} from '/assets/js/game-state.js'
-    import * as mov from '/assets/js/move-generation.js'
-    import * as mm from '/assets/js/minimax.js'
-
-    // First player = white = human
-
-    const captureOptions = mov.captureOptionsFromURL(new URL(location))
-
-    // for testing how to show all possible movement options of a piece (particularly complex example, but we should be able to handle it)
-    //const initialBoard = bo.decodeBoard([
-      //'.....@..',
-      //'........',
-      //'...x....',
-      //'........',
-      //'.....x..',
-      //'..x.....',
-      //'.....x..',
-      //'........',
-    //].join('\n'));
-    const initialBoard=null
-
-    const state = new CheckersState(captureOptions, initialBoard)
-
-
-    let humanMovementChoices = []
-
-    const depth = 6
-    const minimax = new mm.Minimax(false, mm.heuristicCountPieces, depth)
-
-    const boardView = new BoardView(document.querySelector('#board-table'))
-    boardView.render(state.board)
-
-    const log = document.querySelector('#log')
-    const prompt = document.querySelector('#prompt')
-    const btn = document.querySelector('#btn')
-
-    function generateAndLogCurrentMoves() {
-      clearMovablePieces()
-
-      humanMovementChoices = state.actions
-
-      let movString = 'Current moves (' + (state.whiteToMove ? 'white' : 'black') + ')\n'
-      for (let i = 0; i < humanMovementChoices.length; i++) {
-        const mov = humanMovementChoices[i]
-        movString += '' + i + ') ' + ([mov.from, ...mov.sequence].map(bo.positionString).join(', ') + '.\n')
-      }
-      log.innerHTML += movString
-      log.innerHTML += 'Enter your choice\n'
-      log.scrollTop = log.scrollHeight
-
-      markMovablePieces()
-    }
-
-    generateAndLogCurrentMoves()
-
-    const fmt = Intl.NumberFormat('pt')
-
-    btn.addEventListener('click', () => {
-      const choice = prompt.value
-      if (choice < 0 || choice >= humanMovementChoices.length) {
-        log.innerHTML += 'Invalid choice\n'
-        return
-      }
-
-      doPieceMov(humanMovementChoices[choice])
-    })
-
-    const doPieceMov = (moveTaken) => {
-      state.actionDo(moveTaken)
-      boardView.render(state.board)
-
-      checkStatus(state)
-
-      // toggleLoad()
-      // const stateCopy = state.copy()
-      // minimaxWorker.postMessage([stateCopy, [false, 'heuristicCountPieces', depth]])
-
-      // toggleLoad()
-      const {action: aiAction} = minimax.val(state)
-      setTimeout(() => evalAction(aiAction), 500)
-    }
-
-    const evalAction = (aiAction) => {
-      // toggleLoad()
-
-      state.actionDo(aiAction)
-      boardView.render(state.board)
-
-      if (checkStatus(state) == Status.playing) {
-        generateAndLogCurrentMoves()
-        btn.removeAttribute('disabled')
-      }
-    }
-
-    const checkStatus = (state) => {
-      const status = state.status
-      if (status != Status.playing) {
-        const message = {
-          [Status.whiteWon]: 'White wins!',
-          [Status.blackWon]: 'Black wins!',
-          [Status.draw]: 'Draw...',
-        }[status];
-        log.innerHTML += message
-        confirm(`${message}\nPlay again?`)
-        // reload anyway, "cancel" will attempt to keep the game going which will cause an error
-        window.location.reload()
-        btn.setAttribute('disabled', 'disabled')
-      }
-      return status
-    }
-
-    window.onload = () => {
-      const devContainer = document.querySelector('.dev')
-
-      document.addEventListener("keyup", (event) => {
-        if (event.keyCode == 68) { // D
-          if (window.getComputedStyle(devContainer).display == 'block') {
-            devContainer.style.display = 'none'
-          } else {
-            devContainer.style.display = 'block'
-          }
-        }
-      })
-
-      // minimaxWorker.addEventListener('message', (event) => {
-      //   evalAction(event.data.action)
-      // }, false)
-    }
   </script>
 
 </body>
