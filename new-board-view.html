@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+
+<br/>
+<br/>
+<br/>
+<br/>
+<div id="container"></div>
+
+<script type="module">
+import { makeInitialBoard } from './assets/js/board.js'
+
+class View {
+
+  colors = Object.freeze({
+    darkRed: '#990000',
+    beige: '#ffeedd',
+    white: '#fffffe',
+    black: '#020826'
+  })
+
+  constructor(container, cellPx) {
+    this.cellPx = cellPx
+
+    const table = document.createElement('table')
+    table.setAttribute('cellspacing', 0)
+
+    for (let i = 0; i < 8; i++) {
+      const row = document.createElement('tr')
+
+      for (let j = 0; j < 8; j++) {
+        const cell = document.createElement('td')
+        cell.style.padding = 0
+
+        Object.assign(cell.style, {
+          ['height']: `${cellPx}px`,
+          ['width']: `${cellPx}px`,
+          ['background-color']: (i + j) % 2 ? this.colors.darkRed : this.colors.beige
+        })
+
+        row.append(cell)
+      }
+
+      table.append(row)
+    }
+
+    this.pieces = document.createElement('div')
+    this.pieces.style.position = 'relative'
+    container.append(this.pieces)
+
+    container.append(table)
+    
+    this.map = Array(8)
+    for (let i = 0; i < 8; i++) {
+      this.map[i] = Array(8)
+      for (let j = 0; j < 8; j++) {
+        this.map[i][j] = null
+      }
+    }
+  }
+
+  render(board) {
+    const cellPx = this.cellPx
+
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        if (!board[i][j]) continue
+
+        const { white, king } = board[i][j]
+
+        const piece = document.createElement('div')
+        const size = cellPx * (king ? 1/2 : 3/4)
+
+        Object.assign(piece.style, {
+          backgroundColor: white ? this.colors.white : this.colors.black,
+          transition: 'ease-in-out 0.5s',
+          position: 'absolute',
+          top: `${cellPx * i + (cellPx - size) / 2}px`,
+          left: `${cellPx * j + (cellPx - size) / 2}px`,
+        })
+
+        if (king) {
+          Object.assign(piece.style, {
+            transform: 'rotate(45deg)',
+            width: `${size}px`,
+            height: `${size}px`,
+          })
+        } else {
+          Object.assign(piece.style, {
+            width: `${size}px`,
+            height: `${size}px`,
+            borderRadius: '100%'
+          })
+        }
+
+        this.pieces.append(piece)
+
+        this.map[i][j] = piece
+      }
+    }
+  }
+
+  move(from, to, king) {
+    const piece = this.map[from.row][from.col]
+
+    if (!piece) throw Error(`No piece at row ${from.row} col ${from.col}`)
+
+    const cell = this.cellPx
+    const size = Number(piece.style.width.substring(0, piece.style.width.indexOf('px')))
+    const top  = `${cell * to.row + (cell - size) / 2}px`
+    const left = `${cell * to.col + (cell - size) / 2}px`
+    Object.assign(piece.style, { top, left })
+
+    this.map[to.row][to.col] = piece
+    this.map[from.row][from.col] = null
+  }
+
+  moveThen(from, to, king, callback) {
+    this.move(from, to, king)
+    setTimeout(callback, 500)
+  }
+}
+
+const board = makeInitialBoard()
+board[0][1].king = true
+board[0][7].king = true
+
+const container = document.getElementById('container')
+const view = new View(container, 32)
+
+view.render(board)
+
+setInterval(() => {
+  view.moveThen({row:0, col:1}, {row: 5, col: 3}, false, () => {
+    view.move({row:5, col:3}, {row: 0, col: 1}, false)
+  })
+}, 1000)
+
+</script>
+
+</body>
+</html>

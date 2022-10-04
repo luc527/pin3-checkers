@@ -137,14 +137,6 @@ function getSingleCaptureDestinations(board, src) {
 }
 
 /**
- * In checkers, every player is obliged to make the move that captures the most
- * pieces at each turn. This means sequential captures are mandatory, so the single
- * captures described above are not always valid moves. A 'full' capture is one
- * that makes sequential captures until there are no pieces available to capture
- * in the position it ended up.
- */
-
-/**
  * Return an array of all 'full' captures the piece at 'src' can perform in the given board.
  * It includes sequential captures, but also returns simple captures (just between a pair of positions), despite the name.
  * getCaptureSequencesImpl is the real implementation, but it has to take some extra state arguments.
@@ -194,9 +186,7 @@ function getCaptureSequencesImpl(board, src, previousPositions, result, collectI
  * In particular, generateMoves(board, getPlayerPiecePositions(board, player)) will
  * return the moves available for the given player. This is *the* move generation function.
  * This is where all the previous functions come together. This says what the state transition
- * possibilities are for a given state. Some details:
- * - Only returns simple moves if no captures are available
- * - Only returns the longest captures
+ * possibilities are for a given state.
  */
 export function generateMoves(board, piecePositions, options=CaptureOptions.bestMandatory) {
   for (const src of piecePositions) {
