@@ -25,14 +25,6 @@
       <table id="board-table"></table>
     </div>
 
-    <div class="dev" style="display: none;">
-      <textarea id="log" readonly style="width: -webkit-fill-available; max-width: 512px; min-height: 192px; margin-top: 4px; resize: none;"></textarea>
-      <div class="input-group">
-        <input type="text" id="prompt" />
-        <button id="btn" type="button" style="margin-left: 4px;">Choose</button>
-      </div>
-    </div>
-
     <div class="loader-container" style="display: none;">
       <div class="loader"></div>
     </div>
@@ -156,10 +148,6 @@
     const boardView = new BoardView(document.querySelector('#board-table'))
     boardView.render(state.board)
 
-    const log = document.querySelector('#log')
-    const prompt = document.querySelector('#prompt')
-    const btn = document.querySelector('#btn')
-
     function generateAndLogCurrentMoves() {
       clearMovablePieces()
 
@@ -170,9 +158,6 @@
         const mov = humanMovementChoices[i]
         movString += '' + i + ') ' + ([mov.from, ...mov.sequence].map(bo.positionString).join(', ') + '.\n')
       }
-      log.innerHTML += movString
-      log.innerHTML += 'Enter your choice\n'
-      log.scrollTop = log.scrollHeight
 
       markMovablePieces()
     }
@@ -180,16 +165,6 @@
     generateAndLogCurrentMoves()
 
     const fmt = Intl.NumberFormat('pt')
-
-    btn.addEventListener('click', () => {
-      const choice = prompt.value
-      if (choice < 0 || choice >= humanMovementChoices.length) {
-        log.innerHTML += 'Invalid choice\n'
-        return
-      }
-
-      doPieceMov(humanMovementChoices[choice])
-    })
 
     const doPieceMov = (moveTaken) => {
       state.actionDo(moveTaken)
@@ -202,7 +177,7 @@
       // minimaxWorker.postMessage([stateCopy, [false, 'heuristicCountPieces', depth]])
 
       // toggleLoad()
-      const {action: aiAction} = minimax.val(state)
+      const { action: aiAction } = minimax.val(state)
       setTimeout(() => evalAction(aiAction), 500)
     }
 
@@ -235,23 +210,11 @@
       return status
     }
 
-    window.onload = () => {
-      const devContainer = document.querySelector('.dev')
-
-      document.addEventListener("keyup", (event) => {
-        if (event.keyCode == 68) { // D
-          if (window.getComputedStyle(devContainer).display == 'block') {
-            devContainer.style.display = 'none'
-          } else {
-            devContainer.style.display = 'block'
-          }
-        }
-      })
-
-      // minimaxWorker.addEventListener('message', (event) => {
-      //   evalAction(event.data.action)
-      // }, false)
-    }
+    // window.onload = () => {
+    //   minimaxWorker.addEventListener('message', (event) => {
+    //     evalAction(event.data.action)
+    //   }, false)
+    // }
   </script>
 
 </body>

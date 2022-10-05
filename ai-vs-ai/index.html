@@ -21,34 +21,45 @@
 
 <body>
 
-  <div style="margin: auto; width: 50vw; min-width: 300px; padding: 20px;">
-    <div style="display: flex; padding-bottom: 20px">
-      <div style="width: 50%">
-        <h1>IA (peças brancas)</h1>
-        <label for="heuristica1">Heurística</label><br />
-        <select id="heuristica1">
-          <option value="countPieces">countPieces</option>
-          <option value="clusters">clusters</option>
-        </select><br /><br />
-        <label for="profundidade1">Profundidade</label><br />
-        <input type="number" min=1 step=1 max=15 value=7 id="profundidade1">
+  <main style="width: 50vw;">
+    <h1 style="margin-bottom: 64px;">AI vs. AI</h1>
+    <div style="display: flex; gap: 25%; width: 100%;">
+      <div>
+        <h2>IA (peças brancas)</h2>
+        <div class="input-group">
+          <label for="heuristica1">Heurística</label>
+          <select id="heuristica1">
+            <option value="countPieces">countPieces</option>
+            <option value="clusters">clusters</option>
+          </select>
+        </div>
+        <div class="input-group" style="margin-top: 32px;">
+          <label for="profundidade1">Profundidade</label>
+          <input type="number" min=1 step=1 max=15 value=7 id="profundidade1">
+        </div>
       </div>
-      <div style="width: 50%; text-align: right">
-        <h1>IA (peças pretas)</h1>
-        <label for="heuristica2">Heurística</label><br />
-        <select id="heuristica2">
-          <option value="clusters">clusters</option>
-          <option value="countPieces">countPieces</option>
-        </select><br /></br />
-        <label for="profundidade2">Profundidade</label><br />
-        <input type="number" min=1 step=1 max=15 value=7 id="profundidade2">
+      <div style="margin-left: auto;">
+        <h2>IA (peças pretas)</h2>
+        <div class="input-group">
+          <label for="heuristica2">Heurística</label>
+          <select id="heuristica2">
+            <option value="clusters">clusters</option>
+            <option value="countPieces">countPieces</option>
+          </select>
+        </div>
+        <div class="input-group" style="margin-top: 32px;">
+          <label for="profundidade2">Profundidade</label>
+          <input type="number" min=1 step=1 max=15 value=7 id="profundidade2">
+        </div>
       </div>
     </div>
-    <div style="text-align: center;">
-      <h1>Jogo</h1>
-      <label for="jogadas-aleatorias">Jogadas iniciais aleatórias</label><br />
-      <input type="number" min=1 step=1 max=20 value=4 id="jogadas-aleatorias"><br />
-      <br />
+
+    <div style="margin-top: 64px;">
+      <div class="input-group" style="margin-bottom: 16px;">
+        <label for="jogadas-aleatorias">Jogadas iniciais aleatórias</label>
+        <input type="number" min=1 step=1 max=20 value=4 id="jogadas-aleatorias">
+      </div>
+
       <button id="btn-jogar" class="btn-primary" style="max-width: 256px;" type="button">Jogar</button>
     </div>
   </div>
