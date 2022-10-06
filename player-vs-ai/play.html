@@ -22,7 +22,6 @@
 <body>
   <main>
     <div class="board-container">
-      <table id="board-table"></table>
     </div>
 
     <div class="loader-container" style="display: none;">
@@ -115,8 +114,9 @@
     const allowedPieceMovements = (row, col) =>
       humanMovementChoices.filter(mov => mov.from.row == row && mov.from.col == col)
 
-    const movablePieces = () =>
-      new Set(humanMovementChoices.map(mov => document.getElementById(`${mov.from.row}-${mov.from.col}`)))
+    // const movablePieces = () =>
+      // new Set(humanMovementChoices.map(mov => document.getElementById(`${mov.from.row}-${mov.from.col}`)))
+    const movablePieces = () => []
 
 
     // First player = white = human
@@ -145,8 +145,14 @@
 
     let humanMovementChoices = []
 
-    const boardView = new BoardView(document.querySelector('#board-table'))
-    boardView.render(state.board)
+    const boardView = new BoardView(state.board, document.querySelector('.board-container'))
+
+    async function asdf() {
+      await boardView.move({ row: 5, col: 0}, { row: 4, col: 1})
+      await boardView.move({ row: 4, col: 1}, { row: 3, col: 0}, true)
+      await boardView.move({ row: 3, col: 0}, { row: 1, col: 2}, false, { row: 2, col: 1})
+    }
+    setTimeout(asdf, 1000)
 
     function generateAndLogCurrentMoves() {
       clearMovablePieces()
@@ -168,7 +174,6 @@
 
     const doPieceMov = (moveTaken) => {
       state.actionDo(moveTaken)
-      boardView.render(state.board)
 
       checkStatus(state)
 
@@ -185,7 +190,6 @@
       // toggleLoad()
 
       state.actionDo(aiAction)
-      boardView.render(state.board)
 
       if (checkStatus(state) == Status.playing) {
         generateAndLogCurrentMoves()

@@ -1,63 +1,147 @@
 export default class BoardView {
 
-  constructor(tableElem, overlayCoords = false) {
-    tableElem.setAttribute('cellspacing', 0)
-    const pieceMatrix = Array(8)
+  transitionMs = 500
 
-    for (let i = 0; i < 8; i++) {
-      pieceMatrix[i] = Array(8)
+  constructor(board, container, cellPx=64) {
 
-      const rowElem = document.createElement('tr')
-      rowElem.classList.add('board-row')
+    // Container has width and height set
+    // so layers can have width: 100% and height: 100%
+    // so pieces can have heights and widths relative to the board size (like calc(1/8 * 1/2 * 100%)))
 
-      for (let j = 0; j < 8; j++) {
-        const cellElem = document.createElement('td');
-        cellElem.id = `${i}-${j}`
-        const cellColorClass = (i + j) % 2 == 0 ? 'white' : 'black'
-        cellElem.classList.add('board-cell', cellColorClass)
+    Object.assign(container.style, {
+      position: 'relative',
+      width: `${cellPx * 8}px`,
+      height: `${cellPx * 8}px`,
+    });
 
-        const pieceElem = document.createElement('div')
-        pieceElem.classList.add('piece')
-        pieceElem.style.visibility = 'hidden'
+    const table = document.createElement('table')
+    table.classList.add('board-table')
+    table.setAttribute('cellspacing', 0)
 
-        pieceMatrix[i][j] = pieceElem
+    this.cellPx = cellPx
 
-        cellElem.append(pieceElem)
+    this.marksLayer = document.createElement('div')
+    Object.assign(this.marksLayer.style, {
+      position: 'absolute',
+      zIndex: 3,
+      width: '100%',
+      height: '100%',
+    })
+    container.append(this.marksLayer)
 
-        if (overlayCoords) {
-          const text = document.createElement('span')
-          text.classList.add('cell-text')
-          text.innerHTML = `r${i}<br>c${j}`
-          cellElem.append(text)
+    this.piecesLayer = document.createElement('div')
+    Object.assign(this.piecesLayer.style, {
+      position: 'absolute',
+      zIndex: 2,
+      width: '100%',
+      height: '100%',
+    })
+    container.append(this.piecesLayer)
+
+    container.append(table)
+
+    this.cells = Array(8)
+    this.pieces = Array(8)
+
+    for (let i=0; i<8; i++) {
+      const row = document.createElement('tr')
+      table.append(row)
+
+      row.classList.add('board-row')
+
+      this.cells[i] = Array(8)
+      this.pieces[i] = Array(8)
+
+      for (let j=0; j<8; j++) {
+        const cell = document.createElement('td')
+        row.append(cell)
+
+        cell.classList.add('board-cell')
+        cell.style.width = `${cellPx}px`;
+        cell.style.height = `${cellPx}px`;
+        cell.style.maxWidth = `${cellPx}px`;
+        cell.style.maxHeight = `${cellPx}px`;
+
+        cell.classList.add((i + j) % 2 == 0 ? 'cell-light' : 'cell-dark')
+
+        this.cells[i][j] = cell
+        this.pieces[i][j] = null
+
+        if (board[i][j]) {
+          const { white, king } = board[i][j]
+
+          const piece = document.createElement('div')
+          piece.classList.add(
+            'piece',
+            white ? 'white' : 'black',
+            king ? 'king' : 'pawn'
+          )
+          Object.assign(piece.style, {
+            top: `${this.cellPx * i}px`,
+            left: `${this.cellPx * j}px`,
+            transition: `all ${this.transitionMs}ms ease-in-out`
+          });
+
+          this.pieces[i][j] = piece
+          this.piecesLayer.append(piece)
         }
-
-        rowElem.append(cellElem)
       }
-
-      tableElem.append(rowElem)
     }
 
-    this.pieceMatrix = pieceMatrix
   }
 
-  render(board) {
-    for (let i = 0; i < 8; i++) {
-      for (let j = 0; j < 8; j++) {
-        const elem = this.pieceMatrix[i][j]
-        const piece = board[i][j]
+  mark(positions) {
+    this.currentMarks?.foreach(m => m.remove())
+    this.currentMarks = []
 
-        if (!piece) {
-          elem.style.visibility = 'hidden'
-        } else {
-          elem.style.visibility = 'visible'
+    for (const { row, col } of positions) {
+      const mark = document.createElement('div')
+      mark.classList.add('board-mark')
+      Object.assign(mark.style, {
+        width: `${this.cellPx}px`,
+        height: `${this.cellPx}px`,
+        top: `${this.cellPx * row}px`,
+        left: `${this.cellPx * col}px`,
+      })
 
-          elem.classList.remove(piece.king ? 'pawn' : 'king')
-          elem.classList.add(piece.king ? 'king' : 'pawn')
-
-          elem.classList.remove(piece.white ? 'black' : 'white')
-          elem.classList.add(piece.white ? 'white' : 'black')
-        }
-      }
+      this.marksLayer.append(mark)
+      this.currentMarks.push(mark)
     }
+  }
+
+  move(from, to, crown, capture) {
+    console.log('move')
+    const piece = this.pieces[from.row][from.col]
+    this.pieces[from.row][from.col] = null
+    this.pieces[to.row][to.col] = piece
+
+    Object.assign(piece.style, {
+      top:  `${this.cellPx * to.row}px`,
+      left: `${this.cellPx * to.col}px`
+    })
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (!crown && !capture) {
+          resolve()
+        } else {
+          if (crown) {
+            piece.classList.remove('pawn')
+            piece.classList.add('king')
+          }
+          if (capture) {
+            const captured = this.pieces[capture.row][capture.col]
+            this.pieces[capture.row][capture.col] = null
+            captured.style.opacity = 0
+            setTimeout(() => {
+              captured.remove()
+            }, this.transitionMs)
+          }
+          setTimeout(() => {
+            resolve()
+          }, this.transitionMs)
+        }
+      }, this.transitionMs)
+    })
   }
 }
