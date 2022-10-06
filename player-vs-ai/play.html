@@ -67,7 +67,6 @@
 
     const selectPiece = (row, col, event) => {
       event.stopPropagation()
-      clearMovablePieces()
       markPieceAllowedMovement(allowedPieceMovements(row, col))
     }
 
@@ -75,21 +74,21 @@
       event.stopPropagation()
       const mov = humanMovementChoices.find(mov => mov == movement)
       if (mov) {
-        clearMovablePieces()
         doPieceMov(mov)
       }
     }
 
     const markMovablePieces = () => {
-      movablePieces().forEach(element => {
-        element.classList.add('piece-can-move')
-        const [row, col] = element.id.split('-')
-        element.onclick = (event) => selectPiece(row, col, event)
-        enableExit(() => {
-          clearMovablePieces()
-          markMovablePieces()
-        })
-      })
+      boardView.resetMarks(new Set(humanMovementChoices.map(action => action.from)))
+
+      // movablePieces().forEach(element => {
+      //   element.classList.add('piece-can-move')
+      //   const [row, col] = element.id.split('-')
+      //   element.onclick = (event) => selectPiece(row, col, event)
+      //   enableExit(() => {
+      //     markMovablePieces()
+      //   })
+      // })
     }
 
     const markPieceAllowedMovement = (movements) => {
@@ -113,11 +112,6 @@
 
     const allowedPieceMovements = (row, col) =>
       humanMovementChoices.filter(mov => mov.from.row == row && mov.from.col == col)
-
-    // const movablePieces = () =>
-      // new Set(humanMovementChoices.map(mov => document.getElementById(`${mov.from.row}-${mov.from.col}`)))
-    const movablePieces = () => []
-
 
     // First player = white = human
 
@@ -143,20 +137,38 @@
     const depth = url.searchParams.get('depth') ?? 8
     const minimax = new mm.Minimax(false, mm[heuristic], depth)
 
+    // onClick etc in progress
+
     let humanMovementChoices = []
+    let destinationsToActions = {}
 
     const boardView = new BoardView(state.board, document.querySelector('.board-container'))
+    boardView.onClick((row, col) => {
+      if (!state.whiteToMove) return
 
-    async function asdf() {
-      await boardView.move({ row: 5, col: 0}, { row: 4, col: 1})
-      await boardView.move({ row: 4, col: 1}, { row: 3, col: 0}, true)
-      await boardView.move({ row: 3, col: 0}, { row: 1, col: 2}, false, { row: 2, col: 1})
-    }
-    setTimeout(asdf, 1000)
+      const actions = []
+      for (const action of humanMovementChoices) {
+        if (action.from.row == row && action.from.col == col) {
+          actions.push(action)
+        }
+      }
+
+      if (actions.length == 0) { // clicked on a non-marked piece
+        destinationsToActions = {}
+        markMovablePieces()
+      } else {
+        boardView.clearMarks()
+        destinationsToActions = {}
+        for (const action of actions) {
+          const destination = action.sequence[action.sequence.length-1];
+          boardView.addMark(destination)
+          destinationsToActions[bo.serializePosition(destination)] = action
+        }
+      }
+
+    })
 
     function generateAndLogCurrentMoves() {
-      clearMovablePieces()
-
       humanMovementChoices = state.actions
 
       let movString = 'Current moves (' + (state.whiteToMove ? 'white' : 'black') + ')\n'

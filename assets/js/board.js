@@ -323,3 +323,18 @@ export function decodeBoard(str) {
   }
   return board
 }
+
+/**
+ * Functions on coordinates/positions
+ */
+
+export function serializePosition(pos) {
+  return pos.row * 8 + pos.col;
+}
+
+export function deserializePosition(x) {
+  return {
+    row: Math.floor(x / 8),
+    col: x % 8
+  };
+}

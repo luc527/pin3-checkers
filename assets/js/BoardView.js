@@ -29,6 +29,8 @@ export default class BoardView {
     })
     container.append(this.marksLayer)
 
+    this.currentMarks = []
+
     this.piecesLayer = document.createElement('div')
     Object.assign(this.piecesLayer.style, {
       position: 'absolute',
@@ -88,29 +90,45 @@ export default class BoardView {
       }
     }
 
+    this.container = container
   }
 
-  mark(positions) {
-    this.currentMarks?.foreach(m => m.remove())
+  clearMarks() {
+    this.currentMarks.forEach(m => m.remove())
     this.currentMarks = []
+  }
 
-    for (const { row, col } of positions) {
-      const mark = document.createElement('div')
-      mark.classList.add('board-mark')
-      Object.assign(mark.style, {
-        width: `${this.cellPx}px`,
-        height: `${this.cellPx}px`,
-        top: `${this.cellPx * row}px`,
-        left: `${this.cellPx * col}px`,
-      })
+  addMark(position) {
+    const mark = document.createElement('div')
+    mark.classList.add('board-mark')
+    Object.assign(mark.style, {
+      width: `${this.cellPx}px`,
+      height: `${this.cellPx}px`,
+      top: `${this.cellPx * position.row}px`,
+      left: `${this.cellPx * position.col}px`,
+    })
 
-      this.marksLayer.append(mark)
-      this.currentMarks.push(mark)
-    }
+    this.marksLayer.append(mark)
+    this.currentMarks.push(mark)
+  }
+
+  resetMarks(positions) {
+    this.clearMarks()
+    positions.forEach(pos => this.addMark(pos))
+  }
+
+  onClick(callback) {
+    const { x: containerX, y: containerY } = this.container.getBoundingClientRect()
+    this.container.addEventListener('click', event => {
+      if (event.button === 0) {
+        const row = Math.trunc((event.clientY - containerY) / this.cellPx)
+        const col = Math.trunc((event.clientX - containerX) / this.cellPx)
+        callback(row, col, event)
+      }
+    });
   }
 
   move(from, to, crown, capture) {
-    console.log('move')
     const piece = this.pieces[from.row][from.col]
     this.pieces[from.row][from.col] = null
     this.pieces[to.row][to.col] = piece
