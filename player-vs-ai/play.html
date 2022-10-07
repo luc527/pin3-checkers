@@ -36,9 +36,6 @@
     import * as mov from '/assets/js/move-generation.js'
     import * as mm from '/assets/js/minimax.js'
 
-
-    // FIXME there's currently a short delay after the player chooses the destination
-
     // const minimaxWorker = new Worker('/assets/js/minimax-worker.js', { type: 'module' })
 
     const loaderContainer = document.querySelector('.loader-container')
@@ -52,66 +49,6 @@
         loaderContainer.style.display = 'flex'
       }
     }
-
-    const enableExit = (callback) => {
-      document.onkeyup = (event) => {
-        if (event.keyCode == 27) { // Escape
-          callback()
-        }
-      }
-
-      document.onclick = (event) => {
-        callback()
-      }
-    }
-
-    const selectPiece = (row, col, event) => {
-      event.stopPropagation()
-      markPieceAllowedMovement(allowedPieceMovements(row, col))
-    }
-
-    const movePiece = (movement, event) => {
-      event.stopPropagation()
-      const mov = humanMovementChoices.find(mov => mov == movement)
-      if (mov) {
-        doPieceMov(mov)
-      }
-    }
-
-    const markMovablePieces = () => {
-      boardView.resetMarks(new Set(humanMovementChoices.map(action => action.from)))
-
-      // movablePieces().forEach(element => {
-      //   element.classList.add('piece-can-move')
-      //   const [row, col] = element.id.split('-')
-      //   element.onclick = (event) => selectPiece(row, col, event)
-      //   enableExit(() => {
-      //     markMovablePieces()
-      //   })
-      // })
-    }
-
-    const markPieceAllowedMovement = (movements) => {
-      movements.forEach(mov => {
-        mov.sequence.forEach(seq => {
-          const element = document.getElementById(`${seq.row}-${seq.col}`)
-          element.classList.add('piece-can-move')
-          const [row, col] = element.id.split('-')
-          element.onclick = (event) => movePiece(mov, event)
-        })
-      })
-    }
-
-    const clearMovablePieces = () => {
-      document.querySelectorAll('.piece-can-move').forEach(el => {
-        el.onclick = undefined
-        document.keyup = undefined
-        el.classList.remove('piece-can-move')
-      })
-    }
-
-    const allowedPieceMovements = (row, col) =>
-      humanMovementChoices.filter(mov => mov.from.row == row && mov.from.col == col)
 
     // First player = white = human
 
@@ -137,100 +74,10 @@
     const depth = url.searchParams.get('depth') ?? 8
     const minimax = new mm.Minimax(false, mm[heuristic], depth)
 
-    // onClick etc in progress
-
-    let humanMovementChoices = []
-    let destinationsToActions = {}
-
     const boardView = new BoardView(state.board, document.querySelector('.board-container'))
     boardView.onClick((row, col) => {
-      if (!state.whiteToMove) return
-
-      const actions = []
-      for (const action of humanMovementChoices) {
-        if (action.from.row == row && action.from.col == col) {
-          actions.push(action)
-        }
-      }
-
-      if (actions.length == 0) { // clicked on a non-marked piece
-        destinationsToActions = {}
-        markMovablePieces()
-      } else {
-        boardView.clearMarks()
-        destinationsToActions = {}
-        for (const action of actions) {
-          const destination = action.sequence[action.sequence.length-1];
-          boardView.addMark(destination)
-          destinationsToActions[bo.serializePosition(destination)] = action
-        }
-      }
-
+      // TODO
     })
-
-    function generateAndLogCurrentMoves() {
-      humanMovementChoices = state.actions
-
-      let movString = 'Current moves (' + (state.whiteToMove ? 'white' : 'black') + ')\n'
-      for (let i = 0; i < humanMovementChoices.length; i++) {
-        const mov = humanMovementChoices[i]
-        movString += '' + i + ') ' + ([mov.from, ...mov.sequence].map(bo.positionString).join(', ') + '.\n')
-      }
-
-      markMovablePieces()
-    }
-
-    generateAndLogCurrentMoves()
-
-    const fmt = Intl.NumberFormat('pt')
-
-    const doPieceMov = (moveTaken) => {
-      state.actionDo(moveTaken)
-
-      checkStatus(state)
-
-      // toggleLoad()
-      // const stateCopy = state.copy()
-      // minimaxWorker.postMessage([stateCopy, [false, 'heuristicCountPieces', depth]])
-
-      // toggleLoad()
-      const { action: aiAction } = minimax.val(state)
-      setTimeout(() => evalAction(aiAction), 500)
-    }
-
-    const evalAction = (aiAction) => {
-      // toggleLoad()
-
-      state.actionDo(aiAction)
-
-      if (checkStatus(state) == Status.playing) {
-        generateAndLogCurrentMoves()
-        btn.removeAttribute('disabled')
-      }
-    }
-
-    const checkStatus = (state) => {
-      const status = state.status
-      if (status != Status.playing) {
-        const message = {
-          [Status.whiteWon]: 'White wins!',
-          [Status.blackWon]: 'Black wins!',
-          [Status.draw]: 'Draw...',
-        }[status];
-        log.innerHTML += message
-        confirm(`${message}\nPlay again?`)
-        // reload anyway, "cancel" will attempt to keep the game going which will cause an error
-        window.location.reload()
-        btn.setAttribute('disabled', 'disabled')
-      }
-      return status
-    }
-
-    // window.onload = () => {
-    //   minimaxWorker.addEventListener('message', (event) => {
-    //     evalAction(event.data.action)
-    //   }, false)
-    // }
   </script>
 
 </body>
