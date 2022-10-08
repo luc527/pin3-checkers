@@ -30,6 +30,18 @@
   </main>
 
   <script type="module">
+
+    // nice shortcut borrowed from Java
+    Map.prototype.computeIfAbsent = function(key, fn) {
+      let result = this.get(key)
+      if (result === undefined) {
+        result = fn(key)
+        this.set(key, result)
+      }
+      return result
+    }
+
+
     import * as bo from '/assets/js/board.js'
     import BoardView from '/assets/js/BoardView.js'
     import {CheckersState, Status} from '/assets/js/game-state.js'
@@ -53,20 +65,20 @@
     // First player = white = human
 
     // for testing how to show all possible movement options of a piece (particularly complex example, but we should be able to handle it)
-    //const initialBoard = bo.decodeBoard([
-      //'.....@..',
-      //'........',
-      //'...x....',
-      //'........',
-      //'.....x..',
-      //'..x.....',
-      //'.....x..',
-      //'........',
-    //].join('\n'));
+    // const initialBoard = bo.decodeBoard([
+    //   '.....@..',
+    //   '........',
+    //   '...x....',
+    //   '........',
+    //   '.....x..',
+    //   '..x.....',
+    //   '.....x..',
+    //   '........',
+    // ].join('\n'));
+    const initialBoard = null
 
     const url = new URL(location)
 
-    const initialBoard=null
     const captureOptions = mov.captureOptionsFromURL(url)
     const state = new CheckersState(captureOptions, initialBoard)
 
@@ -74,10 +86,95 @@
     const depth = url.searchParams.get('depth') ?? 8
     const minimax = new mm.Minimax(false, mm[heuristic], depth)
 
-    const boardView = new BoardView(state.board, document.querySelector('.board-container'))
-    boardView.onClick((row, col) => {
-      // TODO
+    // this works, but still feels like a bad way to implement this, the code reads weird etc
+
+    // TODO simplify states (in three of them the behaviour is the same (animating and waiting ai move selection),
+    // could replace them with some generic 'away' state, where clicks have no effect)
+    // could also have simplify the names of the remaining two states (waitingPieceSelection, waitingDestinationSelection)
+    const ViewState = Object.freeze({
+      waitingHumanPieceSelection: 0,
+      waitingHumanMoveSelection:  1,
+      animatingHumanMovement:     2,
+      waitingAiMoveSelection:     3,
+      animatingAiMovement:        4
     })
+
+    const boardView = new BoardView(state.board, document.querySelector('.board-container'))
+
+    const currentGameState = {
+      viewState: ViewState.waitingHumanPieceSelection,
+      destinationToMovementList: new Map(),
+
+      waitHumanPieceSelection() {
+        currentGameState.viewState = ViewState.waitingHumanPieceSelection
+        currentGameState.humanMovementChoices = state.actions
+        currentGameState.destinationToMovementList.clear()
+        boardView.resetMarks(
+          new Set(state.actions.map(mov => mov.from))
+        )
+      },
+
+      handleClick(row, col, marked) {
+        currentGameState.clickHandlers[currentGameState.viewState](row, col, marked)
+      },
+
+      clickHandlers: {
+        [ViewState.animatingHumanMovement]: () => { return },
+        [ViewState.waitingAiMoveSelection]: () => { return },
+        [ViewState.animatingAiMovement]: () => { return },
+
+        [ViewState.waitingHumanPieceSelection]: (row, col, marked) => {
+          if (!marked) return
+
+          const selectedPieceMovementOptions = state.actions.filter(mov =>
+            mov.from.row == row && mov.from.col == col
+          )
+
+          boardView.clearMarks()
+          for (const movement of selectedPieceMovementOptions) {
+            const destination = movement.sequence[ movement.sequence.length-1 ]
+            boardView.addMark(destination)
+            const serialized = bo.serializePosition(destination)
+            currentGameState.destinationToMovementList.computeIfAbsent(serialized, () => []).push(movement)
+          }
+
+          currentGameState.viewState = ViewState.waitingHumanMoveSelection
+        },
+
+        [ViewState.waitingHumanMoveSelection]: (row, col, marked) => {
+          if (!marked) {
+            // Return to waitingHumanPieceSelection state
+            currentGameState.waitHumanPieceSelection()
+          } else {
+            const movements = currentGameState.destinationToMovementList.get(bo.serializePosition({ row, col }))
+            const action = movements[0]
+            state.actionDo(action) // obtain undoInfo
+ 
+            currentGameState.viewState = ViewState.animatingHumanMovement
+            boardView.clearMarks()
+            boardView.animateAction(action).then(() => {
+
+              // TODO detect win/loss/draw
+              currentGameState.viewState = ViewState.waitingAiMoveSelection
+
+              const { action: aiAction } = minimax.val(state)
+              state.actionDo(aiAction) // obtain undoInfo
+
+              currentGameState.viewState = ViewState.animatingAiMovement
+              boardView.animateAction(aiAction).then(() => {
+                // TODO detect win/loss/draw
+                currentGameState.waitHumanPieceSelection()
+              })
+            })
+          }
+        }
+      },
+
+    }
+
+    boardView.onClick(currentGameState.handleClick)
+
+    currentGameState.waitHumanPieceSelection()
   </script>
 
 </body>

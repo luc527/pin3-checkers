@@ -1,3 +1,4 @@
+import {serializePosition, positionBetween} from '/assets/js/board.js'
 export default class BoardView {
 
   transitionMs = 500
@@ -23,18 +24,19 @@ export default class BoardView {
     this.marksLayer = document.createElement('div')
     Object.assign(this.marksLayer.style, {
       position: 'absolute',
-      zIndex: 3,
+      zIndex: 30,
       width: '100%',
       height: '100%',
     })
     container.append(this.marksLayer)
 
     this.currentMarks = []
+    this.isMarked = new Set()
 
     this.piecesLayer = document.createElement('div')
     Object.assign(this.piecesLayer.style, {
       position: 'absolute',
-      zIndex: 2,
+      zIndex: 20,
       width: '100%',
       height: '100%',
     })
@@ -95,6 +97,7 @@ export default class BoardView {
 
   clearMarks() {
     this.currentMarks.forEach(m => m.remove())
+    this.isMarked.clear()
     this.currentMarks = []
   }
 
@@ -110,6 +113,11 @@ export default class BoardView {
 
     this.marksLayer.append(mark)
     this.currentMarks.push(mark)
+    this.isMarked.add(serializePosition(position))
+  }
+
+  hasMark(position) {
+    return this.isMarked.has(serializePosition(position))
   }
 
   resetMarks(positions) {
@@ -123,43 +131,75 @@ export default class BoardView {
       if (event.button === 0) {
         const row = Math.trunc((event.clientY - containerY) / this.cellPx)
         const col = Math.trunc((event.clientX - containerX) / this.cellPx)
-        callback(row, col, event)
+        const marked = this.isMarked.has(serializePosition({ row, col }))
+        callback(row, col, marked, event)
       }
     });
   }
 
-  move(from, to, crown, capture) {
-    const piece = this.pieces[from.row][from.col]
-    this.pieces[from.row][from.col] = null
-    this.pieces[to.row][to.col] = piece
+  transition(from, to, capture, crown) {
+    if (!(from && to) && !crown && !capture) {
+      return Promise.resolve()
+    }
 
-    Object.assign(piece.style, {
-      top:  `${this.cellPx * to.row}px`,
-      left: `${this.cellPx * to.col}px`
-    })
+    let moved = null
+    if (from && to) {
+      moved = this.pieces[from.row][from.col]
+      this.pieces[from.row][from.col] = null
+      this.pieces[to.row][to.col] = moved
 
-    return new Promise((resolve) => {
+      Object.assign(moved.style, {
+        top:  `${this.cellPx * to.row}px`,
+        left: `${this.cellPx * to.col}px`
+      })
+
+      // So it moves _over_ captured pieces
+      moved.style.zIndex = 5
+    }
+
+    if (crown) {
+      const piece = this.pieces[crown.row][crown.col]
+      piece.classList.remove('pawn')
+      piece.classList.add('king')
+    }
+
+    let captured = null
+    if (capture) {
+      captured = this.pieces[capture.row][capture.col]
+      this.pieces[capture.row][capture.col] = null
+      captured.style.opacity = 0
+    }
+
+    return new Promise(resolve => {
       setTimeout(() => {
-        if (!crown && !capture) {
-          resolve()
-        } else {
-          if (crown) {
-            piece.classList.remove('pawn')
-            piece.classList.add('king')
-          }
-          if (capture) {
-            const captured = this.pieces[capture.row][capture.col]
-            this.pieces[capture.row][capture.col] = null
-            captured.style.opacity = 0
-            setTimeout(() => {
-              captured.remove()
-            }, this.transitionMs)
-          }
-          setTimeout(() => {
-            resolve()
-          }, this.transitionMs)
-        }
+        captured?.remove()
+        if (moved) delete moved.style.zIndex
+        resolve()
       }, this.transitionMs)
     })
+  }
+
+  async animateMove(from, sequence, captures, crown) {
+    let source = from
+
+    for (const destination of sequence) {
+
+      const toCapture = captures.length > 0 && positionBetween(captures[0], source, destination)
+                      ? captures.shift()
+                      : null
+
+      await this.transition(source, destination, toCapture, null)
+
+      source = destination
+    }
+
+    // Crown if needed, and also animate any leftover captures
+    const toCrown = crown ? sequence[sequence.length-1] : null
+    await this.transition(null, null, null, toCrown)
+  }
+
+  // shortcurt
+  async animateAction(action) {
+    return this.animateMove(action.from, action.sequence, action.undoInfo.captured, action.undoInfo.crowned)
   }
 }

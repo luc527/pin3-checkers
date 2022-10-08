@@ -173,15 +173,14 @@ export function singleMoveUndo(board, src, dst, captured) {
  * Performs a move starting at 'src' and moving to each position in 'sequence'
  * by modifying the given board. Performs captures and crowns the piece if it
  * ends up at the opposite last row. Returns {crowned, captured}, where
- * 'crowned' is a boolean describing whether the piece at 'src' got promoted to a king
- * at the end, and 'captured' is a {row, col, {white, king}} array describing the
- * pieces that got captured. */
+ * 'crowned' is the position the piece ended up (last of 'sequence') if it turned into a king, null otherwise (can be used as a boolean), and
+ * 'captured' is a {row, col, {white, king}} array describing the pieces that got captured. */
 export function fullMoveDo(board, src, sequence) {
   validatePosition(src, 'src')
   validatePositionList(sequence, 'sequence')
 
   const captured = []
-  let crowned = false
+  let crowned = null
 
   const piece = board[src.row][src.col]
 
@@ -194,7 +193,7 @@ export function fullMoveDo(board, src, sequence) {
   const final = sequence[sequence.length-1]
   const crown = piece.white ? final.row == 0 : final.row == 7
   if (!piece.king && crown) {
-    crowned = true
+    crowned = final
     board[final.row][final.col].king = true
   }
 
@@ -337,4 +336,14 @@ export function deserializePosition(x) {
     row: Math.floor(x / 8),
     col: x % 8
   };
+}
+
+function numberBetween(x, a, b) {
+  return (a < b && a < x && x < b)
+      || (b < a && b < x && x < a)
+}
+
+export function positionBetween(x, a, b) {
+  return numberBetween(x.row, a.row, b.row)
+      && numberBetween(x.col, a.col, b.col)
 }
