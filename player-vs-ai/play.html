@@ -88,25 +88,20 @@
 
     // this works, but still feels like a bad way to implement this, the code reads weird etc
 
-    // TODO simplify states (in three of them the behaviour is the same (animating and waiting ai move selection),
-    // could replace them with some generic 'away' state, where clicks have no effect)
-    // could also have simplify the names of the remaining two states (waitingPieceSelection, waitingDestinationSelection)
     const ViewState = Object.freeze({
-      waitingHumanPieceSelection: 0,
-      waitingHumanMoveSelection:  1,
-      animatingHumanMovement:     2,
-      waitingAiMoveSelection:     3,
-      animatingAiMovement:        4
+      waitingSource:   0,
+      waitingMovement: 1,
+      away:            2, // animating human movement + waiting AI + animating AI movement
     })
 
     const boardView = new BoardView(state.board, document.querySelector('.board-container'))
 
     const currentGameState = {
-      viewState: ViewState.waitingHumanPieceSelection,
+      viewState: ViewState.waitingSource,
       destinationToMovementList: new Map(),
 
-      waitHumanPieceSelection() {
-        currentGameState.viewState = ViewState.waitingHumanPieceSelection
+      waitSourceSelection() {
+        currentGameState.viewState = ViewState.waitingSource
         currentGameState.humanMovementChoices = state.actions
         currentGameState.destinationToMovementList.clear()
         boardView.resetMarks(
@@ -119,11 +114,9 @@
       },
 
       clickHandlers: {
-        [ViewState.animatingHumanMovement]: () => { return },
-        [ViewState.waitingAiMoveSelection]: () => { return },
-        [ViewState.animatingAiMovement]: () => { return },
+        [ViewState.away]: () => { return },
 
-        [ViewState.waitingHumanPieceSelection]: (row, col, marked) => {
+        [ViewState.waitingSource]: (row, col, marked) => {
           if (!marked) return
 
           const selectedPieceMovementOptions = state.actions.filter(mov =>
@@ -138,32 +131,30 @@
             currentGameState.destinationToMovementList.computeIfAbsent(serialized, () => []).push(movement)
           }
 
-          currentGameState.viewState = ViewState.waitingHumanMoveSelection
+          currentGameState.viewState = ViewState.waitingMovement
         },
 
-        [ViewState.waitingHumanMoveSelection]: (row, col, marked) => {
+        [ViewState.waitingMovement]: (row, col, marked) => {
           if (!marked) {
-            // Return to waitingHumanPieceSelection state
-            currentGameState.waitHumanPieceSelection()
+            // Return to waitingSource state
+            currentGameState.waitSourceSelection()
           } else {
             const movements = currentGameState.destinationToMovementList.get(bo.serializePosition({ row, col }))
             const action = movements[0]
             state.actionDo(action) // obtain undoInfo
  
-            currentGameState.viewState = ViewState.animatingHumanMovement
+            currentGameState.viewState = ViewState.away
             boardView.clearMarks()
             boardView.animateAction(action).then(() => {
 
               // TODO detect win/loss/draw
-              currentGameState.viewState = ViewState.waitingAiMoveSelection
 
               const { action: aiAction } = minimax.val(state)
               state.actionDo(aiAction) // obtain undoInfo
 
-              currentGameState.viewState = ViewState.animatingAiMovement
               boardView.animateAction(aiAction).then(() => {
                 // TODO detect win/loss/draw
-                currentGameState.waitHumanPieceSelection()
+                currentGameState.waitSourceSelection()
               })
             })
           }
@@ -174,7 +165,7 @@
 
     boardView.onClick(currentGameState.handleClick)
 
-    currentGameState.waitHumanPieceSelection()
+    currentGameState.waitSourceSelection()
   </script>
 
 </body>
