@@ -102,6 +102,10 @@ export default class BoardView {
   }
 
   addMark(position) {
+    const serializedPosition = serializePosition(position)
+    if (this.isMarked.has(serializedPosition)) return
+    this.isMarked.add(serializePosition(position))
+
     const mark = document.createElement('div')
     mark.classList.add('board-mark')
     Object.assign(mark.style, {
@@ -113,7 +117,6 @@ export default class BoardView {
 
     this.marksLayer.append(mark)
     this.currentMarks.push(mark)
-    this.isMarked.add(serializePosition(position))
   }
 
   hasMark(position) {

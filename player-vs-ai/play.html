@@ -116,9 +116,7 @@
         currentGameState.viewState = ViewState.waitingSource
         currentGameState.humanMovementChoices = state.actions
         currentGameState.destinationToMovementList.clear()
-        boardView.resetMarks(
-          new Set(state.actions.map(mov => mov.from))
-        )
+        boardView.resetMarks(state.actions.map(mov => mov.from))
       },
 
       handleClick(row, col, marked) {
