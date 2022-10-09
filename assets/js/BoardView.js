@@ -129,8 +129,9 @@ export default class BoardView {
   }
 
   onClick(callback) {
-    const { x: containerX, y: containerY } = this.container.getBoundingClientRect()
     this.container.addEventListener('click', event => {
+      // this call goes inside, the container coordinates might change if the window is resized!
+      const { x: containerX, y: containerY } = this.container.getBoundingClientRect()
       if (event.button === 0) {
         const row = Math.trunc((event.clientY - containerY) / this.cellPx)
         const col = Math.trunc((event.clientX - containerX) / this.cellPx)
