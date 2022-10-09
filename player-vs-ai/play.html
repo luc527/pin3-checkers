@@ -41,7 +41,6 @@
       return result
     }
 
-
     import * as bo from '/assets/js/board.js'
     import BoardView from '/assets/js/BoardView.js'
     import {CheckersState, Status} from '/assets/js/game-state.js'
@@ -81,6 +80,19 @@
 
     const captureOptions = mov.captureOptionsFromURL(url)
     const state = new CheckersState(captureOptions, initialBoard)
+
+    function checkStatus() {
+      if (state.status == Status.playing) return
+
+      let msg = ''
+      switch (state.status) {
+        case Status.whiteWon: msg = 'White won!'; break
+        case Status.blackWon: msg = 'Black won!'; break
+        case Status.draw: msg = 'Draw...'; break
+      }
+      alert(msg)
+      location.reload()
+    }
 
     const heuristic = url.searchParams.get('heuristic') ?? 'countPieces'
     const depth = url.searchParams.get('depth') ?? 8
@@ -147,13 +159,13 @@
             boardView.clearMarks()
             boardView.animateAction(action).then(() => {
 
-              // TODO detect win/loss/draw
+              checkStatus()
 
               const { action: aiAction } = minimax.val(state)
               state.actionDo(aiAction) // obtain undoInfo
 
               boardView.animateAction(aiAction).then(() => {
-                // TODO detect win/loss/draw
+                checkStatus()
                 currentGameState.waitSourceSelection()
               })
             })

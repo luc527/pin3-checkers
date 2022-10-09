@@ -154,6 +154,7 @@ export default class BoardView {
       })
 
       // So it moves _over_ captured pieces
+      // TODO this doesn't seem to be working, but it doesn't look too bad with the opacity of the captured piece going down, so just remove it maybe?
       moved.style.zIndex = 5
     }
 
