@@ -347,3 +347,7 @@ export function positionBetween(x, a, b) {
   return numberBetween(x.row, a.row, b.row)
       && numberBetween(x.col, a.col, b.col)
 }
+
+export function arePositionsEqual(a, b) {
+  return a.row == b.row && a.col == b.col
+}
