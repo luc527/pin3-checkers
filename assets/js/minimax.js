@@ -98,6 +98,7 @@ export class Minimax {
 export const valueHeuristicFunctions = {
   'heuristicCountPieces': heuristicCountPieces,
   'heuristicClusters': heuristicClusters,
+  'heuristicWeighDistance': heuristicWeighDistance,
 }
 
 export function heuristicCountPieces(state, maximizeWhite) {
@@ -194,6 +195,27 @@ export function heuristicClusters(state, maximizeWhite) {
     const sign = state.board[fst.row][fst.col].white == maximizeWhite ? 1 : -1
 
     value += sign * clusterFactor * pieceCountValue
+  }
+
+  return value
+}
+
+export function heuristicWeighDistance({ board }, maximizeWhite) {
+  let value = 0
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = board[row][col]
+      if (!piece) continue
+
+      const crowningRow = piece.white ? 0 : 7
+      const distance = Math.abs(crowningRow - row) // goes from 0 to 7
+
+      const pieceValue = (piece.king ? 16 : 8) + distance
+      const sign = piece.white == maximizeWhite ? 1 : -1
+
+      value += sign * pieceValue
+    }
   }
 
   return value

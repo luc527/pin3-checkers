@@ -29,8 +29,9 @@
         <div class="input-group">
           <label for="heuristica1">Heurística</label>
           <select id="heuristica1">
-            <option value="countPieces">countPieces</option>
-            <option value="clusters">clusters</option>
+            <option value="heuristicCountPieces">countPieces</option>
+            <option value="heuristicClusters">clusters</option>
+            <option value="heuristicWeighDistance">weightDistance</option>
           </select>
         </div>
         <div class="input-group" style="margin-top: 32px;">
@@ -43,8 +44,9 @@
         <div class="input-group">
           <label for="heuristica2">Heurística</label>
           <select id="heuristica2">
-            <option value="clusters">clusters</option>
-            <option value="countPieces">countPieces</option>
+            <option value="heuristicClusters">clusters</option>
+            <option value="heuristicCountPieces">countPieces</option>
+            <option value="heuristicWeighDistance">weightDistance</option>
           </select>
         </div>
         <div class="input-group" style="margin-top: 32px;">
@@ -73,17 +75,13 @@
 
     function qs(s) { return document.querySelector(s); }
 
-    function heur(s) {
-      return s == 'countPieces' ? mm.heuristicCountPieces : mm.heuristicClusters
-    }
-
     qs('#btn-jogar').onclick = () => {
 
-      const heur1 = heur(qs('#heuristica1').value)
+      const heur1 = mm[qs('#heuristica1').value]
       const depth1 = Number(qs('#profundidade1').value)
       const aiWhite = new mm.Minimax(true, heur1, depth1)
 
-      const heur2 = heur(qs('#heuristica2').value)
+      const heur2 = mm[qs('#heuristica2').value]
       const depth2 = Number(qs('#profundidade2').value)
       const aiBlack = new mm.Minimax(false, heur2, depth2)
 
