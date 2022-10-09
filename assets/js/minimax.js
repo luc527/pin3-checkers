@@ -220,3 +220,16 @@ export function heuristicWeighDistance({ board }, maximizeWhite) {
 
   return value
 }
+
+export function heuristicRandom() {
+  return Math.random() * 2 - 1  // random number in [-1, 1]
+}
+
+export function getHeuristicOptions() {
+  return [
+    { functionName: 'heuristicCountPieces', title: 'Count pieces' },
+    { functionName: 'heuristicClusters', title: 'Clusters' },
+    { functionName: 'heuristicWeighDistance', title: 'Weigh distances' },
+    { functionName: 'heuristicRandom', title: 'Random' },
+  ]
+}

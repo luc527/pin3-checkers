@@ -26,9 +26,6 @@
       <div class="input-group">
         <label for="heuristic">Heuristic</label>
         <select name="heuristic" id="heuristic">
-          <option value="heuristicCountPieces">countPieces</option>
-          <option value="heuristicClusters">clusters</option>
-          <option value="heuristicWeighDistance">weighDistance</option>
         </select>
       </div>
 
@@ -42,7 +39,17 @@
 
   </main>
 
-  <script>
+  <script type="module">
+    import * as mm from '/assets/js/minimax.js'
+
+    const heuristicSelect = document.getElementById('heuristic')
+    mm.getHeuristicOptions().forEach(option => {
+      heuristicSelect.append(Object.assign(document.createElement('option'), {
+        innerText: option.title,
+        value: option.functionName
+      }))
+    })
+
     const url = new URL(location)
 
     const form = document.forms[0]

@@ -29,9 +29,6 @@
         <div class="input-group">
           <label for="heuristica1">Heurística</label>
           <select id="heuristica1">
-            <option value="heuristicCountPieces">countPieces</option>
-            <option value="heuristicClusters">clusters</option>
-            <option value="heuristicWeighDistance">weightDistance</option>
           </select>
         </div>
         <div class="input-group" style="margin-top: 32px;">
@@ -44,9 +41,6 @@
         <div class="input-group">
           <label for="heuristica2">Heurística</label>
           <select id="heuristica2">
-            <option value="heuristicClusters">clusters</option>
-            <option value="heuristicCountPieces">countPieces</option>
-            <option value="heuristicWeighDistance">weightDistance</option>
           </select>
         </div>
         <div class="input-group" style="margin-top: 32px;">
@@ -72,6 +66,16 @@
     import {CheckersState, Status} from '/assets/js/game-state.js'
     import * as bo from '/assets/js/board.js'
     import {captureOptionsFromURL} from '/assets/js/move-generation.js';
+
+    ['heuristica1', 'heuristica2'].forEach(id => {
+      const select = document.getElementById(id)
+      mm.getHeuristicOptions().forEach(option => {
+        select.append(Object.assign(document.createElement('option'), {
+          'innerText': option.title,
+          'value': option.functionName
+        }))
+      })
+    })
 
     function qs(s) { return document.querySelector(s); }
 
