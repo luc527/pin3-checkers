@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkers | Player vs. AI</title>
+  <link rel="shortcut icon" type="image/png" href="/assets/image/favicon.png" />
+  <link rel="apple-touch-icon" href="/assets/image/favicon.png" />
+  <link rel="stylesheet" href="/assets/style/main.css" />
+  <link rel="stylesheet" href="/assets/style/reset.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" />
+  <link rel="stylesheet" media="print" onload="this.onload=null;this.removeAttribute('media');" href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" />
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" />
+  </noscript>
+</head>
+
+<body>
+  <main>
+    <div id="board-container"></div>
+  </main>
+
+  <script type="module">
+    import {captureOptionsFromURL} from '/assets/js/move-generation.js'
+    import {CheckersState, Status} from '/assets/js/game-state.js'
+    import BoardView from '/assets/js/BoardView.js'
+
+    const captureOptions = captureOptionsFromURL(new URL(location))
+
+    const checkers = new CheckersState(captureOptions)
+
+    const viewContainer = document.getElementById('board-container')
+    const view = new BoardView(checkers.board, viewContainer)
+
+    let selectedPosition = null
+    let inAnimation = false // TODO the BoardView itself could manage this
+
+    const waitPieceSelection = () => {
+      view.resetMarks(checkers.actions.map(a => a.from))
+      selectedPosition = null
+    }
+
+    view.onClick((row, col, marked) => {
+      if (inAnimation) return // TODO really necessary?
+      if (!selectedPosition) {
+        if (!marked) return
+        selectedPosition = { row, col }
+        view.resetMarks(checkers.actions.map(a => a.sequence[a.sequence.length-1]))
+      }
+      else {
+        if (!marked) {
+          waitPieceSelection()
+          return
+        }
+        // TODO still need to handle more complex situations (where capture sequences overlap / are prefixes of another etc. -- solution: show one at a time) (also could probably do this in a way such that the solution can be reused -- used both in player-vs-ai and player-vs-player)
+        const source = selectedPosition
+        const destination = { row, col }
+        const possibleActions = checkers.actions.filter(a => {
+          const lastPosition = a.sequence[a.sequence.length-1]
+          return a.from.row == source.row && a.from.col == source.col
+              && lastPosition.row == destination.row && lastPosition.col == destination.col
+        })
+        const actionTaken = possibleActions[0] // arbitrary choice in the case where two or more actions end up in the same position
+        checkers.actionDo(actionTaken)
+
+        inAnimation = true
+        view.clearMarks()
+        view.animateAction(actionTaken).then(() => {
+          inAnimation = false
+
+          if (checkers.status != Status.playing) {
+            let msg = ''
+            switch (checkers.status) {
+              case Status.whiteWon: msg = 'White won!'; break
+              case Status.blackWon: msg = 'Black won!'; break
+              case Status.draw:     msg = 'Draw...'; break
+            }
+            alert(msg)
+            location.reload()
+          }
+
+          waitPieceSelection()
+        })
+      }
+    })
+
+    waitPieceSelection()
+  </script>
+</body>
