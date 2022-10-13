@@ -76,6 +76,8 @@ export class CheckersState {
 
     const moveUndoInfo = bo.fullMoveDo(this.board, action.from, action.sequence)
     Object.assign(action.undoInfo, moveUndoInfo)
+
+    Object.freeze(action.undoInfo)
     
     this.whiteToMove = !this.whiteToMove
 

@@ -22,6 +22,8 @@
 <body>
   <main>
     <div id="board-container"></div>
+
+    <button id="btn-undo" style="margin-top: 10px;">Undo last move!</button>
   </main>
 
   <script type="module">
@@ -33,6 +35,19 @@
     const captureOptions = captureOptionsFromURL(new URL(location))
 
     const checkers = new CheckersState(captureOptions)
+    const actionStack = []
+
+    const actionDo = action => {
+      checkers.actionDo(action)
+      actionStack.push(action)
+    }
+
+    const lastActionUndo = () => {
+      if (actionStack.length == 0) return
+      const action = actionStack.pop()
+      checkers.actionUndo(action)
+      return action
+    }
 
     const viewContainer = document.getElementById('board-container')
     const view = new BoardView(checkers.board, viewContainer)
@@ -43,6 +58,19 @@
     const waitPieceSelection = () => {
       view.resetMarks(checkers.actions.map(a => a.from))
       selectedPosition = null
+    }
+
+    document.getElementById('btn-undo').onclick = () => {
+      if (inAnimation) return;
+      if (actionStack.length == 0) return;
+
+      const action = lastActionUndo()
+      inAnimation = true
+      view.clearMarks()
+      view.animateActionUndo(action).then(() => {
+        inAnimation = false
+        waitPieceSelection()
+      })
     }
 
     view.onClick((row, col, marked) => {
@@ -68,11 +96,11 @@
           arePositionsEqual(source, a.from) && arePositionsEqual(destination, a.sequence[a.sequence.length-1])
         )
         const actionTaken = possibleActions[0] // arbitrary choice in the case where two or more actions end up in the same position
-        checkers.actionDo(actionTaken)
+        actionDo(actionTaken)
 
         inAnimation = true
         view.clearMarks()
-        view.animateAction(actionTaken).then(() => {
+        view.animateActionDo(actionTaken).then(() => {
           inAnimation = false
 
           if (checkers.status != Status.playing) {

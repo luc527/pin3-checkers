@@ -113,13 +113,13 @@
 
         ignoreClicks = true
         view.clearMarks()
-        view.animateAction(actionTaken).then(() => {
+        view.animateActionDo(actionTaken).then(() => {
           checkStatus()
 
           const { action: aiAction } = minimax.val(checkers)
           checkers.actionDo(aiAction)
 
-          view.animateAction(aiAction).then(() => {
+          view.animateActionDo(aiAction).then(() => {
             checkStatus()
             ignoreClicks = false
             waitForPieceSelection()

@@ -1,9 +1,9 @@
 import {serializePosition, positionBetween} from '/assets/js/board.js'
 export default class BoardView {
 
-  transitionMs = 500
+  constructor(board, container, cellPx=64, transitionMs=500) {
 
-  constructor(board, container, cellPx=64) {
+    this.transitionMs = transitionMs
 
     // Container has width and height set
     // so layers can have width: 100% and height: 100%
@@ -72,27 +72,33 @@ export default class BoardView {
         this.pieces[i][j] = null
 
         if (board[i][j]) {
-          const { white, king } = board[i][j]
-
-          const piece = document.createElement('div')
-          piece.classList.add(
-            'piece',
-            white ? 'white' : 'black',
-            king ? 'king' : 'pawn'
-          )
-          Object.assign(piece.style, {
-            top: `${this.cellPx * i}px`,
-            left: `${this.cellPx * j}px`,
-            transition: `all ${this.transitionMs}ms ease-in-out`
-          });
-
-          this.pieces[i][j] = piece
-          this.piecesLayer.append(piece)
+          this.#addPiece(board[i][j], i, j)
         }
       }
     }
 
     this.container = container
+  }
+
+  #addPiece(piece, row, col) {
+    const { white, king } = piece
+
+    const elem = document.createElement('div')
+    elem.classList.add(
+      'piece',
+      white ? 'white' : 'black',
+      king ? 'king' : 'pawn'
+    )
+    Object.assign(elem.style, {
+      top: `${this.cellPx * row}px`,
+      left: `${this.cellPx * col}px`,
+      transition: `all ${this.transitionMs}ms ease-in-out`,
+    });
+
+    this.pieces[row][col] = elem
+    this.piecesLayer.append(elem)
+
+    return elem
   }
 
   clearMarks() {
@@ -141,70 +147,112 @@ export default class BoardView {
     });
   }
 
-  transition(from, to, capture, crown) {
-    if (!(from && to) && !crown && !capture) {
-      return Promise.resolve()
+  #animateSingle(item) {
+    switch (item.type) {
+      case 'move': {
+        const { from, to } = item
+
+        const moved = this.pieces[from.row][from.col]
+        this.pieces[from.row][from.col] = null
+        this.pieces[to.row][to.col] = moved
+
+        Object.assign(moved.style, {
+          top:  `${this.cellPx * to.row}px`,
+          left: `${this.cellPx * to.col}px`
+        })
+      } break;
+      case 'crown': {
+        const { row, col } = item
+        const piece = this.pieces[row][col]
+        piece.classList.remove('pawn')
+        piece.classList.add('king')
+      } break;
+      case 'uncrown': {
+        const { row, col } = item
+        const piece = this.pieces[row][col]
+        piece.classList.remove('king')
+        piece.classList.add('pawn')
+      } break;
+      case 'remove': {
+        const { row, col } = item
+        const piece = this.pieces[row][col]
+        piece.style.opacity = 0;
+        return () => piece.remove()
+      } break;
+      case 'restore': {
+        const { row, col, piece } = item
+        const elem = this.#addPiece(piece, row, col)
+        elem.style.opacity = 0
+        setTimeout(() => elem.style.opacity = 1, 10)
+      } break;
     }
+  }
 
-    let moved = null
-    if (from && to) {
-      moved = this.pieces[from.row][from.col]
-      this.pieces[from.row][from.col] = null
-      this.pieces[to.row][to.col] = moved
-
-      Object.assign(moved.style, {
-        top:  `${this.cellPx * to.row}px`,
-        left: `${this.cellPx * to.col}px`
-      })
-
-      // So it moves _over_ captured pieces
-      // TODO this doesn't seem to be working, but it doesn't look too bad with the opacity of the captured piece going down, so just remove it maybe?
-      moved.style.zIndex = 5
-    }
-
-    if (crown) {
-      const piece = this.pieces[crown.row][crown.col]
-      piece.classList.remove('pawn')
-      piece.classList.add('king')
-    }
-
-    let captured = null
-    if (capture) {
-      captured = this.pieces[capture.row][capture.col]
-      this.pieces[capture.row][capture.col] = null
-      captured.style.opacity = 0
-    }
-
+  animate(...items) {
+    if (!items) return Promise.resolve();
+    const postActions = items.map(it => this.#animateSingle(it)).filter(it => it)
     return new Promise(resolve => {
       setTimeout(() => {
-        captured?.remove()
-        if (moved) delete moved.style.zIndex
+        postActions.forEach(it => it())
         resolve()
       }, this.transitionMs)
     })
   }
 
-  async animateMove(from, sequence, captures, crown) {
-    let source = from
+  async animateActionDo(action) {
+    let { from } = action
+    const { sequence } = action
+    const { crowned } = action.undoInfo
+    const captured = Array.from(action.undoInfo.captured)
+    // ^ make a copy so we don't corrupt action.undoInfo
 
-    for (const destination of sequence) {
-
-      const toCapture = captures.length > 0 && positionBetween(captures[0], source, destination)
-                      ? captures.shift()
+    for (const to of sequence) {
+      const items = [ { type: 'move', from, to } ]
+      const toCapture = captured.length > 0 && positionBetween(captured[0], from, to)
+                      ? captured.shift()
                       : null
+      if (toCapture) {
+        items.push({ type: 'remove', ...toCapture })
+      }
+      await this.animate(...items)
 
-      await this.transition(source, destination, toCapture, null)
-
-      source = destination
+      from = to
     }
 
-    // Crown if needed, and also animate any leftover captures
-    const toCrown = crown ? sequence[sequence.length-1] : null
-    await this.transition(null, null, null, toCrown)
+    const toCrown = crowned ? sequence[sequence.length-1] : null
+    if (toCrown) {
+      await this.animate({ type: 'crown', ...toCrown })
+    }
   }
 
-  // shortcurt
-  async animateAction(action) {
-    return this.animateMove(action.from, action.sequence, action.undoInfo.captured, action.undoInfo.crowned)
+  async animateActionUndo(action) {
+    const { from, sequence } = action
+    const { crowned } = action.undoInfo
+    const captured = Array.from(action.undoInfo.captured)
+
+    if (crowned) {
+      const { row, col } = sequence[sequence.length-1]
+      await this.animate({ type: 'uncrown', row, col })
+    }
+
+    const reversedSequence = sequence.slice(0, sequence.length-1).reverse()
+    reversedSequence.push(from)
+
+    let src = sequence[sequence.length-1]
+    for (const dest of reversedSequence) {
+      const items = [ { type: 'move', from: src, to: dest }]
+
+      const n = captured.length
+      const toRestore = n > 0 && positionBetween(captured[n-1], src, dest)
+                      ? captured.pop()
+                      : null
+      if (toRestore) {
+        items.push({ type: 'restore', ...toRestore })
+      }
+
+      await this.animate(...items)
+
+      src = dest
+    }
   }
 }
