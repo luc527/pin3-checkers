@@ -58,12 +58,16 @@
 
       <button id="btn-jogar" class="btn-primary" style="max-width: 256px;" type="button">Jogar</button>
     </div>
+
+    <div id="history-container" style="margin: 64px"></div>
+
   </div>
 
   <script type="module">
 
     import * as mm from '/assets/js/minimax.js'
     import {CheckersState, Status} from '/assets/js/game-state.js'
+    import GameHistoryView from '/assets/js/GameHistoryView.js'
     import * as bo from '/assets/js/board.js'
     import {captureOptionsFromURL} from '/assets/js/move-generation.js';
 
@@ -77,9 +81,16 @@
       })
     })
 
+    const historyContainer = qs('#history-container')
+
     function qs(s) { return document.querySelector(s); }
 
     qs('#btn-jogar').onclick = () => {
+
+      while (historyContainer.firstChild) {
+        historyContainer.firstChild.remove();
+      }
+      const actionHistory = []
 
       const heur1 = mm[qs('#heuristica1').value]
       const depth1 = Number(qs('#profundidade1').value)
@@ -89,43 +100,35 @@
       const depth2 = Number(qs('#profundidade2').value)
       const aiBlack = new mm.Minimax(false, heur2, depth2)
 
-      const history = []
-
       const captureOptions = captureOptionsFromURL(new URL(location));
 
       const state = new CheckersState(captureOptions)
-      history.push(state.copy())
 
       const randomMoves = Number(qs('#jogadas-aleatorias').value)
       for (let i = 0; i < randomMoves; i++) {
         const rand = Math.floor(Math.random() * state.actions.length)
-        state.actionDo(state.actions[rand])
-        history.push(state.copy())
+        const action = state.actions[rand]
+        state.actionDo(action)
+        actionHistory.push(action)
       }
 
       let i = 0
 
       // TODO to play game automatically without freezing, do it inside a worker?
 
-      console.log('Playing...')
       while (state.status == Status.playing) {
-        if (i++ > 500) { console.log('Breaking out!'); break; }
         const mm = state.whiteToMove ? aiWhite : aiBlack;
         const { action } = mm.val(state)
         state.actionDo(action)
-        history.push(state.copy())
+        actionHistory.push(action)
       }
       if (state.status == Status.draw) {
         console.log('Draw :/')
       } else {
         console.log(`Winner is ${state.status == Status.whiteWon ? 'white' : 'black'}`)
       }
-      console.log(`Game took ${history.length} moves:`)
-      setTimeout(() => {
-        for (const pastState of history) {
-          console.log(bo.encodeBoard(pastState.board), pastState.roundsSincePawnMove, pastState.roundsSinceCapture, pastState.roundsInSpecialEnding)
-        }
-      }, 500)
+
+      new GameHistoryView(actionHistory, qs('#history-container'))
     }
   </script>
 
