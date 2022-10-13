@@ -1,9 +1,24 @@
 import {serializePosition, positionBetween} from '/assets/js/board.js'
 export default class BoardView {
 
+  #inAnimation = false
+
   constructor(board, container, cellPx=64, transitionMs=500) {
 
     this.transitionMs = transitionMs
+    this.cellPx = cellPx
+
+    this.marksLayer = document.createElement('div')
+
+    this.currentMarks = []
+    this.isMarked = new Set()
+
+    this.piecesLayer = document.createElement('div')
+
+    this.cells = Array(8)
+    this.pieces = Array(8)
+
+    this.container = container
 
     // Container has width and height set
     // so layers can have width: 100% and height: 100%
@@ -19,9 +34,6 @@ export default class BoardView {
     table.classList.add('board-table')
     table.setAttribute('cellspacing', 0)
 
-    this.cellPx = cellPx
-
-    this.marksLayer = document.createElement('div')
     Object.assign(this.marksLayer.style, {
       position: 'absolute',
       zIndex: 30,
@@ -30,10 +42,6 @@ export default class BoardView {
     })
     container.append(this.marksLayer)
 
-    this.currentMarks = []
-    this.isMarked = new Set()
-
-    this.piecesLayer = document.createElement('div')
     Object.assign(this.piecesLayer.style, {
       position: 'absolute',
       zIndex: 20,
@@ -43,9 +51,6 @@ export default class BoardView {
     container.append(this.piecesLayer)
 
     container.append(table)
-
-    this.cells = Array(8)
-    this.pieces = Array(8)
 
     for (let i=0; i<8; i++) {
       const row = document.createElement('tr')
@@ -76,8 +81,6 @@ export default class BoardView {
         }
       }
     }
-
-    this.container = container
   }
 
   #addPiece(piece, row, col) {
@@ -188,12 +191,18 @@ export default class BoardView {
     }
   }
 
+  inAnimation() {
+    return this.#inAnimation;
+  }
+
   animate(...items) {
+    this.#inAnimation = true
     if (!items) return Promise.resolve();
     const postActions = items.map(it => this.#animateSingle(it)).filter(it => it)
     return new Promise(resolve => {
       setTimeout(() => {
         postActions.forEach(it => it())
+        this.#inAnimation = false
         resolve()
       }, this.transitionMs)
     })

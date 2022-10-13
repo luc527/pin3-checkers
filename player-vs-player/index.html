@@ -53,7 +53,6 @@
     const view = new BoardView(checkers.board, viewContainer)
 
     let selectedPosition = null
-    let inAnimation = false // TODO the BoardView itself could manage this
 
     const waitPieceSelection = () => {
       view.resetMarks(checkers.actions.map(a => a.from))
@@ -61,20 +60,18 @@
     }
 
     document.getElementById('btn-undo').onclick = () => {
-      if (inAnimation) return;
+      if (view.inAnimation()) return;
       if (actionStack.length == 0) return;
 
       const action = lastActionUndo()
-      inAnimation = true
       view.clearMarks()
       view.animateActionUndo(action).then(() => {
-        inAnimation = false
         waitPieceSelection()
       })
     }
 
     view.onClick((row, col, marked) => {
-      if (inAnimation) return // TODO really necessary?
+      if (view.inAnimation()) return // TODO really necessary?
       if (!selectedPosition) {
         if (!marked) return
         selectedPosition = { row, col }
@@ -98,10 +95,8 @@
         const actionTaken = possibleActions[0] // arbitrary choice in the case where two or more actions end up in the same position
         actionDo(actionTaken)
 
-        inAnimation = true
         view.clearMarks()
         view.animateActionDo(actionTaken).then(() => {
-          inAnimation = false
 
           if (checkers.status != Status.playing) {
             let msg = ''
