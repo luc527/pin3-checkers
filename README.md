@@ -21,7 +21,7 @@ $ npx serve
 To use python's built in http server, you just need to install Python3 following [this instructions](https://www.python.org/downloads/). After successfully installed, you can simply run the following command:
 
 ```bash
-$ python3 -m http.server`
+$ python3 -m http.server
 ```
 
 ## Developers
