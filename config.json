@@ -1,0 +1,14 @@
+{
+  "rule": "capture", 
+  "random": 4,
+  "config": [
+    {
+      "function": "heuristicCountPieces",
+      "depth": 7
+    },
+    {
+      "function": "heuristicClusters",
+      "depth": 10
+    }
+  ]
+}
