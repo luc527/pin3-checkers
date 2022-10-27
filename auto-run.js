@@ -1,7 +1,18 @@
-import { readFileSync } from 'fs'
+import { readFileSync, createWriteStream } from 'fs'
 import * as minimax from './assets/js/minimax.js'
 import { CheckersState, Status } from './assets/js/game-state.js'
-import { captureOptionsFromBools } from './assets/js/move-generation.js';
+import { captureOptionsFromBools } from './assets/js/move-generation.js'
+import { format } from 'util'
+import path from 'path'
+
+const logStdout = process.stdout
+const now = Math.round(+new Date() / 1000)
+const outPutLogFile = createWriteStream(`${path.resolve()}/logs/run-${now}.log`)
+
+console.log = (value) => {
+  outPutLogFile.write(`${format(value)}\n`)
+  logStdout.write(`${format(value)}\n`)
+}
 
 const filePath = process.argv.slice(2)[0]
 let gameConfigArray = JSON.parse(readFileSync(filePath, 'utf8'))
@@ -11,7 +22,6 @@ if (!Array.isArray(gameConfigArray)) {
 }
 
 for (const gameConfig of gameConfigArray) {
-
   console.log(gameConfig);
 
   const heur1 = minimax[gameConfig.players['white'].function]
@@ -28,13 +38,16 @@ for (const gameConfig of gameConfigArray) {
 
   let runs = gameConfig.runs ?? 1;
 
-  // TODO more statistics
-  // - count # of moves until end of game
-  // - aggregate at the end: how many games each player won
+  // TODO: migrate to CSV or JSON on output, so it can be easily managed on sheets / excel
 
-  // TODO output results as JSON to file
+  const gamesWon = {
+    white: 0,
+    black: 0,
+    draw: 0,
+  }
 
-  while (runs-- > 0) {
+  for (let run = 1; run < runs; run++) {
+    let moves = 0;
     const state = new CheckersState(captureOptions)
 
     const randomMoves = gameConfig.random
@@ -42,20 +55,26 @@ for (const gameConfig of gameConfigArray) {
       const rand = Math.floor(Math.random() * state.actions.length)
       const action = state.actions[rand]
       state.actionDo(action)
+      moves++;
     }
 
     while (state.status == Status.playing) {
       const mm = state.whiteToMove ? aiWhite : aiBlack;
       const { action } = mm.val(state)
       state.actionDo(action)
+      moves++;
     }
+
+    gamesWon.black += state.status == Status.blackWon
+    gamesWon.white += state.status == Status.whiteWon
+    gamesWon.draw += state.Status == Status.draw
 
     if (state.status == Status.draw) {
-      console.log('Draw :/')
+      console.log(`Draw. Run: ${run}, after ${moves} moves.`)
     } else {
-      console.log(`Winner is ${state.status == Status.whiteWon ? 'white' : 'black'}`)
+      console.log(`${state.status == Status.whiteWon ? 'White' : 'Black'} Won! Run: ${run}, after ${moves} moves.`)
     }
   }
+  console.log(gamesWon)
+  console.log('------------------')
 }
-
-
