@@ -1,5 +1,24 @@
 import { Status } from './game-state.js'
 
+function randomIn(a, b) {
+  // random integer in interval [a, b)
+  return a + Math.floor(Math.random() * (b - a))
+}
+
+function randomOrder(n) {
+  const a = Array(n)
+  for (let i = 0; i < n; i++) {
+    a[i] = i
+  }
+  for (let i = 0; i < n-1; i++) {
+    const r = randomIn(i, n)
+    const t = a[i]
+    a[i] = a[r]
+    a[r] = t
+  }
+  return a
+}
+
 export class Minimax {
   constructor(maximizeWhite, valueHeuristic, cutoffDepth) {
     this.maximizeWhite = maximizeWhite
@@ -50,7 +69,11 @@ export class Minimax {
     let value = maximizing ? -Infinity : +Infinity
     let actionTaken = null
 
-    for (const action of actions) {
+    const actionOrder = randomOrder(actions.length)
+
+    for (const actionIndex of actionOrder) {
+      const action = actions[actionIndex]
+
       state.actionDo(action)
 
       const { value: subValue } = this.val(state, depth+1, alpha, beta)
