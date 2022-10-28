@@ -7,11 +7,22 @@ import path from 'path'
 
 const logStdout = process.stdout
 const now = Math.round(+new Date() / 1000)
-const outPutLogFile = createWriteStream(`${path.resolve()}/logs/run-${now}.log`)
+const outPutLogFile = createWriteStream(`${path.resolve()}/logs/run-${now}.json`)
 
 console.log = (value) => {
   outPutLogFile.write(`${format(value)}\n`)
   logStdout.write(`${format(value)}\n`)
+}
+
+const statusToWinner = (status) => {
+  switch (status) {
+    case 1:
+      return 'white'
+    case 2:
+      return 'black'
+    case 3:
+      return 'draw'
+  }
 }
 
 const filePath = process.argv.slice(2)[0]
@@ -21,8 +32,15 @@ if (!Array.isArray(gameConfigArray)) {
   gameConfigArray = [gameConfigArray];
 }
 
+const configLogs = []
+
 for (const gameConfig of gameConfigArray) {
-  console.log(gameConfig);
+  const configLog = {
+    config: {},
+    runs: [],
+    gamesWon: {}
+  }
+  configLog.config = gameConfig
 
   const heur1 = minimax[gameConfig.players['white'].function]
   const depth1 = gameConfig.players['white'].depth
@@ -46,8 +64,15 @@ for (const gameConfig of gameConfigArray) {
     draw: 0,
   }
 
+  const runsLog = []
+
   for (let run = 1; run < runs; run++) {
-    let moves = 0;
+    const runLog = {
+      run: run,
+      winner: undefined,
+      pieceCount: {},
+      moves: 0
+    }
     const state = new CheckersState(captureOptions)
 
     const randomMoves = gameConfig.random
@@ -55,26 +80,28 @@ for (const gameConfig of gameConfigArray) {
       const rand = Math.floor(Math.random() * state.actions.length)
       const action = state.actions[rand]
       state.actionDo(action)
-      moves++;
+      runLog.moves++;
     }
 
     while (state.status == Status.playing) {
       const mm = state.whiteToMove ? aiWhite : aiBlack;
       const { action } = mm.val(state)
       state.actionDo(action)
-      moves++;
+      runLog.moves++;
     }
 
     gamesWon.black += state.status == Status.blackWon
+    gamesWon.draw += state.status == Status.draw
     gamesWon.white += state.status == Status.whiteWon
-    gamesWon.draw += state.Status == Status.draw
-
-    if (state.status == Status.draw) {
-      console.log(`Draw. Run: ${run}, after ${moves} moves.`)
-    } else {
-      console.log(`${state.status == Status.whiteWon ? 'White' : 'Black'} Won! Run: ${run}, after ${moves} moves.`)
-    }
+ 
+    runLog.pieceCount = state.pieceCount
+    runLog.winner = statusToWinner(state.status)
+    runsLog.push(runLog)
   }
-  console.log(gamesWon)
-  console.log('------------------')
+  configLog.runs = runsLog
+  configLog.gamesWon = gamesWon
+
+  configLogs.push(configLog)
 }
+
+console.log(JSON.stringify(configLogs, null, '\t'))

@@ -1,6 +1,6 @@
 [
   {
-    "runs": 5,
+    "runs": 50,
     "rule": "capture", 
     "random": 4,
     "players": {
@@ -15,7 +15,7 @@
     }
   },
   {
-    "runs": 5,
+    "runs": 50,
     "rule": "capture", 
     "random": 2,
     "players": {
