@@ -66,7 +66,7 @@ for (const gameConfig of gameConfigArray) {
 
   const runsLog = []
 
-  for (let run = 1; run < runs; run++) {
+  for (let run = 1; run <= runs; run++) {
     const runLog = {
       run: run,
       winner: undefined,
