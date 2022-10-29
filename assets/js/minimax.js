@@ -234,7 +234,7 @@ export function heuristicWeighDistance({ board }, maximizeWhite) {
       const crowningRow = piece.white ? 0 : 7
       const distance = Math.abs(crowningRow - row) // goes from 0 to 7
 
-      const pieceValue = (piece.king ? 16 : 8) + distance
+      const pieceValue = (piece.king ? 16 : 8) - distance / 4
       const sign = piece.white == maximizeWhite ? 1 : -1
 
       value += sign * pieceValue
