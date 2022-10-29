@@ -1,32 +1,254 @@
 [
   {
-    "runs": 50,
-    "rule": "capture", 
-    "random": 4,
+    "runs": 2,
     "players": {
       "white": {
         "function": "heuristicCountPieces",
-        "depth": 6
+        "depth": 3
       },
       "black": {
         "function": "heuristicClusters",
-        "depth": 6
+        "depth": 3
       }
-    }
+    },
+    "rule": 0
   },
   {
-    "runs": 50,
-    "rule": "capture", 
-    "random": 2,
+    "runs": 2,
     "players": {
       "white": {
         "function": "heuristicCountPieces",
-        "depth": 7
+        "depth": 3
       },
       "black": {
         "function": "heuristicWeighDistance",
-        "depth": 7
+        "depth": 3
       }
-    }
+    },
+    "rule": 0
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicClusters",
+        "depth": 3
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 3
+      }
+    },
+    "rule": 0
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 5
+      },
+      "black": {
+        "function": "heuristicClusters",
+        "depth": 5
+      }
+    },
+    "rule": 0
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 5
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 5
+      }
+    },
+    "rule": 0
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicClusters",
+        "depth": 5
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 5
+      }
+    },
+    "rule": 0
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 3
+      },
+      "black": {
+        "function": "heuristicClusters",
+        "depth": 3
+      }
+    },
+    "rule": 1
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 3
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 3
+      }
+    },
+    "rule": 1
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicClusters",
+        "depth": 3
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 3
+      }
+    },
+    "rule": 1
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 5
+      },
+      "black": {
+        "function": "heuristicClusters",
+        "depth": 5
+      }
+    },
+    "rule": 1
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 5
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 5
+      }
+    },
+    "rule": 1
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicClusters",
+        "depth": 5
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 5
+      }
+    },
+    "rule": 1
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 3
+      },
+      "black": {
+        "function": "heuristicClusters",
+        "depth": 3
+      }
+    },
+    "rule": 3
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 3
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 3
+      }
+    },
+    "rule": 3
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicClusters",
+        "depth": 3
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 3
+      }
+    },
+    "rule": 3
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 5
+      },
+      "black": {
+        "function": "heuristicClusters",
+        "depth": 5
+      }
+    },
+    "rule": 3
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 5
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 5
+      }
+    },
+    "rule": 3
+  },
+  {
+    "runs": 2,
+    "players": {
+      "white": {
+        "function": "heuristicClusters",
+        "depth": 5
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 5
+      }
+    },
+    "rule": 3
   }
 ]

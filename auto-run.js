@@ -1,107 +1,144 @@
-import { readFileSync, createWriteStream } from 'fs'
+import * as fs from 'fs'
 import * as minimax from './assets/js/minimax.js'
 import { CheckersState, Status } from './assets/js/game-state.js'
-import { captureOptionsFromBools } from './assets/js/move-generation.js'
-import { format } from 'util'
-import path from 'path'
+import { CaptureOptions } from './assets/js/move-generation.js'
 
-const logStdout = process.stdout
-const now = Math.round(+new Date() / 1000)
-const outPutLogFile = createWriteStream(`${path.resolve()}/logs/run-${now}.json`)
-
-console.log = (value) => {
-  outPutLogFile.write(`${format(value)}\n`)
-  logStdout.write(`${format(value)}\n`)
-}
-
-const statusToWinner = (status) => {
+function statusToString(status) {
   switch (status) {
-    case 1:
+    case Status.whiteWon:
       return 'white'
-    case 2:
+    case Status.blackWon:
       return 'black'
-    case 3:
+    case Status.draw:
       return 'draw'
   }
 }
 
-const filePath = process.argv.slice(2)[0]
-let gameConfigArray = JSON.parse(readFileSync(filePath, 'utf8'))
+function ruleToString() {
+  switch (rule) {
+    case CaptureOptions.notMandatory:
+      return 'notMandatory';
+    case CaptureOptions.mandatory:
+      return 'mandatory';
+    case CaptureOptions.bestMandatory:
+      return 'bestMandatory';
+  }
+}
+
+
+class GameResult {
+  // params: { whiteHeur, whiteDepth, blackHeur, blackDepth, rule }
+  // winner: 'white' | 'black' | 'draw"
+  // moves: int
+  // pieceCount: { whitePawns, whiteKings, blackPawns, blackKings }
+  constructor(params, winner, moves, pieceCount) {
+    this.params = params
+    this.winner = winner
+    this.moves = moves
+    this.pieceCount = pieceCount
+  }
+
+  colSeparator = ','
+  rowSeparator = '\n'
+
+  static csvHeader() {
+    return [
+      'white_heuristic',
+      'white_depth',
+      'black_heuristic',
+      'black_depth',
+      'rule',
+      'winner',
+      'moves',
+      'white_pawns',
+      'white_kings',
+      'black_pawns',
+      'black_kings',
+    ].join(separator);
+  }
+
+  toCSV() {
+    return [
+      this.params.whiteHeur,
+      this.params.whiteDepth,
+      this.params.blackHeur,
+      this.params.blackDepth,
+      this.params.rule,
+      this.winner,
+      this.moves,
+      this.pieceCount.whitePawns,
+      this.pieceCount.whiteKings,
+      this.pieceCount.blackPawns,
+      this.pieceCount.blackKings,
+    ].join(separator);
+  }
+}
+
+function runGame(whiteHeur, whiteDepth, blackHeur, blackDepth, captureOptions) {
+
+  console.log('runGame', whiteHeur, whiteDepth, blackHeur, blackDepth, captureOptions)
+
+  const whiteHeurFunction = minimax[whiteHeur]
+  const blackHeurFunction = minimax[blackHeur]
+
+  const whitePlayer = new minimax.Minimax(true, whiteHeurFunction, whiteDepth)
+  const blackPlayer = new minimax.Minimax(false, blackHeurFunction, blackDepth)
+  const state = new CheckersState(captureOptions)
+
+  let moves = 0
+  let currentPlayer = whitePlayer
+
+  while (state.status == Status.playing) {
+    const { action } = currentPlayer.val(state)
+    state.actionDo(action)
+    moves++
+    currentPlayer = currentPlayer == whitePlayer ? blackPlayer : whitePlayer
+  }
+
+  return {
+    winner: statusToString(state.status),
+    moves,
+    pieceCount: state.pieceCount
+  }
+}
+
+const inputPath = process.argv[2] ?? 'config.json'
+let gameConfigArray = JSON.parse(fs.readFileSync(inputPath, 'utf8'))
 
 if (!Array.isArray(gameConfigArray)) {
   gameConfigArray = [gameConfigArray];
 }
 
-const configLogs = []
+const results = []
 
-for (const gameConfig of gameConfigArray) {
-  const configLog = {
-    config: {},
-    runs: [],
-    gamesWon: {}
-  }
-  configLog.config = gameConfig
+for (const config of gameConfigArray) {
+  const whiteHeur = config.players['white'].function
+  const whiteDepth = config.players['white'].depth
+  const blackHeur = config.players['black'].function
+  const blackDepth = config.players['black'].depth
+  const rule = config.rule
 
-  const heur1 = minimax[gameConfig.players['white'].function]
-  const depth1 = gameConfig.players['white'].depth
-  const aiWhite = new minimax.Minimax(true, heur1, depth1)
+  const params = { whiteHeur, whiteDepth, blackHeur, blackDepth, rule }
 
-  const heur2 = minimax[gameConfig.players['black'].function]
-  const depth2 = gameConfig.players['black'].depth
-  const aiBlack = new minimax.Minimax(false, heur2, depth2)
-
-  const mandatory = gameConfig.rule == 'capturesMandatory'
-  const bestMandatory = gameConfig.rule == 'bestCapturesMandatory'
-  const captureOptions = captureOptionsFromBools(mandatory, bestMandatory)
-
-  let runs = gameConfig.runs ?? 1;
-
-  // TODO: migrate to CSV or JSON on output, so it can be easily managed on sheets / excel
-
-  const gamesWon = {
-    white: 0,
-    black: 0,
-    draw: 0,
-  }
-
-  const runsLog = []
+  const runs = config.runs
 
   for (let run = 1; run <= runs; run++) {
-    const runLog = {
-      run: run,
-      winner: undefined,
-      pieceCount: {},
-      moves: 0
-    }
-    const state = new CheckersState(captureOptions)
-
-    const randomMoves = gameConfig.random
-    for (let i = 0; i < randomMoves; i++) {
-      const rand = Math.floor(Math.random() * state.actions.length)
-      const action = state.actions[rand]
-      state.actionDo(action)
-      runLog.moves++;
-    }
-
-    while (state.status == Status.playing) {
-      const mm = state.whiteToMove ? aiWhite : aiBlack;
-      const { action } = mm.val(state)
-      state.actionDo(action)
-      runLog.moves++;
-    }
-
-    gamesWon.black += state.status == Status.blackWon
-    gamesWon.draw += state.status == Status.draw
-    gamesWon.white += state.status == Status.whiteWon
- 
-    runLog.pieceCount = state.pieceCount
-    runLog.winner = statusToWinner(state.status)
-    runsLog.push(runLog)
+    const { winner, moves, pieceCount } = runGame(whiteHeur, whiteDepth, blackHeur, blackDepth, rule)
+    const result = new GameResult(params, winner, moves, pieceCount)
+    results.push(result)
   }
-  configLog.runs = runsLog
-  configLog.gamesWon = gamesWon
-
-  configLogs.push(configLog)
 }
 
-console.log(JSON.stringify(configLogs, null, '\t'))
+// import to sqlite:
+// .read schema.sql
+// .separator ","
+// .import results.csv game_results
+
+let output = ''
+// output += GameResult.csvHeader() + GameResult.rowSeparator
+for (const result of results) {
+  output += result.toCSV() + GameResult.rowSeparator
+}
+
+const outputPath = process.argv[3] ?? './results.csv'
+fs.writeFileSync(outputPath, output)
