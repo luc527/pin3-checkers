@@ -41,22 +41,6 @@ class GameResult {
   colSeparator = ','
   rowSeparator = '\n'
 
-  static csvHeader() {
-    return [
-      'white_heuristic',
-      'white_depth',
-      'black_heuristic',
-      'black_depth',
-      'rule',
-      'winner',
-      'moves',
-      'white_pawns',
-      'white_kings',
-      'black_pawns',
-      'black_kings',
-    ].join(separator);
-  }
-
   toCSV() {
     return [
       this.params.whiteHeur,
@@ -135,7 +119,6 @@ for (const config of gameConfigArray) {
 // .import results.csv game_results
 
 let output = ''
-// output += GameResult.csvHeader() + GameResult.rowSeparator
 for (const result of results) {
   output += result.toCSV() + GameResult.rowSeparator
 }
