@@ -1,3 +1,5 @@
+DROP TABLE game_results;
+
 CREATE TABLE game_results (
   white_heuristic text,
   white_depth int,

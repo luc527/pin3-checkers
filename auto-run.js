@@ -14,7 +14,7 @@ function statusToString(status) {
   }
 }
 
-function ruleToString() {
+function ruleToString(rule) {
   switch (rule) {
     case CaptureOptions.notMandatory:
       return 'notMandatory';
@@ -38,23 +38,20 @@ class GameResult {
     this.pieceCount = pieceCount
   }
 
-  colSeparator = ','
-  rowSeparator = '\n'
-
   toCSV() {
     return [
       this.params.whiteHeur,
       this.params.whiteDepth,
       this.params.blackHeur,
       this.params.blackDepth,
-      this.params.rule,
+      ruleToString(this.params.rule),
       this.winner,
       this.moves,
       this.pieceCount.whitePawns,
       this.pieceCount.whiteKings,
       this.pieceCount.blackPawns,
       this.pieceCount.blackKings,
-    ].join(separator);
+    ].join(',');
   }
 }
 
@@ -120,7 +117,7 @@ for (const config of gameConfigArray) {
 
 let output = ''
 for (const result of results) {
-  output += result.toCSV() + GameResult.rowSeparator
+  output += result.toCSV() + '\n'
 }
 
 const outputPath = process.argv[3] ?? './results.csv'

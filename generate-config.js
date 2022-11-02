@@ -3,7 +3,7 @@ import * as fs from 'fs'
 const depths = [
   3,
   5,
-  // 7,
+  7,
   // 9,
 ]
 
@@ -19,8 +19,7 @@ const heuristicPairs = [
   [ 'heuristicClusters', 'heuristicWeighDistance' ],
 ]
 
-const runs = 2
-// const runs = 50
+const runs = 10
 
 const configArray = []
 
