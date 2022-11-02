@@ -2,15 +2,14 @@
 
 Projeto Integrador 3, UDESC 6ª fase 2022/2
 
-## Setting up environment
+## Setting up the environment
 
-This projects uses JS modules. So a http server is needed.
-If you don't have already set up, you can use this options:
+This projects uses JS modules. So a http server is needed. Here are some options:
 
 ### [NodeJS - Serve](https://www.npmjs.com/package/serve)
 
-First, you will need NodeJS installed. You can follow [this instructions](https://nodejs.org/en/download/package-manager/) on how to install on your device.
-After NodeJS is installed, and set up on your CLI path, simply run:
+First, you will need to have NodeJS installed. You can follow [these instructions](https://nodejs.org/en/download/package-manager/) on how to install it on your device.
+After NodeJS is installed and set up on your CLI path, simply run:
 
 ```bash
 $ npx serve
@@ -18,7 +17,7 @@ $ npx serve
 
 ### [Python http.server](https://docs.python.org/3/library/http.server.html)
 
-To use python's built in http server, you just need to install Python3 following [this instructions](https://www.python.org/downloads/). After successfully installed, you can simply run the following command:
+To use python's built in http server, you just need to install Python3 ([instructions](https://www.python.org/downloads/)). After installing it you just need to run the following command:
 
 ```bash
 $ python3 -m http.server
