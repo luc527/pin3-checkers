@@ -27,7 +27,9 @@ export default class GameHistoryView {
     }))
 
     // TODO make better layout
-    this.#boardView = new BoardView(makeInitialBoard(), container, 32, 100)
+    const cellPx = 32
+    const transitionMs = 100
+    this.#boardView = new BoardView(makeInitialBoard(), container, cellPx, transitionMs)
   }
 
   next() {

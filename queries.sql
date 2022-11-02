@@ -27,21 +27,17 @@ with heuristics as (
   union
   select distinct black_heuristic as name from game_results
 ) select h.name as heuristic
-       , sum(
-         case (h.name, g.winner)
-         when (g.white_heuristic, "white") then 1
-         when (g.black_heuristic, "black") then 1
-         else 0
-         end
-       ) as wins
+       , sum(case (h.name, g.winner)
+               when (g.white_heuristic, "white") then 1
+               when (g.black_heuristic, "black") then 1
+               else 0
+             end) as wins
        , sum(case g.winner when "draw" then 1 else 0 end) as draws
-       , sum(
-         case (h.name, g.winner)
-         when (g.white_heuristic, "black") then 1
-         when (g.black_heuristic, "white") then 1
-         else 0
-         end
-       ) as losses
+       , sum(case (h.name, g.winner)
+               when (g.white_heuristic, "black") then 1
+               when (g.black_heuristic, "white") then 1
+               else 0
+             end) as losses
        , count(1) as total
     from heuristics h
     join game_results g
