@@ -1,11 +1,17 @@
 import * as fs from 'fs'
 
-const depths = [
-  3,
-  5,
-  7,
-  // 9,
-]
+const depths = [...Array(20).keys()]
+
+// const depths = [
+//   3,
+//   5,
+//   7,
+//   9,
+//   11,
+//   13,
+//   15,
+//   17,
+// ]
 
 const rules = [
   0, //CaptureOptions.notMandatory,
@@ -19,7 +25,7 @@ const heuristicPairs = [
   [ 'heuristicClusters', 'heuristicWeighDistance' ],
 ]
 
-const runs = 10
+const runs = 50
 
 const configArray = []
 
