@@ -25,7 +25,6 @@ function ruleToString(rule) {
   }
 }
 
-
 class GameResult {
   // params: { whiteHeur, whiteDepth, blackHeur, blackDepth, rule }
   // winner: 'white' | 'black' | 'draw"
@@ -115,7 +114,7 @@ for (const config of gameConfigArray) {
 // .separator ","
 // .import results.csv game_results
 
-let output = ''
+let output = 'first-ai-function, first-ai-depth,second-ai-function, second-ai-depth, game-rule, winner, moves, white-pawns, white-kings, black-pawns, black-kings\n'
 for (const result of results) {
   output += result.toCSV() + '\n'
 }
