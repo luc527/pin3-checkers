@@ -1,6 +1,9 @@
 import * as fs from 'fs'
 
-const depths = [...Array(20).keys()]
+const depths = Array.from(
+  { length: 20 },
+  (_, index) => index + 1
+);
 
 // const depths = [
 //   3,

@@ -4,48 +4,6 @@
     "players": {
       "white": {
         "function": "heuristicCountPieces",
-        "depth": 0
-      },
-      "black": {
-        "function": "heuristicClusters",
-        "depth": 0
-      }
-    },
-    "rule": 0
-  },
-  {
-    "runs": 50,
-    "players": {
-      "white": {
-        "function": "heuristicCountPieces",
-        "depth": 0
-      },
-      "black": {
-        "function": "heuristicWeighDistance",
-        "depth": 0
-      }
-    },
-    "rule": 0
-  },
-  {
-    "runs": 50,
-    "players": {
-      "white": {
-        "function": "heuristicClusters",
-        "depth": 0
-      },
-      "black": {
-        "function": "heuristicWeighDistance",
-        "depth": 0
-      }
-    },
-    "rule": 0
-  },
-  {
-    "runs": 50,
-    "players": {
-      "white": {
-        "function": "heuristicCountPieces",
         "depth": 1
       },
       "black": {
@@ -844,42 +802,42 @@
     "players": {
       "white": {
         "function": "heuristicCountPieces",
-        "depth": 0
+        "depth": 20
       },
       "black": {
         "function": "heuristicClusters",
-        "depth": 0
+        "depth": 20
       }
     },
-    "rule": 1
+    "rule": 0
   },
   {
     "runs": 50,
     "players": {
       "white": {
         "function": "heuristicCountPieces",
-        "depth": 0
+        "depth": 20
       },
       "black": {
         "function": "heuristicWeighDistance",
-        "depth": 0
+        "depth": 20
       }
     },
-    "rule": 1
+    "rule": 0
   },
   {
     "runs": 50,
     "players": {
       "white": {
         "function": "heuristicClusters",
-        "depth": 0
+        "depth": 20
       },
       "black": {
         "function": "heuristicWeighDistance",
-        "depth": 0
+        "depth": 20
       }
     },
-    "rule": 1
+    "rule": 0
   },
   {
     "runs": 50,
@@ -1684,42 +1642,42 @@
     "players": {
       "white": {
         "function": "heuristicCountPieces",
-        "depth": 0
+        "depth": 20
       },
       "black": {
         "function": "heuristicClusters",
-        "depth": 0
+        "depth": 20
       }
     },
-    "rule": 3
+    "rule": 1
   },
   {
     "runs": 50,
     "players": {
       "white": {
         "function": "heuristicCountPieces",
-        "depth": 0
+        "depth": 20
       },
       "black": {
         "function": "heuristicWeighDistance",
-        "depth": 0
+        "depth": 20
       }
     },
-    "rule": 3
+    "rule": 1
   },
   {
     "runs": 50,
     "players": {
       "white": {
         "function": "heuristicClusters",
-        "depth": 0
+        "depth": 20
       },
       "black": {
         "function": "heuristicWeighDistance",
-        "depth": 0
+        "depth": 20
       }
     },
-    "rule": 3
+    "rule": 1
   },
   {
     "runs": 50,
@@ -2515,6 +2473,48 @@
       "black": {
         "function": "heuristicWeighDistance",
         "depth": 19
+      }
+    },
+    "rule": 3
+  },
+  {
+    "runs": 50,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 20
+      },
+      "black": {
+        "function": "heuristicClusters",
+        "depth": 20
+      }
+    },
+    "rule": 3
+  },
+  {
+    "runs": 50,
+    "players": {
+      "white": {
+        "function": "heuristicCountPieces",
+        "depth": 20
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 20
+      }
+    },
+    "rule": 3
+  },
+  {
+    "runs": 50,
+    "players": {
+      "white": {
+        "function": "heuristicClusters",
+        "depth": 20
+      },
+      "black": {
+        "function": "heuristicWeighDistance",
+        "depth": 20
       }
     },
     "rule": 3
