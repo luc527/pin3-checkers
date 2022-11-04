@@ -114,14 +114,23 @@ export class Minimax {
   }
 }
 
-// TODO could instead just do
-//  import * as mm from '/assets/js/minimax.js'
-//  const s = 'heuristicCountPieces'
-//  mm[s]
 export const valueHeuristicFunctions = {
   'heuristicCountPieces': heuristicCountPieces,
   'heuristicClusters': heuristicClusters,
   'heuristicWeighDistance': heuristicWeighDistance,
+  'heuristicRandom': heuristicRandom,
+  'heuristicCountPiecesUnweighted': heuristicCountPiecesUnweighted,
+}
+
+export function heuristicCountPiecesUnweighted(state, maximizeWhite) {
+  const { blackPawns, blackKings, whitePawns, whiteKings } = state.pieceCount
+
+  const whiteValue = whitePawns + whiteKings
+  const blackValue = blackPawns + blackKings
+
+  return maximizeWhite
+       ? whiteValue - blackValue
+       : blackValue - whiteValue
 }
 
 export function heuristicCountPieces(state, maximizeWhite) {
@@ -253,6 +262,7 @@ export function getHeuristicOptions() {
     { functionName: 'heuristicCountPieces', title: 'Count pieces' },
     { functionName: 'heuristicClusters', title: 'Clusters' },
     { functionName: 'heuristicWeighDistance', title: 'Weigh distances' },
+    { functionName: 'heuristicCountPiecesUnweighted', title: 'Count pieces unweighted' },
     { functionName: 'heuristicRandom', title: 'Random' },
   ]
 }

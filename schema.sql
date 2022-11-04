@@ -1,4 +1,4 @@
-DROP TABLE game_results;
+DROP TABLE IF EXISTS game_results;
 
 CREATE TABLE game_results (
   white_heuristic text,
