@@ -1,6 +1,6 @@
-import * as minimax from './assets/js/minimax.js'
-import { CheckersState, Status } from './assets/js/game-state.js'
-import { CaptureOptions } from './assets/js/move-generation.js'
+import * as minimax from '../assets/js/minimax.js'
+import { CheckersState, Status } from '../assets/js/game-state.js'
+import { CaptureOptions } from '../assets/js/move-generation.js'
 
 function statusToString(status) {
   switch (status) {

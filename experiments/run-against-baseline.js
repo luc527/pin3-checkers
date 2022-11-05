@@ -2,7 +2,6 @@ import { runGame, GameResult } from './game-result.js'
 import * as fs from 'fs'
 
 const depths = [
-  //1,
   3,
   5,
   //7,

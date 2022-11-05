@@ -1,3 +1,3 @@
-logs/*
-!logs/.gitkeep
-db.db
+./experiments/config.json
+./experiments/*.db
+./experiments/*.csv

@@ -22,6 +22,7 @@ for (const config of gameConfigArray) {
   const runs = config.runs
 
   for (let run = 1; run <= runs; run++) {
+    console.log('run', run)
     const { winner, moves, pieceCount } = runGame(whiteHeur, whiteDepth, blackHeur, blackDepth, rule)
     const result = new GameResult(params, winner, moves, pieceCount)
     results.push(result)
