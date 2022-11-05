@@ -1,20 +1,13 @@
 import * as fs from 'fs'
 
-const depths = Array.from(
-  { length: 20 },
-  (_, index) => index + 1
-);
-
-// const depths = [
-//   3,
-//   5,
-//   7,
-//   9,
-//   11,
-//   13,
-//   15,
-//   17,
-// ]
+const depths = [
+  3,
+  5,
+  7,
+  9,
+  11,
+  13,
+]
 
 const rules = [
   0, //CaptureOptions.notMandatory,
