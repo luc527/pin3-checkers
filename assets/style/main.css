@@ -21,6 +21,7 @@ html {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  scroll-behavior: smooth;
 }
 
 main, main form {
@@ -267,4 +268,11 @@ main h1 {
 
 .options-group > label {
   cursor: pointer;
+}
+
+#game-result {
+  color: var(--green);
+  margin-top: 64px;
+  font-weight: bold;
+  font-size: 32px;
 }

@@ -10,21 +10,29 @@ export default class GameHistoryView {
   constructor(actions, container) {
     this.#actions = actions
 
-    container.append(Object.assign(document.createElement('button'), {
+    const previousBtn = Object.assign(document.createElement('button'), {
       type: 'button',
-      innerText: 'Prev',
+      innerText: 'Previous',
       onclick: () => {
         this.prev()
-      }
-    }))
+    }})
+    previousBtn.classList.add('btn-primary')
 
-    container.append(Object.assign(document.createElement('button'), {
+    const nextBtn = Object.assign(document.createElement('button'), {
       type: 'button',
       innerText: 'Next',
       onclick: () => {
         this.next()
       }
-    }))
+    })
+    nextBtn.classList.add('btn-primary')
+
+    const btnGroup = document.createElement('div')
+    btnGroup.append(previousBtn)
+    btnGroup.append(nextBtn)
+    btnGroup.classList.add('history-container-btn-group')
+
+    container.append(btnGroup)
 
     // TODO make better layout
     const cellPx = 32

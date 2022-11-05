@@ -19,47 +19,69 @@
   </noscript>
 </head>
 
+  <style>
+    main {
+      padding: 32px;
+    }
+
+    .history-container-btn-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .btn-primary:not(:last-child) {
+      margin-bottom: 0;
+    }
+  </style>
+
 <body>
 
   <main style="width: 50vw;">
     <h1 style="margin-bottom: 64px;">AI vs. AI</h1>
     <div style="display: flex; gap: 25%; width: 100%;">
       <div>
-        <h2>IA (peças brancas)</h2>
+        <h2>AI (white pieces)</h2>
         <div class="input-group">
-          <label for="heuristica1">Heurística</label>
+          <label for="heuristica1">Heuristic</label>
           <select id="heuristica1">
           </select>
         </div>
         <div class="input-group" style="margin-top: 32px;">
-          <label for="profundidade1">Profundidade</label>
-          <input type="number" min=1 step=1 max=15 value=7 id="profundidade1">
+          <label for="profundidade1">Depth</label>
+          <input type="number" min=1 step=1 max=15 value=3 id="profundidade1">
         </div>
       </div>
       <div style="margin-left: auto;">
-        <h2>IA (peças pretas)</h2>
+        <h2>AI (black pieces)</h2>
         <div class="input-group">
-          <label for="heuristica2">Heurística</label>
+          <label for="heuristica2">Heuristic</label>
           <select id="heuristica2">
           </select>
         </div>
         <div class="input-group" style="margin-top: 32px;">
-          <label for="profundidade2">Profundidade</label>
-          <input type="number" min=1 step=1 max=15 value=7 id="profundidade2">
+          <label for="profundidade2">Depth</label>
+          <input type="number" min=1 step=1 max=15 value=3 id="profundidade2">
         </div>
       </div>
     </div>
 
     <div style="margin-top: 64px;">
       <div class="input-group" style="margin-bottom: 16px;">
-        <label for="jogadas-aleatorias">Jogadas iniciais aleatórias</label>
+        <label for="jogadas-aleatorias">Random opening moves</label>
         <input type="number" min=1 step=1 max=20 value=4 id="jogadas-aleatorias">
       </div>
 
-      <button id="btn-jogar" class="btn-primary" style="max-width: 256px;" type="button">Jogar</button>
+      <button id="btn-jogar" class="btn-primary" style="max-width: 256px;" type="button">Play</button>
     </div>
 
-    <div id="history-container" style="margin: 64px"></div>
+    <h3 id="game-result"></h5>
+
+    <div id="history-container" style="margin: 64px">
+      
+    </div>
 
   </div>
 
@@ -86,7 +108,6 @@
     function qs(s) { return document.querySelector(s); }
 
     qs('#btn-jogar').onclick = () => {
-
       while (historyContainer.firstChild) {
         historyContainer.firstChild.remove();
       }
@@ -123,12 +144,14 @@
         actionHistory.push(action)
       }
       if (state.status == Status.draw) {
-        console.log('Draw :/')
+        qs('#game-result').innerText = 'Draw :/'
       } else {
-        console.log(`Winner is ${state.status == Status.whiteWon ? 'white' : 'black'}`)
+        qs('#game-result').innerText = `${state.status == Status.whiteWon ? 'White' : 'Black'} won!`
+        
       }
 
       new GameHistoryView(actionHistory, qs('#history-container'))
+      window.scrollTo(0, document.body.scrollHeight);
     }
   </script>
 
