@@ -58,6 +58,9 @@ WITH counts AS (
 ) SELECT heuristic,
          depth,
          rule,
+         wins,
+         draws,
+         losses,
          100.0 * wins / total AS win_perc,
          100.0 * draws / total AS draws_perc,
          100.0 * losses / total AS losses_perc
