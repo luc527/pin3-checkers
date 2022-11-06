@@ -60,6 +60,7 @@ WITH counts AS (
          rule,
          wins,
          draws,
+         total,
          losses,
          100.0 * wins / total AS win_perc,
          100.0 * draws / total AS draws_perc,
