@@ -2,9 +2,12 @@ import { runGame, GameResult } from './game-result.js'
 import * as fs from 'fs'
 
 const depths = [
-  3,
   5,
-  //7,
+  6,
+  7,
+  8,
+  9,
+  10,
 ]
 
 const heuristics = [
@@ -16,12 +19,12 @@ const heuristics = [
 const baselineHeuristic = 'heuristicCountPiecesUnweighted'
 
 const rules = [
-  0,  // notMandatory
+  // 0,  // notMandatory  // too slow!
   1,  // mandatory
   3,  // bestMandatory
 ]
 
-const runs = 20
+const runs = 50
 
 const results = []
 
@@ -56,4 +59,6 @@ for (const result of results) {
   output += result.toCSV() + '\n'
 }
 
-fs.writeFileSync('./against-baseline-results.csv', output)
+const outputPath = process.argv[2] ?? './against-baseline-results.csv'
+
+fs.writeFileSync(outputPath, output)

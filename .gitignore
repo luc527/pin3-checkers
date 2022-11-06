@@ -1,3 +1,2 @@
-./experiments/config.json
-./experiments/*.db
-./experiments/*.csv
+experiments/config.json
+experiments/*.db
