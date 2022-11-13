@@ -24,14 +24,12 @@
     <div id="board-container">
     </div>
 
-    <div class="loader-container" style="display: none;">
-      <div class="loader"></div>
-    </div>
+    <button id="btn-undo" class="btn-primary" style="margin-top: 16px;">Undo last move!</button>
   </main>
 
   <script type="module">
 
-    import { setupGame } from '/assets/js/game-client.js'
+    import { GameClient } from '/assets/js/game-client.js'
     import { captureOptionsFromURL } from '/assets/js/move-generation.js'
 
     const againstAI = true
@@ -45,7 +43,11 @@
     const depth = url.searchParams.get('depth') ?? 8
     const aiParameters = { heuristic, depth }
 
-    setupGame(againstAI, captureOptions, container, aiParameters)
+    const cli = new GameClient(againstAI, captureOptions, container, aiParameters)
+
+    document.getElementById('btn-undo').onclick = () => {
+      cli.undo()
+    }
 
   </script>
 </body>

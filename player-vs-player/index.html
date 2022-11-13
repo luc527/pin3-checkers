@@ -28,7 +28,7 @@
 
   <script type="module">
 
-    import { setupGame } from '/assets/js/game-client.js'
+    import { GameClient } from '/assets/js/game-client.js'
     import { captureOptionsFromURL } from '/assets/js/move-generation.js'
 
     const againstAI = false
@@ -42,7 +42,11 @@
     const depth = url.searchParams.get('depth') ?? 8
     const aiParameters = { heuristic, depth }
 
-    setupGame(againstAI, captureOptions, container, aiParameters)
+    const cli = new GameClient(againstAI, captureOptions, container, aiParameters)
+
+    document.getElementById('btn-undo').onclick = () => {
+      cli.undo()
+    }
 
   </script>
 </body>

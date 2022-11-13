@@ -3,15 +3,9 @@ import BoardView from '/assets/js/BoardView.js';
 import { Status, CheckersState } from '/assets/js/game-state.js'
 import * as mm from '/assets/js/minimax.js'
 
-export function setupGame(againstAI, captureOptions, aiParameters, container) {
-  new GameClient(againstAI, captureOptions, aiParameters, container)
-}
+export class GameClient {
 
-// TODO redo as a just a function
-// TODO undo/redo
-//  against AI undo will need to go back two steps
-
-class GameClient {
+  #animating = false
 
   constructor(againstAI, captureOptions, container, aiParameters={}) {
     const checkers = new CheckersState(captureOptions);
@@ -41,6 +35,7 @@ class GameClient {
     this.againstAI = againstAI
     this.checkers = checkers
     this.view = view
+    this.actionStack = []
 
     this.waitSourceSelection()
   }
@@ -83,22 +78,61 @@ class GameClient {
     })
     const actionTaken = possibleActions[0]
     
-    this.checkers.actionDo(actionTaken)
+    this.#actionDo(actionTaken)
     this.view.clearMarks()
+
+    this.#animating = true
     this.view.animateActionDo(actionTaken).then(() => {
       this.checkStatus()
 
       if (this.againstAI) {
         const { action: aiAction } = this.minimax.val(this.checkers)
-        this.checkers.actionDo(aiAction)
+        this.#actionDo(aiAction)
         this.view.animateActionDo(aiAction).then(() => {
           this.checkStatus()
           this.waitSourceSelection()
+          this.#animating = false
         })
       } else {
         this.waitSourceSelection()
+        this.#animating = false
       }
 
+    })
+  }
+
+  #actionDo(action) {
+    this.checkers.actionDo(action)
+    this.actionStack.push(action)
+  }
+
+  #prevActionUndo() {
+    if (this.actionStack.length == 0) return
+    const action = this.actionStack.pop()
+    this.checkers.actionUndo(action)
+    return action
+  }
+
+  undo() {
+    if (this.#animating) return
+    if (this.actionStack.length == 0) return
+    console.log('undo')
+
+    this.view.clearMarks()
+
+    this.#animating = true
+    const action = this.#prevActionUndo()
+    this.view.animateActionUndo(action).then(() => {
+      if (this.againstAI) {
+        const action = this.#prevActionUndo()
+        this.view.animateActionUndo(action).then(() => {
+          this.waitSourceSelection()
+          this.#animating = false
+        })
+      } else {
+        this.waitSourceSelection()
+        this.#animating = false
+      }
     })
   }
 
