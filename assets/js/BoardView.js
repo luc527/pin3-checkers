@@ -2,6 +2,7 @@ import {serializePosition, positionBetween} from '/assets/js/board.js'
 export default class BoardView {
 
   #inAnimation = false
+  #useBlueMarks = false
 
   constructor(board, container, cellPx=64, transitionMs=500) {
 
@@ -110,6 +111,10 @@ export default class BoardView {
     this.currentMarks = []
   }
 
+  useBlueMarks(use) {
+    this.#useBlueMarks = use
+  }
+
   addMark(position) {
     const serializedPosition = serializePosition(position)
     if (this.isMarked.has(serializedPosition)) return
@@ -117,6 +122,9 @@ export default class BoardView {
 
     const mark = document.createElement('div')
     mark.classList.add('board-mark')
+    if (this.#useBlueMarks) {
+      mark.classList.add('blue')
+    }
     Object.assign(mark.style, {
       width: `${this.cellPx}px`,
       height: `${this.cellPx}px`,

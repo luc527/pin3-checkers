@@ -76,7 +76,6 @@ export class CheckersState {
 
     const moveUndoInfo = bo.fullMoveDo(this.board, action.from, action.sequence)
     Object.assign(action.undoInfo, moveUndoInfo)
-
     Object.freeze(action.undoInfo)
     
     this.whiteToMove = !this.whiteToMove
@@ -103,13 +102,13 @@ export class CheckersState {
     this.actions = this.#generateActions()
     this.pieceCount = bo.countPieces(this.board)
 
-    // #calculateStatus depends on actions and pieceCount being updated, so this order matters
-    this.status = this.#calculateStatus()
-
     // detect if just got in a special ending
     if (this.roundsInSpecialEnding == -1 && this.#inSpecialEnding()) {
       this.roundsInSpecialEnding = 0
     }
+
+    // #calculateStatus depends on actions and pieceCount being updated, so this order matters
+    this.status = this.#calculateStatus()
   }
 
   #inSpecialEndingImpl(ourKings, ourPawns, theirKings, theirPawns) {

@@ -1,14 +1,39 @@
-import { arePositionsEqual } from '/assets/js/board.js';
+import { arePositionsEqual, serializePosition, decodeBoard } from '/assets/js/board.js';
 import BoardView from '/assets/js/BoardView.js';
 import { Status, CheckersState } from '/assets/js/game-state.js'
 import * as mm from '/assets/js/minimax.js'
 
+function detectOverlap(possibleActions) {
+  const set = new Set()
+  for (const action of possibleActions) {
+    for (const position of action.sequence) {
+      const pos = serializePosition(position)
+      if (set.has(pos)) return true
+      set.add(pos)
+    }
+  }
+  return false
+}
+
 export class GameClient {
 
-  #animating = false
+  animating = false
 
   constructor(againstAI, captureOptions, container, aiParameters={}) {
-    const checkers = new CheckersState(captureOptions);
+
+    const initialBoard = decodeBoard([
+      '.....@..',
+      '........',
+      '...x....',
+      '........',
+      '.....x..',
+      '..x.....',
+      '.....x..',
+      '........',
+    ].join('\n'));
+
+    const checkers = new CheckersState(captureOptions, initialBoard);
+
     if (againstAI) {
       const maximizeWhite = false // player is white
       const heuristic = mm[aiParameters.heuristic]
@@ -19,7 +44,7 @@ export class GameClient {
 
     const view = new BoardView(checkers.board, container);
     view.onClick((row, col, marked) => {
-      if (!this.selectedSource) {
+      if (!this.possibleActions) {
         if (marked) {
           this.waitDestinationSelection(row, col)
         }
@@ -32,6 +57,14 @@ export class GameClient {
       }
     })
 
+    document.addEventListener('wheel', (e) => {
+      console.log('wheel')
+      if (this.possibleActionIndex == null) return
+      const up = e.deltaY < 0
+      if (up) this.showPrevPossibleAction()
+      else this.showNextPossibleAction()
+    });
+
     this.againstAI = againstAI
     this.checkers = checkers
     this.view = view
@@ -41,19 +74,40 @@ export class GameClient {
   }
 
   waitSourceSelection() {
-    console.log('waitSourceSelection')
-    this.selectedSource = null
+    this.animating = false
+    this.possibleActions = null
+    this.possibleActionIndex = null
+    this.view.useBlueMarks(false)
     this.view.resetMarks(this.checkers.actions.map(it => it.from))
   }
 
   waitDestinationSelection(row, col) {
-    console.log('waitDestinationSelection', row, col)
-    this.selectedSource = { row, col }
-    this.view.resetMarks(
-      this.checkers.actions
-      .filter(it => arePositionsEqual(it.from, this.selectedSource))
-      .map(it => it.sequence[it.sequence.length-1])
-    )
+    const src = { row, col }
+    this.possibleActions = this.checkers.actions.filter(it => arePositionsEqual(it.from, src))
+    if (detectOverlap(this.possibleActions)) {
+      this.view.useBlueMarks(true)
+      this.possibleActionIndex = 0
+      this.showCurrentPossibleAction()
+    } else {
+      this.view.resetMarks(this.possibleActions.map(it => it.sequence[it.sequence.length-1]))
+    }
+  }
+
+  showCurrentPossibleAction() {
+    const action = this.possibleActions[this.possibleActionIndex]
+    const dest = action.sequence[action.sequence.length-1]
+    this.view.resetMarks([dest])
+  }
+
+  showNextPossibleAction() {
+    this.possibleActionIndex = (this.possibleActionIndex + 1) % this.possibleActions.length
+    this.showCurrentPossibleAction()
+  }
+
+  showPrevPossibleAction() {
+    this.possibleActionIndex--;
+    if (this.possibleActionIndex < 0) this.possibleActionIndex = this.possibleActions.length-1;
+    this.showCurrentPossibleAction()
   }
 
   checkStatus() {
@@ -69,19 +123,14 @@ export class GameClient {
   }
 
   handleDestinationSelection(row, col) {
-    console.log('handleDestinationSelection', row, col)
 
-    const source = this.selectedSource
     const destination = { row, col }
-    const possibleActions = this.checkers.actions.filter(it => {
-      return arePositionsEqual(it.from, source) && arePositionsEqual(it.sequence[it.sequence.length-1], destination)
-    })
-    const actionTaken = possibleActions[0]
+    const actionTaken = this.possibleActions.find(it => arePositionsEqual(it.sequence[it.sequence.length-1], destination))
     
     this.#actionDo(actionTaken)
     this.view.clearMarks()
 
-    this.#animating = true
+    this.animating = true
     this.view.animateActionDo(actionTaken).then(() => {
       this.checkStatus()
 
@@ -91,11 +140,9 @@ export class GameClient {
         this.view.animateActionDo(aiAction).then(() => {
           this.checkStatus()
           this.waitSourceSelection()
-          this.#animating = false
         })
       } else {
         this.waitSourceSelection()
-        this.#animating = false
       }
 
     })
@@ -114,24 +161,21 @@ export class GameClient {
   }
 
   undo() {
-    if (this.#animating) return
+    if (this.animating) return
     if (this.actionStack.length == 0) return
-    console.log('undo')
 
     this.view.clearMarks()
 
-    this.#animating = true
+    this.animating = true
     const action = this.#prevActionUndo()
     this.view.animateActionUndo(action).then(() => {
       if (this.againstAI) {
         const action = this.#prevActionUndo()
         this.view.animateActionUndo(action).then(() => {
           this.waitSourceSelection()
-          this.#animating = false
         })
       } else {
         this.waitSourceSelection()
-        this.#animating = false
       }
     })
   }
