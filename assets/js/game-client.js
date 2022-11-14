@@ -125,7 +125,10 @@ export class GameClient {
   handleDestinationSelection(row, col) {
 
     const destination = { row, col }
-    const actionTaken = this.possibleActions.find(it => arePositionsEqual(it.sequence[it.sequence.length-1], destination))
+    const actionTaken
+      = this.possibleActionIndex == null
+      ? this.possibleActions.find(it => arePositionsEqual(it.sequence[it.sequence.length-1], destination))
+      : this.possibleActions[this.possibleActionIndex];
     
     this.#actionDo(actionTaken)
     this.view.clearMarks()
