@@ -21,6 +21,7 @@ export class GameClient {
 
   constructor(againstAI, captureOptions, container, aiParameters={}) {
 
+    /* for showcasing the actions navigation when their positions overlap
     const initialBoard = decodeBoard([
       '.....@..',
       '........',
@@ -31,6 +32,8 @@ export class GameClient {
       '.....x..',
       '........',
     ].join('\n'));
+    */
+    const initialBoard = null;
 
     const checkers = new CheckersState(captureOptions, initialBoard);
 
