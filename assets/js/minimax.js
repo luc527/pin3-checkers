@@ -254,7 +254,7 @@ export function getHeuristicOptions() {
     { functionName: 'heuristicCountPiecesWeighted', title: 'Count pieces' },
     { functionName: 'heuristicClusters', title: 'Clusters' },
     { functionName: 'heuristicWeighDistance', title: 'Weigh distances' },
-    { functionName: 'heuristicCountPieces', title: 'Count pieces unweighted' },
+    { functionName: 'heuristicCountPieces', title: 'Count pieces weighted' },
     { functionName: 'heuristicRandom', title: 'Random' },
   ]
 }

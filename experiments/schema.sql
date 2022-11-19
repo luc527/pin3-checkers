@@ -44,7 +44,7 @@ SELECT black_heuristic AS heuristic,
 DROP VIEW IF EXISTS experiments_grouped;
 
 /* even easier to query on */
-CREATE VIEW experiments_grouped AS
+CREATE VIEW baseline_grouped AS
 WITH counts AS (
     SELECT heuristic,
            depth,
@@ -66,3 +66,14 @@ WITH counts AS (
          100.0 * draws / total AS draws_perc,
          100.0 * losses / total AS losses_perc
     FROM counts;
+
+CREATE view eachother_grouped aS
+  seleCT white_heuristic,
+         black_heuristic,
+         white_depth AS depth,
+         SUM(CASE winner WHEN 'white' THEN 1 ELSE 0 END) AS white_wins,
+         SUM(CASE winner WHEN 'black' THEN 1 ELSE 0 END) AS black_wins,
+         SUM(CASE winner WHEN 'draw' THEN 1 ELSE 0 END) AS draws,
+         COUNT(1) AS total
+    FROM game_results
+GROUP BY white_heuristic, black_heuristic, depth;
