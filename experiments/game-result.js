@@ -29,11 +29,13 @@ export class GameResult {
   // winner: 'white' | 'black' | 'draw"
   // moves: int
   // pieceCount: { whitePawns, whiteKings, blackPawns, blackKings }
-  constructor(params, winner, moves, pieceCount) {
+  // duration: int (milliseconds)
+  constructor(params, winner, moves, pieceCount, duration) {
     this.params = params
     this.winner = winner
     this.moves = moves
     this.pieceCount = pieceCount
+    this.duration = duration;
   }
 
   toCSV() {
@@ -49,6 +51,7 @@ export class GameResult {
       this.pieceCount.whiteKings,
       this.pieceCount.blackPawns,
       this.pieceCount.blackKings,
+      this.duration,
     ].join(',');
   }
 }
@@ -65,6 +68,8 @@ export function runGame(whiteHeur, whiteDepth, blackHeur, blackDepth, captureOpt
   let moves = 0
   let currentPlayer = whitePlayer
 
+  const start = Date.now();
+
   while (state.status == Status.playing) {
     const { action } = currentPlayer.val(state)
     state.actionDo(action)
@@ -72,9 +77,12 @@ export function runGame(whiteHeur, whiteDepth, blackHeur, blackDepth, captureOpt
     currentPlayer = currentPlayer == whitePlayer ? blackPlayer : whitePlayer
   }
 
+  const duration = Date.now() - start;  // in ms
+
   return {
     winner: statusToString(state.status),
     moves,
-    pieceCount: state.pieceCount
+    pieceCount: state.pieceCount,
+    duration
   }
 }

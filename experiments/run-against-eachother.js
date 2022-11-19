@@ -45,7 +45,7 @@ for (const depth of depths) {
         const progress = `${progressPercentage} (${currGame}/${totalGames})`;
         console.log(`${progress} ${whiteHeur}  x  ${blackHeur}, depth ${depth}, rule ${rule}`);
 
-        const { winner, moves, pieceCount } = runGame(whiteHeur, depth, blackHeur, depth, rule);
+        const { winner, moves, pieceCount, duration } = runGame(whiteHeur, depth, blackHeur, depth, rule);
         const params = {
           whiteHeur,
           whiteDepth: depth,
@@ -53,7 +53,7 @@ for (const depth of depths) {
           blackDepth: depth,
           rule,
         }
-        const result = new GameResult(params, winner, moves, pieceCount);
+        const result = new GameResult(params, winner, moves, pieceCount, duration);
         results.push(result);
 
         currGame++;
