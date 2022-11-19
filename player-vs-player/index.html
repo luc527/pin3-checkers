@@ -38,7 +38,7 @@
     const container = document.getElementById('board-container')
 
     const url = new URL(location)
-    const heuristic = url.searchParams.get('heuristic') ?? 'heuristicCountPieces'
+    const heuristic = url.searchParams.get('heuristic') ?? 'heuristicCountPiecesWeighted'
     const depth = url.searchParams.get('depth') ?? 8
     const aiParameters = { heuristic, depth }
 

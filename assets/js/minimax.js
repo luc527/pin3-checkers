@@ -114,15 +114,7 @@ export class Minimax {
   }
 }
 
-export const valueHeuristicFunctions = {
-  'heuristicCountPieces': heuristicCountPieces,
-  'heuristicClusters': heuristicClusters,
-  'heuristicWeighDistance': heuristicWeighDistance,
-  'heuristicRandom': heuristicRandom,
-  'heuristicCountPiecesUnweighted': heuristicCountPiecesUnweighted,
-}
-
-export function heuristicCountPiecesUnweighted(state, maximizeWhite) {
+export function heuristicCountPieces(state, maximizeWhite) {
   const { blackPawns, blackKings, whitePawns, whiteKings } = state.pieceCount
 
   const whiteValue = whitePawns + whiteKings
@@ -133,7 +125,7 @@ export function heuristicCountPiecesUnweighted(state, maximizeWhite) {
        : blackValue - whiteValue
 }
 
-export function heuristicCountPieces(state, maximizeWhite) {
+export function heuristicCountPiecesWeighted(state, maximizeWhite) {
   const { blackPawns, blackKings, whitePawns, whiteKings } = state.pieceCount
 
   const whiteValue = whitePawns + 2 * whiteKings
@@ -221,7 +213,7 @@ export function heuristicClusters(state, maximizeWhite) {
     // maybe could 'damp' the cluster.length/12 factor, because very large clusters aren't that much better than smaller clusters
     // or do something like 1 + Math.min(4, cluster.length) / 4, so clusters bigger than 4 aren't better than clusters of size 4
 
-    // clusterFactor=1 in particular makes this heuristic equal to heuristicCountPieces
+    // clusterFactor=1 in particular makes this heuristic equal to heuristicCountPiecesWeighted
 
     const fst = cluster[0]
     const sign = state.board[fst.row][fst.col].white == maximizeWhite ? 1 : -1
@@ -259,10 +251,10 @@ export function heuristicRandom() {
 
 export function getHeuristicOptions() {
   return [
-    { functionName: 'heuristicCountPieces', title: 'Count pieces' },
+    { functionName: 'heuristicCountPiecesWeighted', title: 'Count pieces' },
     { functionName: 'heuristicClusters', title: 'Clusters' },
     { functionName: 'heuristicWeighDistance', title: 'Weigh distances' },
-    { functionName: 'heuristicCountPiecesUnweighted', title: 'Count pieces unweighted' },
+    { functionName: 'heuristicCountPieces', title: 'Count pieces unweighted' },
     { functionName: 'heuristicRandom', title: 'Random' },
   ]
 }

@@ -5,8 +5,8 @@ CREATE TABLE heuristics (
 );
 
 INSERT INTO heuristics VALUES
-('heuristicCountPiecesUnweighted'),
 ('heuristicCountPieces'),
+('heuristicCountPiecesWeighted'),
 ('heuristicClusters'),
 ('heuristicWeightDistance');
 

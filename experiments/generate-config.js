@@ -16,8 +16,8 @@ const rules = [
 ]
 
 const heuristicPairs = [
-  [ 'heuristicCountPieces', 'heuristicClusters' ],
-  [ 'heuristicCountPieces', 'heuristicWeighDistance' ],
+  [ 'heuristicCountPiecesWeighted', 'heuristicClusters' ],
+  [ 'heuristicCountPiecesWeighted', 'heuristicWeighDistance' ],
   [ 'heuristicClusters', 'heuristicWeighDistance' ],
 ]
 

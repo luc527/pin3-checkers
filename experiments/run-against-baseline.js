@@ -11,12 +11,12 @@ const depths = [
 ]
 
 const heuristics = [
-  'heuristicCountPieces',
+  'heuristicCountPiecesWeighted',
   'heuristicWeighDistance',
   'heuristicClusters'
 ]
 
-const baselineHeuristic = 'heuristicCountPiecesUnweighted'
+const baselineHeuristic = 'heuristicCountPieces'
 
 const rules = [
   // 0,  // notMandatory  // too slow!
