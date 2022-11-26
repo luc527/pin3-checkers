@@ -12,23 +12,28 @@ const depths = [
   10
 ];
 
-const heuristicPairs = [
-  [ 'heuristicCountPiecesWeighted', 'heuristicCountPieces' ],
-  [ 'heuristicCountPiecesWeighted', 'heuristicWeighDistance' ],
-  [ 'heuristicCountPiecesWeighted', 'heuristicClusters' ],
-
-  [ 'heuristicCountPieces', 'heuristicWeighDistance' ],
-  [ 'heuristicCountPieces', 'heuristicClusters' ],
-
-  [ 'heuristicWeighDistance', 'heuristicClusters' ],
+const heuristics = [
+    'heuristicCountPieces',
+    'heuristicCountPiecesWeighted',
+    'heuristicClusters',
+    'heuristicWeighDistance',
 ];
+
+const heuristicPairs = [];
+
+for (const whiteHeur of heuristics) {
+    for (const blackHeur of heuristics) {
+        if (whiteHeur == blackHeur) continue
+        heuristicPairs.push([ whiteHeur, blackHeur ])
+    }
+}
 
 const rules = [
   1,
   3
 ];
 
-const runs = 50;
+const runs = 25;
 
 const results = [];
 
