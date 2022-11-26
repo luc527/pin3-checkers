@@ -74,7 +74,7 @@ WITH counts AS (
 DROP VIEW IF EXISTS eachother_grouped;
 
 CREATE VIEW eachother_grouped aS
-  seleCT white_heuristic,
+  SELECT white_heuristic,
          black_heuristic,
          white_depth AS depth,
          SUM(CASE winner WHEN 'white' THEN 1 ELSE 0 END) AS white_wins,
@@ -84,3 +84,18 @@ CREATE VIEW eachother_grouped aS
          AVG(duration_ms) AS avg_duration_ms
     FROM game_results
 GROUP BY white_heuristic, black_heuristic, depth;
+
+CREATE VIEW eachother_pairs AS
+  SELECT 
+    white_heuristic,
+    black_heuristic,
+    SUM(white_wins) white_wins,
+    SUM(black_wins) black_wins,
+    SUM(draws) draws,
+    SUM(total) total,
+    AVG(avg_duration_ms) avg_duration_ms
+  FROM
+    eachother_grouped
+  GROUP BY
+    white_heuristic,
+    black_heuristic;
