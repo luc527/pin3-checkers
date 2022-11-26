@@ -61,7 +61,6 @@ export class GameClient {
     })
 
     document.addEventListener('wheel', (e) => {
-      console.log('wheel')
       if (this.possibleActionIndex == null) return
       const up = e.deltaY < 0
       if (up) this.showPrevPossibleAction()
