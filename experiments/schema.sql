@@ -8,7 +8,7 @@ INSERT INTO heuristics VALUES
 ('heuristicCountPieces'),
 ('heuristicCountPiecesWeighted'),
 ('heuristicClusters'),
-('heuristicWeightDistance');
+('heuristicWeighDistance');
 
 DROP TABLE IF EXISTS game_results;
 
@@ -26,6 +26,10 @@ CREATE TABLE game_results (
   black_kings int,
   duration_ms int
 );
+
+-----------
+-- baseline
+-- use these views when evaluating results from run-against-baseline
 
 DROP VIEW IF EXISTS baseline_experiments;
 
@@ -71,6 +75,11 @@ WITH counts AS (
          avg_duration_ms
     FROM counts;
 
+--------------------
+-- eachother ordered
+-- distinguishing which player started
+-- use these views when evaluating results from running run-against-eachother.js
+
 DROP VIEW IF EXISTS eachother_grouped;
 
 CREATE VIEW eachother_grouped aS
@@ -84,6 +93,8 @@ CREATE VIEW eachother_grouped aS
          AVG(duration_ms) AS avg_duration_ms
     FROM game_results
 GROUP BY white_heuristic, black_heuristic, depth;
+
+DROP VIEW IF EXISTS eachother_pairs;
 
 CREATE VIEW eachother_pairs AS
   SELECT 
@@ -99,3 +110,38 @@ CREATE VIEW eachother_pairs AS
   GROUP BY
     white_heuristic,
     black_heuristic;
+
+----------------------
+-- eachother unordered
+-- without distinguishing which player started
+
+drop view if exists eachother_grouped_unordered;
+
+create view eachother_grouped_unordered as
+  select h1.name heuristic,
+         h2.name against,
+         g.depth,
+         sum(iif(h1.name = g.white_heuristic, g.white_wins, g.black_wins)) as wins,
+         sum(draws) as draws,
+         sum(iif(h1.name = g.white_heuristic, g.black_wins, g.white_wins)) as losses,
+         sum(total) as total
+    from heuristics h1
+left join heuristics h2 on h2.name <> h1.name
+left join eachother_grouped g
+      on ((h1.name = g.white_heuristic and h2.name = g.black_heuristic)
+       or (h1.name = g.black_heuristic and h2.name = g.white_heuristic))
+group by h1.name, h2.name, g.depth;
+
+drop view if exists eachother_pairs_unordered;
+
+create view eachother_pairs_unordered as
+   select heuristic, against, sum(wins) as wins, sum(draws) as draws, sum(losses) as losses, sum(total) as total
+    from eachother_grouped_unordered
+group by heuristic, against;
+
+drop view if exists eachother_per_heuristic;
+
+create view eachother_per_heuristic as
+  select heuristic, sum(wins) as wins, sum(draws) as draws, sum(losses) as losses, sum(total) as total
+    from eachother_pairs_unordered
+group by heuristic;
