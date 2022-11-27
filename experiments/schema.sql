@@ -145,3 +145,13 @@ create view eachother_per_heuristic as
   select heuristic, sum(wins) as wins, sum(draws) as draws, sum(losses) as losses, sum(total) as total
     from eachother_pairs_unordered
 group by heuristic;
+
+drop view if exists eachother_grouped_unordered_dedup;
+
+create view eachother_grouped_unordered_dedup as
+select * from eachother_grouped_unordered where heuristic < against;
+
+drop view if exists eachother_pairs_unordered_dedup;
+
+create view eachother_pairs_unordered_dedup as
+select * from eachother_pairs_unordered where heuristic < against;
