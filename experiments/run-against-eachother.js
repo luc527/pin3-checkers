@@ -2,14 +2,11 @@ import { runGame, GameResult } from './game-result.js'
 import * as fs from 'fs'
 
 
-const depths = [
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10
+const depthRunsPairs = [
+    [  7, 101 ],
+    [  8,  71 ],
+    [  9,  41 ],
+    [ 10,  11 ]
 ];
 
 const heuristics = [
@@ -33,16 +30,16 @@ const rules = [
   3
 ];
 
-const runs = 25;
-
 const results = [];
 
-const totalConfigs = depths.length * heuristicPairs.length * rules.length;
-const totalGames = totalConfigs * runs;
+const totalGames =
+    rules.length *
+    heuristicPairs.length *
+    depthRunsPairs.reduce((a, [d, r]) => a + r, 0);
 
 let currGame = 1;
 
-for (const depth of depths) {
+for (const [ depth, runs ] of depthRunsPairs) {
   for (const [ whiteHeur, blackHeur ] of heuristicPairs) {
     for (const rule of rules) {
       for (let run = 0; run < runs; run++) {
