@@ -1,12 +1,19 @@
 import { runGame, GameResult } from './game-result.js'
 import * as fs from 'fs'
 
+//cli args
+
+const outpath = process.argv[2] ?? './against-eachother-results.csv';
+
+const depthsToRun = process.argv.slice(3).map(Number)
+
+//running the experiments
 
 const depthRunsPairs = [
-    [  7, 101 ],
-    [  8,  71 ],
-    [  9,  41 ],
-    [ 10,  11 ]
+    [  7, 100 ],
+    [  8,  70 ],
+    [  9,  50 ],
+    [ 10,  10 ]
 ];
 
 const heuristics = [
@@ -35,11 +42,18 @@ const results = [];
 const totalGames =
     rules.length *
     heuristicPairs.length *
-    depthRunsPairs.reduce((a, [d, r]) => a + r, 0);
+    depthRunsPairs
+        .filter(([d, r]) => depthsToRun.includes(d))
+        .reduce((a, [d, r]) => a + r, 0);
 
 let currGame = 1;
 
 for (const [ depth, runs ] of depthRunsPairs) {
+
+  if (!depthsToRun.includes(depth)) {
+      continue;
+  }
+
   for (const [ whiteHeur, blackHeur ] of heuristicPairs) {
     for (const rule of rules) {
       for (let run = 0; run < runs; run++) {
@@ -68,7 +82,5 @@ let output = '';
 for (const result of results) {
   output += result.toCSV() + '\n';
 }
-
-const outpath = process.argv[2] ?? './against-eachother-results.csv';
 
 fs.writeFileSync(outpath, output);
