@@ -4,7 +4,7 @@ Projeto Integrador 3, UDESC 6ª fase 2022/2
 
 ## Setting up the environment
 
-This projects uses JS modules. So a http server is needed. Here are some options:
+This projects uses JS modules, which don't work if you just open the html files in a browser. So a local http server is needed. Here are some options:
 
 ### [NodeJS - Serve](https://www.npmjs.com/package/serve)
 
