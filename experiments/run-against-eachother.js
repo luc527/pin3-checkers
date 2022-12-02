@@ -13,7 +13,7 @@ const depthRunsPairs = [
     [  7, 100 ],
     [  8,  70 ],
     [  9,  50 ],
-    [ 10,  10 ]
+    [ 10,  12 ]
 ];
 
 const heuristics = [
