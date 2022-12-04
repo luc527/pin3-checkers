@@ -62,7 +62,6 @@ WITH t AS (
     JOIN game_results g
       ON ((g.white_heuristic = h0.name AND g.black_heuristic = h1.name)
        OR (g.white_heuristic = h1.name AND g.black_heuristic = h0.name))
-   WHERE heuristic < against
 GROUP BY heuristic, against, depth, rule
 ) SELECT *,
          100.0*wins/total as wins_perc,
@@ -94,7 +93,6 @@ WITH t AS (
     JOIN game_results g
       ON ((g.white_heuristic = h0.name AND g.black_heuristic = h1.name)
        OR (g.white_heuristic = h1.name AND g.black_heuristic = h0.name))
-   WHERE heuristic < against
 GROUP BY heuristic, against
 ) SELECT *,
          100.0*wins/total as wins_perc,
@@ -128,3 +126,25 @@ GROUP BY heuristic
          100.0*losses/total AS losses_perc,
          100.0*draws/total AS draws_perc
     FROM t;
+
+DROP VIEW compare_white_black;
+
+CREATE VIEW compare_white_black AS
+SELECT 'white' AS player, white_heuristic heuristic, AVG(white_perc) wins, AVG(black_perc) losses, AVG(draws_perc) draws
+FROM all_pairs_per_players
+GROUP BY heuristic
+UNION
+SELECT 'black' AS player, black_heuristic heuristic, AVG(black_perc) wins, AVG(white_perc) losses, AVG(draws_perc) draws
+FROM all_pairs_per_players
+GROUP BY heuristic;
+
+DROP VIEW per_heuristic_per_depth;
+
+CREATE VIEW per_heuristic_per_depth AS
+   SELECT heuristic,
+          depth,
+          AVG(wins_perc) wins,
+          AVG(losses_perc) losses,
+          AVG(draws_perc) draws
+    FROM unord_per_config
+GROUP BY heuristic, depth;
