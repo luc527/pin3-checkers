@@ -1,3 +1,23 @@
+drop view if exists game_results_unord;
+
+create view game_results_unord as
+select name as heuristic
+     , case name when white_heuristic then white_depth else black_depth end as heuristic_depth
+     , case name when white_heuristic then black_heuristic else white_heuristic end as other
+     , case name when white_heuristic then black_depth else white_depth end as other_depth
+     , rule
+     , moves
+     , case (name, winner)
+       when (white_heuristic, 'white') then 'win'
+       when (black_heuristic, 'black') then 'win'
+       when (white_heuristic, 'black') then 'loss'
+       when (black_heuristic, 'white') then 'loss'
+       else 'draw' end as result
+     , duration_ms
+  from heuristics
+  join game_results
+    on name in (white_heuristic, black_heuristic);
+
 DROP VIEW IF EXISTS all_pairs_per_config;
 
 CREATE VIEW all_pairs_per_config AS
@@ -9,7 +29,8 @@ WITH t AS (
          SUM(CASE winner WHEN 'white' THEN 1 ELSE 0 END) white_wins,
          SUM(CASE winner WHEN 'black' THEN 1 ELSE 0 END) black_wins,
          SUM(CASE winner WHEN 'draw' THEN 1 ELSE 0 END) draws,
-         COUNT(*) total
+         COUNT(*) total,
+         AVG(duration_ms) avg_duration_ms
     FROM game_results
 GROUP BY white_heuristic, black_heuristic, depth, rule
 ) SELECT *,
