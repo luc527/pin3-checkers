@@ -1,6 +1,30 @@
 import * as bo from './board.js'
 import { CaptureOptions, generateMoves } from './move-generation.js'
 
+// TODO current problem with this code:
+// actions are generated for _every_ state, as you can see in #handleChange
+// the problem with this is that it generates actions even for states in the leaves of the Minimax tree
+// which is a lot of unnecessary work! -- when working with depth x, it'll actually generate the tree down to depth x+1
+
+// one possible solution is a .generateActions() method that does what #generateActions does but caches the result
+// so only when we need the actions we call .generateActions()
+// make the method lazy instead of eager, basically
+
+// the problem is that we actually do use the .actions array even for those leaf states
+// in order to detect when a player has no moves available and lost the game
+
+// but we could replace that with a more specialized method hasAvailableMoves()
+// which just has to report whether the board has simple moves or simple captures available for some piece
+
+// although this does introduce some overhead for the nodes that are not leaves:
+// they will call _both_ hasAvailableMoves() and generateActions() instead of just calling generateActions() and checking whether it's empty
+
+// we'd need to check which is worst: the overhead (with the benefit of not generating actions for leaf states) or keeping it the way it currently is, generating actions for leaf states
+
+// BUT we also could tell the CheckersState whether it's a leaf state so it just calls hasAvailableMoves() for leaf states
+// but my intuition is that it would make the code awkward
+// but the code could also be redesigned to be less awkward, maybe inlining some stuff and seeing which patterns actually emerge that indicate a better abstraction to use
+
 export const Status = Object.freeze({
   playing: 0,
   whiteWon: 1,
